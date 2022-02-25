@@ -5,7 +5,7 @@
 # Must contain backup.monthly backup.weekly backup.daily folders
 BACKUP_DIR=/home/sander/steep_backup
 
-# to send mails to if backup failed TODO
+# to send mails to if backup failed TODO add email
 ADMIN_MAIL=
 
 # Source folder where files are backed

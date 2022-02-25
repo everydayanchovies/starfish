@@ -1,0 +1,34 @@
+{% extends 'groups/result_group.html' %}
+{% block header %}
+    <h1>People</h1>
+    <hr/>
+{% endblock %}
+
+{% block content %}
+    <div class="row row-flex">
+        {% for item in results %}
+            <div class="col-xs-12 col-md-6 col-lg-4" style="">
+                <div class="row-content">
+                    <div class="card">
+                        <div style="width: 100%; padding-top: 10px;">
+                            <div style="width: 100px; height: 100px; margin: 0 auto; background: url('/media/{{ item.photo }}'); background-size: cover; border-radius: 50%;">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <a href="{{ item.get_absolute_url }}" style="color: black;">
+                                    {{ item.name }}
+                                </a>
+                            </h4>
+                            <p>
+                                {{ item.summary }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

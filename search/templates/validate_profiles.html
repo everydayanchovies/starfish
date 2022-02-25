@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container container-item">
+        <h3>Validate profiles</h3>
+        <div class="row row-flex">
+            {% for profile in profiles %}
+                <div class="col-xs-12 col-md-12 col-lg-6" style="">
+                    <div class="row-content">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ profile.name }}</h5>
+                                <p class="card-text">
+                                    {{ profile.university }}<br/>
+                                    {{ profile.email }}
+                                <hr/>
+
+                                <strong>Introduction.</strong><br/>
+                                {{ profile.introduction }}
+                                </p>
+                                <a href="/validate/accept?person={{ profile.pk }}" class="btn btn-success">
+                                    Accept
+                                </a>
+                                <a href="/validate/reject?person={{ profile.pk }}" class="btn btn-danger">
+                                    Reject
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% include 'licence.html' %}
+    </div>
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

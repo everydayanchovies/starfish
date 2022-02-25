@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container container-item">
+        <h3>You are currently not allowed to create contributions!</h3>
+        <p>
+            Your account has not yet been validated by a Starfish staff member. Please try again later.
+        </p>
+        {% include 'licence.html' %}
+    </div>
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

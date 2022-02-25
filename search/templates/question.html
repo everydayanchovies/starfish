@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<div class="row well" style='margin-bottom: 0px;'>
+	<div class="col-lg-12">
+    <div class="row">
+      <h2 style='margin: 0px;'>
+        {{ question.title }}
+      </h2>
+    </div>
+    <div class="row">
+			{% autoescape off %}
+			{{ question.text }}
+			{% endautoescape %}
+    </div>
+    <div class="row">
+      <span class="text-muted">Posted by <a href={{ question.author.get_absolute_url }}>{{ syntax.PERSON }}{{ question.author.handle }}</a> on {{ question.create_date }}</span>
+    </div>
+	</div>
+</div>
+<div class="row" style='border: thin solid darkgrey;'>
+	<div class="col-lg-12">
+		<dl class="dl-horizontal">
+			{% if p %}
+			<dt>Pedagogy</dt>
+		  <dd>
+				{% for tag in p %}
+					{% if tag.type == 'P' %}
+					{% include 'tag.html' with tag=tag %}
+					{% endif %}
+				{% endfor %}
+			</dd>
+			{% endif %}
+			{% if t %}
+			<dt>Technology</dt>
+		  <dd>
+				{% for tag in t %}
+					{% if tag.type == 'T' %}
+					{% include 'tag.html' with tag=tag %}
+					{% endif %}
+				{% endfor %}
+			</dd>
+			{% endif %}
+			{% if c %}
+			<dt>Content</dt>
+		  <dd>
+				{% for tag in c %}
+					{% if tag.type == 'C' %}
+					{% include 'tag.html' with tag=tag %}
+					{% endif %}
+				{% endfor %}
+			</dd>
+			{% endif %}
+			{% if o %}
+			<dt>Context/Topic</dt>
+		  <dd>
+				{% for tag in o %}
+					{% if tag.type == 'O' %}
+					{% include 'tag.html' with tag=tag %}
+					{% endif %}
+				{% endfor %}
+			</dd>
+			{% endif %}
+		</dl>
+	</div>
+</div>
+
+<div class="row" style="margin-top: 15px;">
+  {% if community_links|length %}
+    <div class="col-lg-9">
+  {% else %}
+    <div class="col-lg-12">
+  {% endif %}
+
+  {% if question.comments.all|length %}
+    <div class="row">
+      <div class="col-lg-12 highlight">
+        <h3>Answers</h3>
+        <ul class="media-list">
+        {% for comment in question.comments.all %}
+          <li class="media">
+            <a class="pull-left" href="{{ comment.author.get_absolute_url }}">
+              <img class="media-object" style="max-height: 64px; max-width: 64px;" src="{{ comment.author.photo }}" />
+            </a>
+            <div class="media-body pull-left">
+              <a href="{{ comment.author.get_absolute_url }}">
+                <h4 class="media-heading">{{ comment.author.name }}</h4>
+              </a>
+							<div style='font-style: italic; margin-bottom: 10px;'>
+								{{ comment.date }}
+							</div>
+							<div>
+								{% for tag in comment.tags.all %}
+									<a href="?q=#{{tag.handle}}" class="badge {{ tag.type }}">
+										{{ tag.handle }}
+									</a>
+								{% endfor %}
+							</div>
+						</div>
+            <div style='clear:both; padding-top:10px;'>
+              {% autoescape off %}
+                {{ comment.text }}
+              {% endautoescape %}
+            </div>
+            <div class="pull-right" >
+              <!-- TODO delete comment?
+              <a href="/delete/C/{{comment.id}}">
+                <span class="icon-large icon-delete"></span>
+              </a>
+              -->
+              <a href="#" onClick="vote_api('C',{{comment.id}},1)">
+                <span class="icon-large icon-thumbs-up"></span>
+              </a>
+              {% if comment.votes > 0 %}
+                +
+              {% endif %}
+              {{comment.votes}}
+              <a href="#" onClick="vote_api('C',{{comment.id}},-1)">
+                <span class="icon-large icon-thumbs-down"></span>
+              </a>
+            </div>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+  {% else %}
+    <div class="row">
+  {% endif %}
+    <div class="col-lg-12 highlight">
+      <h3>Give answer</h3>
+      <form onsubmit="return false;">
+				{% csrf_token %}
+        {{ form.media }}
+        {{ form.as_p }}
+        <button type="button" onclick="submit_comment_form(this.parentNode);">
+          Place answer
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% if community_links|length %}
+  <div class="col-lg-3" style='padding-right: 0px;'>
+    <div class='highlight' style='padding: 20px'>
+  <h3 style='margin-top: 0px;'>See also</h3>
+    {% include 'link_list.html' with item=question %}
+  </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

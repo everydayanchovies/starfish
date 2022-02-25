@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block header %}
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="container item-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <h1>My Contributions</h1>
+        <hr />
+
+        <div class="row">
+            {% for k, v in c.items %}
+                {% if v %}
+                    <div class="col-md-6">
+                        {% if k == "goodpractice" %}
+                            <h2 style="position: relative; top: -4px" id="G">Good Practices</h2>
+                        {% elif k == "project" %}
+                            <h2 style="position: relative; top: -4px" id="R">Projects</h2>
+                        {% elif k == "glossary" %}
+                            <h2 style="position: relative; top: -4px" id="S">Glossaries</h2>
+                        {% elif k == "event" %}
+                            <h2 style="position: relative; top: -4px" id="E">Events</h2>
+                        {% elif k == "information" %}
+                            <h2 style="position: relative; top: -4px" id="I">Information</h2>
+                        {% elif k == "question" %}
+                            <h2 style="position: relative; top: -4px" id="Q">Questions</h2>
+                        {% elif k == "usercase" %}
+                            <h2 style="position: relative; top: -4px" id="U">User Case</h2>
+                        {% endif %}
+
+                        <div class="well">
+                            <ul style="list-style-type: none">
+                                {% for e in v %}
+                                    <li style="margin-bottom: 5px; margin-top: 5px;">
+                                        <a href="/dashboard/{{ k }}/{{ e.id }}">{{ e }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

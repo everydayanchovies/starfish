@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'searchbox.html' %}
+{% if query %}
+
+{% if query != dym_query %}
+<div class="alert alert-info">Did you mean: <a href='?q={{ dym_query_raw|urlencode }}'>{{ dym_query|safe }}</a></div>
+{% endif %}
+
+{% include 'results_list.html' %}
+
+{% else %}
+  <img src='/static/images/explanation.png' />
+{% endif %}
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

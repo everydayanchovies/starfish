@@ -1,0 +1,12 @@
+Django==2.1.5
+django-widget-tweaks==1.4.2
+pytz==2018.4
+python-ldap==3.0.0
+django-bootstrap3-datetimepicker-2==2.5.0
+pyasn1==0.4.2
+pyasn1-modules==0.2.1
+uWSGI==2.0.17
+django-js-asset==1.2.2
+django-ckeditor==6.1.0
+wikipedia==1.4.0
+Pillow==8.2.0

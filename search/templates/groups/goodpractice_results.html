@@ -1,0 +1,33 @@
+{% extends 'groups/result_group.html' %}
+{% load static %}
+
+{% block header %}
+    <h1>Good Practices</h1>
+    <hr />
+{% endblock %}
+
+{% block content %}
+    <div class="row row-flex">
+        {% for item in results %}
+            <div class="col-xs-12 col-md-12 col-lg-6" style="">
+                <div class="row-content">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <a href="{{ item.get_absolute_url }}" style="color: black;">
+                                    {{ item.title }}
+                                </a>
+                            </h4>
+                            <h6 class="card-subtitle mb-2 text-muted">{% include 'groups/tags.html' %}</h6>
+                            <p class="card-text">
+                                {{ item.summary }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

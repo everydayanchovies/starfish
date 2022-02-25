@@ -1,0 +1,98 @@
+{% load staticfiles %}
+{% if results or special %}
+    <link href="{% static 'bootstrap.icon-large.min.css' %}" rel="stylesheet">
+    {% if special %}
+        <div class="row well well" onmouseover='this.style.cursor="pointer"'
+             onclick='window.location="{{ special.get_absolute_url }}"'>
+            {% if special.info %}
+                {# Tag #}
+                <div class="col-lg-12">
+                    <h3 style='margin: 0px;'>
+                        {{ special.info.title }}
+                        <a href="{{ special.get_absolute_url }}" class="btn btn-info btn-xs">more</a>
+                    </h3>
+                    {{ special.info.summary }}
+                </div>
+            {% else %}
+                {# Person #}
+                <div class="col-lg-1">
+                    {% if special.photo %}
+                        <img class="img-thumbnail" style="max-width: 70px;"
+                             src="/media/{{ special.photo }}"/>
+                    {% endif %}
+                </div>
+                <div class="col-lg-11">
+                    {% if special.title %}
+                        <h3 style='margin: 0px;'>{{ special.title }} {{ special.name }}
+                            <a href="/person/{{ special.id }}" class="btn btn-info btn-xs">more</a>
+                        </h3>
+                    {% else %}
+                        <h3 style='margin: 0px;'>{{ special.name }}
+                            <a href="/person/{{ special.id }}" class="btn btn-info btn-xs">more</a>
+                        </h3>
+                    {% endif %}
+
+                    <p style='text-align: justify'>
+                        {% autoescape off %}
+                            {{ special.summary }}
+                        {% endautoescape %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <table class="table">
+        {% for item in results %}
+            <tr>
+                <td>
+                    {% if item.featured %}
+                        <span class="icon-large icon-star"></span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.type == "Person" %}
+                        <span class="icon-large icon-user"></span>
+                    {% elif item.type == "Question" %}
+                        <span class="icon-large icon-question-sign"></span>
+                    {% elif item.type == "Good Practice" %}
+                        <span class="icon-large icon-certificate"></span>
+                    {% elif item.type == "Information" %}
+                        <span class="icon-large icon-info-sign"></span>
+                    {% elif item.type == "Project" %}
+                        {# extra width for wider project image #}
+                        <span style="width: 40px;" class="icon-large icon-group"></span>
+                    {% elif item.type == "Event" %}
+                        <span class="icon-large icon-calendar"></span>
+                    {% endif %}
+                    <a style="font-size: 150%; position: relative; bottom: 5px;" href="{{ item.get_absolute_url }}">
+                        {% if item.type == "Person" %}
+                            {{ item.name }}
+                        {% else %}
+                            {{ item.title }}
+                        {% endif %}
+                    </a><br/>
+                    {% for tag in item.tags %}
+                        {% if not tag.more %}
+                            {% include 'tag.html' with tag=tag %}
+                        {% else %}
+                            <button class="btn btn-default btn-xs"
+                                    onclick="$(this).hide();$('#{{ tag.dom_id }}').show();">{{ tag.handle }}</button>
+                            <span id="{{ tag.dom_id }}" style="display: none;">
+						{% for more in tag.more %}
+                            {% include 'tag.html' with tag=more %}
+                        {% endfor %}
+						</span>
+                        {% endif %}
+                    {% endfor %}
+                    <br/>
+                    {{ item.summary }}
+                    <br/>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Search did not yield any results</p>
+{% endif %}
+
+{# vim: set ft=htmldjango: #}

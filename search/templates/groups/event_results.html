@@ -1,0 +1,92 @@
+{% extends 'groups/result_group.html' %}
+{% load static %}
+
+{% block header %}
+    <h1>Events</h1>
+    <hr />
+{% endblock %}
+
+
+{% block content %}
+    <div class="row row-flex">
+        {% for item in results %}
+            <div class="col-xs-12 col-md-12 col-lg-6" style="">
+                <div class="row-content">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <a href="{{ item.get_absolute_url }}" style="color: black;">
+                                    {% if item.is_past_due %}
+                                		<span class="text-muted">
+                            		 {% endif %}
+                            				{{ item.title }}
+                            		 {% if item.is_past_due %}
+                                		</span>
+                            		 {% endif %}
+                                </a>
+                            </h4>
+                            <h6 class="card-subtitle mb-2 text-muted">{% include 'groups/tags.html' %}</h6>
+                            <p class="card-text">
+                                {{ item.summary }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
+
+{% block content1 %}
+
+
+
+{% for item in results %}
+	<div style="
+		background-color: #FFFFFF;
+		border: 1px solid
+		rgb(221, 221, 221); margin-bottom: 20px; padding: 10px;"
+		onmouseover='this.style.cursor="pointer"'
+		onclick='window.location="{{ item.get_absolute_url }}"'>
+    {% if item.featured %}
+      <span class="icon-large icon-question-sign"></span>
+    {% endif %}
+
+      <a style="font-size: 150%; position: relative; bottom: 5px;" href="{{ item.get_absolute_url }}">
+		{% if item.is_past_due %}
+		<span class="text-muted">
+		{% endif %}
+				{{ item.title }}
+		{% if item.is_past_due %}
+		</span>
+		{% endif %}
+      </a>
+		{% if item.date or item.location %}
+		<div class="clearfix" style="margin-bottom: 10px;">
+		{% if item.date %}
+			<span class="clearfix text-muted">{{ item.date }}
+			{% if item.is_past_due %}
+			<span class="text-warning">(This event is in the past)</span>
+			{% endif %}
+			</span>
+		{% endif %}
+		</div>
+		{% endif %}
+		{% include 'groups/tags.html' %}
+		<p>
+		{% if item.is_past_due %}
+		<div class="text-muted">
+		{% endif %}
+		{{ item.summary }}
+		{% if item.is_past_due %}
+		</div>
+		{% endif %}
+		</p>
+	</div>
+{% endfor %}
+</table>
+{% endblock %}
+
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

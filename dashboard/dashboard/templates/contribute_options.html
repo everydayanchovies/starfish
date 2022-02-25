@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block header %}
+{{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <style>
+        .contributeItem {
+            text-align: center;
+        }
+
+        .contributeItem:hover {
+            cursor: pointer;
+        }
+
+        .contributeText {
+            margin-left: 10px;
+            font-size: 150%;
+        }
+    </style>
+
+	<div class="col-md-12">
+		<h1>Contribute</h1>
+	</div>
+
+	<div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='goodpractice'">
+		<div class="well contributeItem" style="background: rgb(245,80,160); background: linear-gradient(180deg, rgba(245,80,160,1) 0%, rgba(255,120,120,1) 100%); color: white;">
+			<img src="{% static 'svg/goodpractice.svg' %}" style="width: 50px;" alt="Good Practice">
+			<span class="contributeText" id="G">Good Practice</span>
+		</div>
+	</div>
+
+	<div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='project'">
+		<div class="well contributeItem" style="background: rgb(85,185,210); background: radial-gradient(circle, rgba(85,185,210,1) 0%, rgba(85,90,150,1) 100%);">
+            <img src="{% static 'svg/project.svg' %}" style="width: 50px;" alt="Project">
+			<span class="contributeText" id="R">Project</span>
+		</div>
+	</div>
+
+	<div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='glossary'">
+		<div class="well contributeItem" style="background: rgb(250,225,140); background: linear-gradient(180deg, rgba(250,225,140,1) 0%, rgba(245,130,130,1) 100%);">
+			<img src="{% static 'svg/glossary.svg' %}" style="width: 50px;" alt="Glossary">
+			<span class="contributeText" id="S">Glossary</span>
+		</div>
+	</div>
+
+	<div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='event'">
+		<div class="well contributeItem" style="background: rgb(65,230,150); background: linear-gradient(180deg, rgba(65,230,150,1) 0%, rgba(60,180,185,1) 100%); color: white;">
+			<img src="{% static 'svg/event.svg' %}" style="width: 50px;" alt="Event">
+			<span class="contributeText" id="E">Event</span>
+		</div>
+	</div>
+
+	<div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='information'">
+		<div class="well contributeItem">
+			<img src="{% static 'svg/information.svg' %}" style="width: 50px;" alt="Information">
+			<span class="contributeText" id="I">Information</span>
+		</div>
+	</div>
+
+    <div class="col-md-4 col-sm-6 col-xs-12"
+		onClick="window.location='usercase'">
+		<div class="well contributeItem">
+			<span class="contributeText" id="I">User Case</span>
+		</div>
+	</div>
+
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

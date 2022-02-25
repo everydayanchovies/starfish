@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block header %}
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="container item-container">
+        <h1>Log in</h1>
+        {% if errors|length > 0 %}
+            <div class="alert alert-danger" role="alert">
+                <strong>An error occurred!</strong>
+
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12">
+                    <strong>E-mail</strong>
+                    {{ form.email.errors }}
+                    {{ form.email|attr:"class:form-control" }}
+
+                    <br/>
+
+                    <strong>Password</strong>
+                    {{ form.password.errors }}
+                    {{ form.password|attr:"class:form-control" }}
+
+                    <br/>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

@@ -1,0 +1,176 @@
+{% load staticfiles %}
+
+<script>
+    $(function () {
+        if ("{{first_active}}" != "") {
+            $('#tab-results-' + '{{first_active}}').addClass('active');
+            $('#' + '{{first_active}}' + '-results').show();
+        }
+    });
+
+    function showResults(type) {
+        var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase'];
+        for (i = 0; i < types.length; i++) {
+            if (types[i] == type) {
+                var resultbox_id = '#' + type + '-results';
+                $(resultbox_id).show();
+                $('#tab-results-' + types[i]).addClass('active');
+                // TODO highlight corresponding btn
+            } else {
+                $('#' + types[i] + '-results').hide();
+                $('#tab-results-' + types[i]).removeClass('active');
+            }
+        }
+    }
+
+    $(function () {
+        $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
+        $("#sorting-select").change(function () {
+            var sort = $(this).val();
+            var redirect = document.location.href;
+            if (sort != "recent") {
+                redirect += (document.location.search == "" ? "?" : "&");
+                redirect += "sort=" + sort;
+            }
+            document.location = redirect;
+        });
+    });
+</script>
+
+{% if first_active %}
+    <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12" style="padding-top:20px;">
+        <div style="margin-bottom: 20px">
+            <span style="font-size: 150%; position:relative; top: -4px;">Sorting</span>
+            <select class='form-control' id="sorting-select">
+                <option value="recent">Most recent</option>
+                <option value="a-z">Alphabetical</option>
+            </select>
+        </div>
+        <div class="">
+            <span style="font-size: 150%; position:relative; top: -4px;">Categories</span>
+            <ul class="nav nav-pills nav-stacked">
+                {% if results.GoodPractice %}
+                    <li id="tab-results-goodpractice">
+                        <a onclick="showResults('goodpractice');">
+                            Good Practices <span class="badge pull-right">{{ results.GoodPractice|length }}</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if results.Project %}
+                    <li id="tab-results-project"><a onclick="showResults('project');">
+                        Projects <span class="badge pull-right">{{ results.Project|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.Event %}
+                    <li id="tab-results-event"><a onclick="showResults('event');">
+                        Events <span class="badge pull-right">{{ results.Event|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.Glossary %}
+                    <li id="tab-results-glossary"><a onclick="showResults('glossary');">
+                        Glossaries <span class="badge pull-right">{{ results.Glossary|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.Information %}
+                    <li id="tab-results-information">
+                        <a onclick="showResults('information');">
+                            Information <span class="badge pull-right">{{ results.Information|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.Person %}
+                    <li id="tab-results-person"><a onclick="showResults('person');">
+                        People <span class="badge pull-right">{{ results.Person|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.Question %}
+                    <li id="tab-results-question"><a onclick="showResults('question');">
+                        Questions <span class="badge pull-right">{{ results.Question|length }}</span></a>
+                    </li>
+                {% endif %}
+
+                {% if results.UserCase %}
+                    <li id="tab-results-usercase"><a onclick="showResults('usercase');">
+                        User Cases <span class="badge pull-right">{{ results.UserCase|length }}</span></a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-10 col-md-9 col-sm-8 col-xs-12" style="margin-top: 0;">
+    <div id="goodpractice-results">
+        {% if results.GoodPractice %}
+            {% with results.GoodPractice as results %}
+                {% include 'groups/goodpractice_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="project-results" style="display:none;">
+        {% if results.Project %}
+            {% with results.Project as results %}
+                {% include 'groups/project_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="event-results"  style="display:none;">
+        {% if results.Event %}
+            {% with results.Event as results %}
+                {% include 'groups/event_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="glossary-results" style="display:none;">
+        {% if results.Glossary %}
+            {% with results.Glossary as results %}
+                {% include 'groups/glossary_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="information-results" style="display:none;">
+        {% if results.Information %}
+            {% with results.Information as results %}
+                {% include 'groups/information_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="person-results" style="display:none;">
+        {% if results.Person %}
+            {% with results.Person as results %}
+                {% include 'groups/person_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <div id="question-results" style="display:none;">
+        {% if results.Question %}
+            {% with results.Question as results %}
+                {% include 'groups/question_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+    <div id="usercase-results" style="display:none;">
+        {% if results.UserCase %}
+            {% with results.UserCase as results %}
+                {% include 'groups/usercase_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+{% else %}
+    <div class="alert alert-warning col-md-7 col-sm-12 col-md-offset-2">
+        No items were matched to your query. Try searching differently, or click <a href='/browse'>here</a> to browse
+        all items.
+    </div>
+{% endif %}
+
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

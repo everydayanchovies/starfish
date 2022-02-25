@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row well" style='margin-bottom: 0px;'>
+	<div class="col-lg-10">
+		<h1 style='margin: 0px;'>
+			{{ project.title }}
+		</h1>
+		<span class="text-muted">Posted by
+			<a href="/person/{{ project.author.id }}">
+				{{ syntax.PERSON }}{{ project.author.handle }}
+			</a> on {{ project.create_date }}
+		</span>
+
+		{% if project.contact %}
+		<span class="text-muted pull-right">Contact:
+			<a href="{{ project.contact.get_absolute_url }}" >
+				{{ syntax.PERSON }}{{ project.contact.handle }}
+			</a>
+		</span>
+		{% endif %}
+
+	</div>
+	<div class="col-lg-2" style='padding-top: 20px'>
+		<p>
+    <span class='btn btn-primary' style='width:100%;'
+      onclick="load_questionform('{{project.type}}', '{{project.id}}', '#questionbox')">
+				Ask a question
+	  </span>
+		</p>
+      {% if search %}
+      <p>
+        <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>
+          Search
+        </a>
+      </p>
+      {% endif %}
+	</div>
+</div>
+
+{% include 'tag_list.html' %}
+
+<div class="row" style="margin-top: 15px;" >
+		{% if project.text %}
+			{% if community_links|length %}
+				<div class="col-lg-9 highlight">
+			{% else %}
+				<div class="col-lg-12 highlight">
+			{% endif %}
+			<h3 style='margin-top: 0px;'>About</h3>
+			{% autoescape off %}
+			{{ project.text }}
+			{% endautoescape %}
+			<hr style='margin-bottom: 10px;'/>
+      {% include 'licence.html' %}
+			</div>
+		{% endif %}
+		{% if community_links|length %}
+			{% if project.text %}
+				<div class="col-lg-3" style='padding-right: 0px;'>
+					<div class='highlight' style='padding: 20px'>
+			{% else %}
+				<div class="col-lg-12 highlight">
+			{% endif %}
+			<h3 style='margin-top: 0px;'>See also</h3>
+      {% include 'link_list.html' with item=project %}
+			{% if project.about %}
+				</div>
+			{% endif %}
+			</div>
+		{% endif %}
+</div>
+</div>
+<div class="row">
+	<div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;"  >
+		<a name="question"></a>
+	</div>
+</div>
+
+{% endblock %}
+
+{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

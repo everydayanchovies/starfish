@@ -90,3 +90,9 @@ can use them.
 (venv) $ python manage.py migrate
 ```
 
+## Installing uWSGI fails on M1 machines
+
+```shell
+ln -s /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/config-3.8-darwin/libpython3.8.a ~/miniconda3/lib/python3.8/config-3.8-darwin/
+pip install uWSGI==2.0.17
+```

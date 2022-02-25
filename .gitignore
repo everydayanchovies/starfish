@@ -3,3 +3,4 @@ secrets.json
 myenviromen
 media
 venv
+*__pycache__/

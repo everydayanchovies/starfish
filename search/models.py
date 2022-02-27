@@ -95,6 +95,7 @@ class Tag(models.Model):
     # The handle by which this tag will be identified
     handle = models.CharField(max_length=255, unique=True)
     # The glossary item that explains the tag
+    # TODO: use a one-to-one relationship instead of a foreign key
     glossary = models.ForeignKey(
         "Glossary", on_delete=models.SET_NULL, null=True, blank=True, unique=True
     )

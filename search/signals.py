@@ -1,8 +1,10 @@
-from django.dispatch import Signal, receiver
-from django.core.mail import EmailMultiAlternatives
-from search.models import Person
 import logging
+
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import Signal, receiver
+
+from search.models import Person
 
 # providing args: author, title, tags
 unknown_tag_signal = Signal()

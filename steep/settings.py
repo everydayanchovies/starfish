@@ -1,8 +1,8 @@
 # Django settings for starfish project.
 
 
-import os
 import json
+import os
 
 from django.core.exceptions import ImproperlyConfigured
 

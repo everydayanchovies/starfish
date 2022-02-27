@@ -1,5 +1,3 @@
-import pgdumplib
-from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
 from search.models import Project, Person, Community
@@ -40,7 +38,6 @@ class Command(BaseCommand):
                 print(data[3:])
                 print(Person.objects.all())
 
-
                 project = Project(
                     draft=False,
                     title=data[1],
@@ -53,7 +50,6 @@ class Command(BaseCommand):
                 project.save()
                 project.communities.set(Community.objects.filter(name="Public"))
                 project.save()
-
 
             print(set(authors), set(contacts))
         self.stdout.write(self.style.SUCCESS('Successfully closed poll "%s"' % 1))

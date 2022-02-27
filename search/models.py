@@ -1,13 +1,14 @@
-from django.db import models
-from html.parser import HTMLParser
-from datetime import datetime
-from django.utils import timezone
-from django.contrib.auth.models import User
-from django.conf import settings
-import wikipedia
-import ckeditor_uploader.fields as ck_field
-from django.db.models.signals import post_save
 import re
+from datetime import datetime
+from html.parser import HTMLParser
+
+import ckeditor_uploader.fields as ck_field
+import wikipedia
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models.signals import post_save
+from django.utils import timezone
 
 ITEM_TYPES = settings.ITEM_TYPES
 
@@ -49,7 +50,7 @@ class MLStripper(HTMLParser):
 
 
 def strip_tags(html):
-    if html == None:
+    if html is None:
         return ""
 
     s = MLStripper()
@@ -284,9 +285,11 @@ class Item(models.Model):
         return strip_tags(text)
 
     # Dictionary representation used to communicate the model to the client
-    def dict_format(self, obj={}):
+    def dict_format(self, obj=None):
         # Fill dict format at this level
         # make sure the pass by reference does not cause unexpected results
+        if obj is None:
+            obj = {}
         obj = obj.copy()
         obj.update(
             {

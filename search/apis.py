@@ -1,7 +1,7 @@
-from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
+
+from search.forms import CommentForm
 from search.models import *
-import json
 
 
 def comment(request):

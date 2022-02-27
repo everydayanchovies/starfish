@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.forms import Form, ModelForm, CharField, IntegerField, HiddenInput, \
-        ModelMultipleChoiceField, TextInput, Textarea, SelectMultiple, PasswordInput, EmailInput
+from django.forms import ModelForm, CharField, IntegerField, HiddenInput, \
+    ModelMultipleChoiceField, Textarea, SelectMultiple, PasswordInput, EmailInput
+
 from search.models import Comment, Question, Information, GoodPractice, \
     Person, Project, Event, Glossary, Community, Item, UserCase
-from search.widgets import TagInput, NonAdminFilteredSelectMultiple
-#from bootstrap3_datetime.widgets import DateTimePicker
+from search.widgets import TagInput
+
+
+# from bootstrap3_datetime.widgets import DateTimePicker
 
 
 class LoginForm(ModelForm):
@@ -117,7 +120,8 @@ class EditQuestionForm(DashboardForm):
 class EditUserCaseForm(DashboardForm):
     class Meta:
         model = UserCase
-        fields = ['title', 'text', 'draft', 'wallpaper', 'tags', 'context_goals', 'cpd_activities', 'evaluation', 'links', 'communities', 'author']
+        fields = ['title', 'text', 'draft', 'wallpaper', 'tags', 'context_goals', 'cpd_activities', 'evaluation',
+                  'links', 'communities', 'author']
 
 
 class EditPersonForm(DashboardForm):

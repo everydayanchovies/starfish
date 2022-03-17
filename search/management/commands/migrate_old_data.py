@@ -1,7 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from search.models import Project, Person, Community
+from search.models import (
+    Project,
+    Person,
+    Community,
+    Event,
+    Glossary,
+    GoodPractice,
+    Information,
+    Question,
+    Tag,
+)
 
 
 # TODO:
@@ -10,6 +20,9 @@ from search.models import Project, Person, Community
 # * dry run again with fresh db backup from production
 # * create another backup and execute on production
 class Command(BaseCommand):
+    dumps = {}
+    dumps_as_objs = {}
+
     def add_arguments(self, parser):
         parser.add_argument("path", type=str)
 
@@ -27,13 +40,20 @@ class Command(BaseCommand):
             "search_tag",  # id type handle alias_of_id glossary_id
         ]
 
-        dumps = {}
         for filename in dump_filenames:
-            dumps[filename] = self.sql_to_strings(
+            self.dumps[filename] = self.sql_to_strings(
                 options["path"] + "/" + filename + ".sql"
             )
 
-        print(dumps["search_community"])
+        for filename in dump_filenames:
+            fn = "arr_to_" + filename.replace("search_", "").replace("export_", "")
+            if not hasattr(self, fn):
+                continue
+            self.dumps_as_objs[filename] = list(
+                map(getattr(self, fn), self.dumps[filename])
+            )
+
+        print(self.dumps_as_objs)
 
     def sql_to_strings(self, filepath):
         lines = []
@@ -48,7 +68,7 @@ class Command(BaseCommand):
                 if len(lines) > 0 and len(lines[0]) != len(data):
                     break
 
-                data = map(self.clean_data, data)
+                data = list(map(self.clean_data, data))
                 lines.append(data)
 
         return lines
@@ -58,3 +78,93 @@ class Command(BaseCommand):
             return None
 
         return data
+
+    def arr_to_project(self, arr):
+        item_ptr_id, title, text, begin_date, end_date, author_id, contact_id = arr
+        return Project(
+            draft=False,
+            title=title,
+            text=text,
+            author=self.person_for_id(author_id),
+            contact=self.person_for_id(contact_id),
+            begin_date=begin_date,
+            end_date=end_date,
+        )
+
+    def arr_to_person(self, arr):
+        item_ptr_id, name = arr
+        return Person(
+            id=item_ptr_id,
+            name=name,
+        )
+
+    def arr_to_community(self, arr):
+        cid, name, part_of_id = arr
+        return Community(
+            name=name,
+            part_of_id=part_of_id,
+        )
+
+    def arr_to_event(self, arr):
+        item_ptr_id, title, text, date, location, author_id, contact_id = arr
+        return Event(
+            title=title,
+            text=text,
+            date=date,
+            location=location,
+            author=self.person_for_id(author_id),
+            contact=self.person_for_id(contact_id),
+        )
+
+    def arr_to_glossary(self, arr):
+        item_ptr_id, title, text, author_id = arr
+        return Glossary(
+            title=title,
+            text=text,
+            author=self.person_for_id(author_id),
+        )
+
+    def arr_to_goodpractice(self, arr):
+        item_ptr_id, title, text, author_id = arr
+        return GoodPractice(
+            title=title,
+            text=text,
+            author=self.person_for_id(author_id),
+        )
+
+    def arr_to_information(self, arr):
+        item_ptr_id, title, text, author_id = arr
+        return Information(
+            title=title,
+            text=text,
+            author=self.person_for_id(author_id),
+        )
+
+    def arr_to_question(self, arr):
+        item_ptr_id, title, text, author_id = arr
+        return Information(
+            title=title,
+            text=text,
+            author=self.person_for_id(author_id),
+        )
+
+    def arr_to_tag(self, arr):
+        tid, ttype, handle, alias_of_id, glossary_id = arr
+        return Tag(
+            type=ttype,
+            handle=handle,
+            alias_of_id=alias_of_id,
+            glossary=self.glossary_for_id(glossary_id),
+        )
+
+    def person_for_id(self, pid):
+        parrs = [x for x in self.dumps["export_person"] if x[0] == pid]
+        if not parrs:
+            return None
+        return self.arr_to_person(parrs[0])
+
+    def glossary_for_id(self, gid):
+        garrs = [x for x in self.dumps["search_glossary"] if x[0] == gid]
+        if not garrs:
+            return None
+        return self.arr_to_glossary(garrs[0])

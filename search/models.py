@@ -135,10 +135,17 @@ class Tag(models.Model):
         if not created:
             return
 
-        page_info = wikipedia.page(instance.handle, auto_suggest=True, redirect=True)
-        url = "https://en.wikipedia.org/?curid=" + page_info.pageid
-        instance.description = wikipedia.summary(instance.handle, sentences=1)
-        instance.info_link = url
+        try:
+            page_info = wikipedia.page(instance.handle, auto_suggest=True, redirect=True)
+            url = "https://en.wikipedia.org/?curid=" + page_info.pageid
+            instance.description = wikipedia.summary(instance.handle, sentences=1)
+            instance.info_link = url
+        except:
+            page_info = ""
+            url = ""
+            instance.description = ""
+            instance.info_link = ""
+
         instance.save()
 
     class Meta:

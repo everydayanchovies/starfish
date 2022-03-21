@@ -1,40 +1,68 @@
 {% load staticfiles %}
 
 <script>
-    $(function () {
-        if ("{{first_active}}" != "") {
-            $('#tab-results-' + '{{first_active}}').addClass('active');
-            $('#' + '{{first_active}}' + '-results').show();
-        }
-    });
+     var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase'];
 
-    function showResults(type) {
-        var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase'];
-        for (i = 0; i < types.length; i++) {
-            if (types[i] == type) {
-                var resultbox_id = '#' + type + '-results';
-                $(resultbox_id).show();
-                $('#tab-results-' + types[i]).addClass('active');
-                // TODO highlight corresponding btn
-            } else {
-                $('#' + types[i] + '-results').hide();
-                $('#tab-results-' + types[i]).removeClass('active');
-            }
-        }
-    }
+ $(function () {
+     if (!!(fa = "{{first_active}}")) {
+         selectCategory(fa);
+     }
+ });
 
-    $(function () {
-        $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
-        $("#sorting-select").change(function () {
-            var sort = $(this).val();
-            var redirect = document.location.href;
-            if (sort != "recent") {
-                redirect += (document.location.search == "" ? "?" : "&");
-                redirect += "sort=" + sort;
-            }
-            document.location = redirect;
-        });
-    });
+ function showResults(ftype) {
+     if (!types.includes(ftype)) {
+         return deselectCategory(ftype);
+     }
+
+     window.location = window.location.pathname + replaceQueryParam("ftype", ftype, window.location.search);
+ }
+
+ function deselectAllCategories() {
+     types.forEach(t => deselectCategory(t));
+ }
+
+ function deselectCategory(ftype) {
+     $(`#${ftype}-results`).hide();
+     $(`#tab-results-${ftype}`).removeClass("active");
+ }
+
+ function selectCategory(ftype) {
+     $(`#${ftype}-results`).show();
+     $(`#tab-results-${ftype}`).addClass("active");
+ }
+
+ $(function () {
+     $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
+     $("#sorting-select").change(function () {
+         var sort = $(this).val();
+         var redirect = document.location.href;
+         if (sort != "recent") {
+             redirect += (document.location.search == "" ? "?" : "&");
+             redirect += "sort=" + sort;
+         }
+         document.location = redirect;
+     });
+
+     const params = new Proxy(new URLSearchParams(window.location.search), {
+         get: (searchParams, prop) => searchParams.get(prop),
+     });
+
+     if (!!(ftype = params.ftype)) {
+         if (!types.includes(ftype)) return;
+
+         deselectAllCategories();
+
+         selectCategory(ftype);
+     }
+ });
+
+ // https://stackoverflow.com/questions/1090948/change-url-parameters-and-specify-defaults-using-javascript -- bronson
+ function replaceQueryParam(param, newval, search) {
+     var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+     var query = search.replace(regex, "$1").replace(/&$/, '');
+
+     return (query.length > 2 ? query + "&" : "?") + (newval ? param + "=" + newval : '');
+ }
 </script>
 
 {% if first_active %}

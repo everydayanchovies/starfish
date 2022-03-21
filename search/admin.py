@@ -38,7 +38,7 @@ class LinkInline(admin.TabularInline):
         return fs
 
 class ItemAdmin(admin.ModelAdmin):
-    filter_horizontal = ('links',)
+    filter_horizontal = ('links','tags',)
     inlines = (LinkInline,)
 
     def response_add(self, request, obj, post_url_continue=None):

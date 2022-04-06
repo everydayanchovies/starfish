@@ -48,14 +48,16 @@ class Command(BaseCommand):
 
         for filename in dump_filenames:
             fn = "arr_to_" + filename.replace("search_", "").replace("export_", "")
+            print("Executing " + fn)
             if not hasattr(self, fn):
                 continue
-            self.dumps_as_objs[filename] = list(
-                map(getattr(self, fn), self.dumps[filename])
+            self.dumps_as_objs[filename] = filter(
+                None, list(map(getattr(self, fn), self.dumps[filename]))
             )
 
         for filename in dump_filenames:
             fn = "import_" + filename.replace("search_", "").replace("export_", "")
+            print("Executing " + fn)
             if not hasattr(self, fn):
                 continue
             getattr(self, fn)()
@@ -90,12 +92,16 @@ class Command(BaseCommand):
 
     def arr_to_project(self, arr):
         item_ptr_id, title, text, begin_date, end_date, author_id, contact_id = arr
+        author = self.person_for_id(author_id)
+        contact = self.person_for_id(contact_id)
+        if not author or not contact:
+            return None
         return Project(
             draft=False,
             title=title,
             text=text,
-            author=self.person_for_id(author_id),
-            contact=self.person_for_id(contact_id),
+            author=author,
+            contact=contact,
             begin_date=begin_date,
             end_date=end_date,
         )
@@ -116,54 +122,73 @@ class Command(BaseCommand):
 
     def arr_to_event(self, arr):
         item_ptr_id, title, text, date, location, author_id, contact_id = arr
+        author = self.person_for_id(author_id)
+        contact = self.person_for_id(contact_id)
+        if not author or not contact:
+            return None
         return Event(
             title=title,
             text=text,
             date=date,
             location=location,
-            author=self.person_for_id(author_id),
-            contact=self.person_for_id(contact_id),
+            author=author,
+            contact=contact,
         )
 
     def arr_to_glossary(self, arr):
         item_ptr_id, title, text, author_id = arr
+        author = self.person_for_id(author_id)
+        if not author:
+            return None
         return Glossary(
             title=title,
             text=text,
-            author=self.person_for_id(author_id),
+            author=author,
         )
 
     def arr_to_goodpractice(self, arr):
         item_ptr_id, title, text, author_id = arr
+        author = self.person_for_id(author_id)
+        if not author:
+            return None
         return GoodPractice(
             title=title,
             text=text,
-            author=self.person_for_id(author_id),
+            author=author,
         )
 
     def arr_to_information(self, arr):
         item_ptr_id, title, text, author_id = arr
+        author = self.person_for_id(author_id)
+        if not author:
+            return None
         return Information(
             title=title,
             text=text,
-            author=self.person_for_id(author_id),
+            author=author,
         )
 
     def arr_to_question(self, arr):
         item_ptr_id, title, text, author_id = arr
+        author = self.person_for_id(author_id)
+        if not author:
+            return None
         return Information(
             title=title,
             text=text,
-            author=self.person_for_id(author_id),
+            author=author,
         )
 
     def arr_to_tag(self, arr):
         tid, ttype, handle, alias_of_id, glossary_id = arr
+        glossary = self.glossary_for_id(glossary_id)
+        if not glossary:
+            return None
         return Tag(
             type=ttype,
             handle=handle,
             alias_of_id=alias_of_id,
-            glossary=self.glossary_for_id(glossary_id),
+            glossary=glossary,
         )
 
     """
@@ -173,47 +198,48 @@ class Command(BaseCommand):
     def person_for_id(self, pid):
         parrs = [x for x in self.dumps["export_person"] if x[0] == pid]
         if not parrs:
+            print("Warning! No person found for pid " + pid)
             return None
 
         pliveobjs = [x for x in Person.objects.all() if x.name == parrs[0][1]]
-        if pliveobjs:
-            return pliveobjs[0]
+        if not pliveobjs:
+            return None
 
-        pobjs = [
-            x for x in self.dumps_as_objs["export_person"] if x.name == parrs[0][1]
-        ]
-        if pobjs:
-            return pobjs[0]
+        print("Warning! No person found in objs for pid " + pid)
 
-        print("\nWarning! No person found for pid " + pid)
-
-        return self.arr_to_person(parrs[0])
+        return pliveobjs[0]
 
     def glossary_for_id(self, gid):
+        if not gid:
+            print("Warning! Attempting to get glossary with None id")
+            return None
+
         garrs = [x for x in self.dumps["search_glossary"] if x[0] == gid]
         if not garrs:
+            print("Warning! No glossary found for gid " + gid)
             return None
 
         gliveobjs = [x for x in Glossary.objects.all() if x.title == garrs[0][1]]
-        if gliveobjs:
-            return gliveobjs[0]
+        if not gliveobjs:
+            return None
 
-        gobjs = [
-            x for x in self.dumps_as_objs["search_glossary"] if x.title == garrs[0][1]
-        ]
-        if gobjs:
-            return gobjs[0]
+        print("Warning! No glossary found in objs for gid " + gid)
 
-        print("\nWarning! No glossary found for gid " + gid)
-
-        return self.arr_to_glossary(garrs[0])
+        return gliveobjs[0]
 
     """
     BEGIN import object
     """
 
     def import_project(self):
-        pass
+        live_projects = Project.objects.all()
+        for oi in self.dumps_as_objs["search_project"]:
+            for oj in live_projects:
+                if oi.title == oj.title:
+                    break
+            else:
+                print("Adding project " + oi.title)
+                oi.save()
 
     def import_person(self):
         live_persons = Person.objects.all()
@@ -226,10 +252,24 @@ class Command(BaseCommand):
                 pi.save()
 
     def import_community(self):
-        pass
+        live_communities = Community.objects.all()
+        for oi in self.dumps_as_objs["search_community"]:
+            for oj in live_communities:
+                if oi.name == oj.name:
+                    break
+            else:
+                print("Adding community " + oi.name)
+                oi.save()
 
     def import_event(self):
-        pass
+        live_events = Event.objects.all()
+        for oi in self.dumps_as_objs["search_event"]:
+            for oj in live_events:
+                if oi.title == oj.title:
+                    break
+            else:
+                print("Adding event " + oi.title)
+                oi.save()
 
     def import_glossary(self):
         live_glossaries = Glossary.objects.all()
@@ -242,16 +282,47 @@ class Command(BaseCommand):
                 gi.save()
 
     def import_goodpractice(self):
-        pass
+        live_gps = GoodPractice.objects.all()
+        for oi in self.dumps_as_objs["search_goodpractice"]:
+            for oj in live_gps:
+                if oi.title == oj.title:
+                    break
+            else:
+                print("Adding goodpractice " + oi.title)
+                oi.save()
 
     def import_information(self):
-        pass
+        live_infos = Information.objects.all()
+        for oi in self.dumps_as_objs["search_information"]:
+            for oj in live_infos:
+                if oi.title == oj.title:
+                    break
+            else:
+                print("Adding information " + oi.title)
+                oi.save()
 
+    # TODO why does this not save?
     def import_question(self):
-        pass
+        live_questions = Question.objects.all()
+        print(Question.objects.filter(title="Hoe berekent TestVision de cijfers?"))
+        for oi in self.dumps_as_objs["search_question"]:
+            for oj in live_questions:
+                if oi.title == oj.title:
+                    break
+            else:
+                print("Adding question " + oi.title)
+                oi.save()
+                print(Question.objects.filter(title=oi.title))
 
     def import_tag(self):
-        pass
+        live_tags = Tag.objects.all()
+        for oi in self.dumps_as_objs["search_tag"]:
+            for oj in live_tags:
+                if oi.handle == oj.handle:
+                    break
+            else:
+                print("Adding tag " + oi.handle)
+                oi.save()
 
     """
     END import object

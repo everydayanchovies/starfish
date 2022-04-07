@@ -1,4 +1,10 @@
 {% extends 'base.html' %}
+
+{% block header %}
+    <link href="/static/css/read_more_link.css" rel="stylesheet">
+    <script src="/static/js/read_more_links.js"></script>
+{% endblock %}
+
 {% block content %}
     <div class="item-container container">
     <div class="row">
@@ -33,7 +39,7 @@
         <div class="col-md-8 col-xs-12 d-flex">
             <div class="your-class" id="wikipedia" style="padding: 10px; padding-top: 0;">
                 {% for summary in summaries %}
-                    <div class="card"
+                    <div class="card expandable {% if summary.summary|length <= 200 %} expanded {% endif %}"
                          style="width: 18rem; margin: 10px; border: 1px solid #EAEAEA; border-radius: 10px; padding: 10px 20px;">
                         <div class="card-body">
                             <small>{{summary.tag_dict.type_name}}</small>
@@ -41,8 +47,14 @@
                             <p class="card-text" style="font-size: 80%;">{{ summary.summary }}</p>
                             <a href="/?q=%23{{ summary.tag }}" class="btn btn-primary btn-sm">Explore</a>
 
-                            {% if summary.url != None %}
-                                <a href="{{ summary.url }}" target="_blank" class="btn btn-link btn-sm">Read More</a>
+                            {% if summary.url != None or summary.summary|length > 200 %}
+                                <a href="#" data-wiki-href="{{ summary.url }}" class="btn btn-link btn-sm wiki-link">
+                            {% if summary.summary|length > 200 %}
+                                    Read more...
+                            {% else %}
+                                Wikipedia...
+                                {% endif %}
+                            </a>
                             {% endif %}
                         </div>
                     </div>
@@ -53,8 +65,6 @@
 
 
     {% include 'tag_list.html' %}
-
-
 
     <script type="text/javascript">
         $(document).ready(function () {

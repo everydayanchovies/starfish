@@ -1,0 +1,12 @@
+.card .card-text {
+    min-height: 70pt;
+}
+
+.card.expandable .card-text {
+    overflow: hidden;
+    max-height: 70pt;
+}
+
+.card.expandable.expanded .card-text {
+    max-height: unset;
+}

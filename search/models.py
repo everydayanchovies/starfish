@@ -11,23 +11,24 @@ import re
 
 ITEM_TYPES = settings.ITEM_TYPES
 
+
 def get_template(item):
     if item == GoodPractice:
-        item = 'G'
+        item = "G"
     elif item == Project:
-        item = 'R'
+        item = "R"
     elif item == Information:
-        item = 'I'
+        item = "I"
     elif item == Event:
-        item = 'E'
+        item = "E"
     elif item == Person:
-        item = 'P'
+        item = "P"
     elif item == Glossary:
-        item = 'S'
+        item = "S"
     elif item == Question:
-        item = 'Q'
+        item = "Q"
     elif item == UserCase:
-        item = 'U'
+        item = "U"
     try:
         return Template.objects.get(type=item).template
     except (Template.DoesNotExist, AttributeError):
@@ -44,7 +45,7 @@ class MLStripper(HTMLParser):
         self.fed.append(d)
 
     def get_data(self):
-        return ' '.join(self.fed)
+        return " ".join(self.fed)
 
 
 def strip_tags(html):
@@ -76,25 +77,31 @@ def cleanup_for_search(raw_text):
     # Convert to lower case
     text = text.lower()
     # Remove URLs
-    text = re.sub(r'\b(https?|ftp)://[^\s/$.?#].[^\s]*\b', "", text)
+    text = re.sub(r"\b(https?|ftp)://[^\s/$.?#].[^\s]*\b", "", text)
     # Remove email addresses
-    text = re.sub(r'\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}\b', "", text)
+    text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}\b", "", text)
     return text
 
 
 class Tag(models.Model):
-    TAG_TYPES = (('P', 'Pedagogy'),
-                 ('T', 'Technology'),
-                 ('C', 'Content'),
-                 ('O', 'Context/Topic'))
+    TAG_TYPES = (
+        ("P", "Pedagogy"),
+        ("T", "Technology"),
+        ("C", "Content"),
+        ("O", "Context/Topic"),
+    )
     # The type of this tag, used for coloring
     type = models.CharField(max_length=1, choices=TAG_TYPES)
     # The handle by which this tag will be identified
     handle = models.CharField(max_length=255, unique=True)
     # The glossary item that explains the tag
-    glossary = models.ForeignKey('Glossary', on_delete=models.SET_NULL, null=True, blank=True, unique=True)
+    glossary = models.ForeignKey(
+        "Glossary", on_delete=models.SET_NULL, null=True, blank=True, unique=True
+    )
     # The reference to the Tag of which this is an alias (if applicable)
-    alias_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    alias_of = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     info_link = models.CharField(max_length=300, null=True, blank=True)
 
@@ -108,27 +115,29 @@ class Tag(models.Model):
         info_dict = None
         if self.glossary:
             info_dict = {
-                'title': self.glossary.title,
-                'text': self.glossary.text,
-                'author': self.glossary.author,
-                'summary': self.glossary.summary(max_len=480)
+                "title": self.glossary.title,
+                "text": self.glossary.text,
+                "author": self.glossary.author,
+                "summary": self.glossary.summary(max_len=480),
             }
-        return {'handle': self.handle,
-                'type': self.type,
-                'type_name': dict(self.TAG_TYPES)[self.type],
-                'alias_of': alias_of_handle,
-                'info': info_dict,
-                'summary': self.description,
-                'get_absolute_url': self.get_absolute_url()}
+        return {
+            "handle": self.handle,
+            "type": self.type,
+            "type_name": dict(self.TAG_TYPES)[self.type],
+            "alias_of": alias_of_handle,
+            "info": info_dict,
+            "summary": self.description,
+            "get_absolute_url": self.get_absolute_url(),
+        }
 
     def __str__(self):
         s = dict(self.TAG_TYPES)[self.type] + ":" + self.handle
         if self.alias_of:
-            s += ' > ' + self.alias_of.handle
+            s += " > " + self.alias_of.handle
         return s
 
     def get_absolute_url(self):
-        return '/tag/' + str(self.handle)
+        return "/tag/" + str(self.handle)
 
     @classmethod
     def post_create(cls, sender, instance, created, *args, **kwargs):
@@ -136,25 +145,25 @@ class Tag(models.Model):
             return
 
         try:
-            page_info = wikipedia.page(instance.handle, auto_suggest=True, redirect=True)
+            page_info = wikipedia.page(
+                instance.handle, auto_suggest=True, redirect=True
+            )
             url = "https://en.wikipedia.org/?curid=" + page_info.pageid
-            instance.description = wikipedia.summary(instance.handle, sentences=1)
+            if not instance.description:
+                instance.description = wikipedia.summary(instance.handle, sentences=1)
             instance.info_link = url
         except:
-            page_info = ""
-            url = ""
-            instance.description = ""
-            instance.info_link = ""
+            pass
 
         instance.save()
 
     class Meta:
-        ordering = ['type', 'handle']
+        ordering = ["type", "handle"]
 
 
 class Template(models.Model):
     type = models.CharField(max_length=1, choices=ITEM_TYPES, primary_key=True)
-    template = ck_field.RichTextUploadingField(verbose_name='Text')
+    template = ck_field.RichTextUploadingField(verbose_name="Text")
 
     def __str__(self):
         return dict(ITEM_TYPES)[self.type] + " template"
@@ -166,11 +175,17 @@ class Template(models.Model):
 class Community(models.Model):
     # The name of the community
     name = models.CharField(max_length=254)
-    #abbreviation = models.CharField(max_length=50, blank=True, null=True,
+    # abbreviation = models.CharField(max_length=50, blank=True, null=True,
     #                                default=None)
     # Communities are hierarchical
-    part_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
-                                default=None, related_name="subcommunities")
+    part_of = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="subcommunities",
+    )
 
     def __str__(self):
         return self.name
@@ -185,8 +200,8 @@ class Community(models.Model):
 
 
 class Link(models.Model):
-    from_item = models.ForeignKey('Item',on_delete=models.CASCADE, related_name='+')
-    to_item = models.ForeignKey('Item',on_delete=models.CASCADE, related_name='+')
+    from_item = models.ForeignKey("Item", on_delete=models.CASCADE, related_name="+")
+    to_item = models.ForeignKey("Item", on_delete=models.CASCADE, related_name="+")
 
     def __str__(self):
         return "%s -> %s" % (str(self.from_item), str(self.to_item))
@@ -203,12 +218,13 @@ class Link(models.Model):
 class Item(models.Model):
     draft = models.BooleanField(default=True)
     # Tags linked to this item
-    tags = models.ManyToManyField('Tag', blank=True)
+    tags = models.ManyToManyField("Tag", blank=True)
     # The other items that are linked to this item
-    links = models.ManyToManyField('Item', blank=True, through='Link',
-            symmetrical=False)
+    links = models.ManyToManyField(
+        "Item", blank=True, through="Link", symmetrical=False
+    )
     # The comments linked to this item
-    comments = models.ManyToManyField('Comment', blank=True, editable=True)
+    comments = models.ManyToManyField("Comment", blank=True, editable=True)
     # Whether this item is featured by a moderator
     featured = models.BooleanField(default=False)
     # The type of this item, important to know which subclass to load
@@ -220,8 +236,7 @@ class Item(models.Model):
     # The concatenated string representation of each item for free text search
     searchablecontent = models.TextField(editable=False)
     # The communities for which the item is visible
-    communities = models.ManyToManyField('Community',
-            related_name='items')
+    communities = models.ManyToManyField("Community", related_name="items")
 
     @property
     def authors(self):
@@ -231,14 +246,14 @@ class Item(models.Model):
     def downcast(self):
         # Define links to subclasses
         subcls = {
-            'P': lambda self: self.person,
-            'G': lambda self: self.goodpractice,
-            'I': lambda self: self.information,
-            'R': lambda self: self.project,
-            'E': lambda self: self.event,
-            'Q': lambda self: self.question,
-            'S': lambda self: self.glossary,
-            'U': lambda self: self.usercase
+            "P": lambda self: self.person,
+            "G": lambda self: self.goodpractice,
+            "I": lambda self: self.information,
+            "R": lambda self: self.project,
+            "E": lambda self: self.event,
+            "Q": lambda self: self.question,
+            "S": lambda self: self.glossary,
+            "U": lambda self: self.usercase,
         }
         # If link to the current subclass is known
         if self.type in subcls:
@@ -250,7 +265,7 @@ class Item(models.Model):
         # If new instance is created, set the default community (public)
         super(Item, self).save(*args, **kwargs)
         if self.pk is None:
-            self.communities.add(Community.objects.get(pk = 1))
+            self.communities.add(Community.objects.get(pk=1))
 
     @property
     def display_name(self):
@@ -264,7 +279,7 @@ class Item(models.Model):
 
     def _truncate(self, text, max_len=200):
         if len(text) > max_len:
-            return strip_tags(text)[:max_len - 2] + "..."
+            return strip_tags(text)[: max_len - 2] + "..."
         return strip_tags(text)
 
     # Dictionary representation used to communicate the model to the client
@@ -272,21 +287,23 @@ class Item(models.Model):
         # Fill dict format at this level
         # make sure the pass by reference does not cause unexpected results
         obj = obj.copy()
-        obj.update({
-            'id': self.id,
-            'type': dict(ITEM_TYPES)[self.type],
-            'tags': [t.dict_format() for t in list(self.tags.all())],
-            'featured': self.featured,
-            'score': self.score,
-            'summary': self.summary(),
-            'create_date': self.create_date,
-            'named-authors': [a.person.dict_format() for a in self.authors],
-            'get_absolute_url': self.downcast().get_absolute_url()
-        })
+        obj.update(
+            {
+                "id": self.id,
+                "type": dict(ITEM_TYPES)[self.type],
+                "tags": [t.dict_format() for t in list(self.tags.all())],
+                "featured": self.featured,
+                "score": self.score,
+                "summary": self.summary(),
+                "create_date": self.create_date,
+                "named-authors": [a.person.dict_format() for a in self.authors],
+                "get_absolute_url": self.downcast().get_absolute_url(),
+            }
+        )
         # Attempt to get reference to subclass
         subcls = self.downcast()
         # Attempt to let subclasses fill in dict format further
-        if subcls is not None and hasattr(subcls, 'dict_format'):
+        if subcls is not None and hasattr(subcls, "dict_format"):
             return subcls.dict_format(obj)
         else:
             return obj
@@ -294,9 +311,9 @@ class Item(models.Model):
     def get_absolute_url(self):
         if self.type in dict(ITEM_TYPES):
             t = dict(ITEM_TYPES)[self.type].lower().replace(" ", "")
-            return '/' + t + "/" + str(self.id)
+            return "/" + t + "/" + str(self.id)
         else:
-            return '/item/' + str(self.id)
+            return "/item/" + str(self.id)
 
     def __str__(self):
         # Attempt to get reference to subclass
@@ -313,15 +330,15 @@ class Item(models.Model):
 class Comment(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     text = ck_field.RichTextUploadingField()
-    author = models.ForeignKey('Person', on_delete=models.CASCADE)
+    author = models.ForeignKey("Person", on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
-    upvoters = models.ManyToManyField('Person', related_name='upvoters',
-                                      blank=True)
-    downvoters = models.ManyToManyField('Person', related_name='downvoters',
-                                        blank=True)
+    upvoters = models.ManyToManyField("Person", related_name="upvoters", blank=True)
+    downvoters = models.ManyToManyField("Person", related_name="downvoters", blank=True)
 
     def __str__(self):
-        return str(self.text[:40],)
+        return str(
+            self.text[:40],
+        )
 
     @property
     def votes(self):
@@ -343,20 +360,18 @@ class Person(Item):
     # Text describing this person
     about = ck_field.RichTextUploadingField(blank=True, null=True)
     # The source of a photo
-    photo = models.ImageField(upload_to='profile_pictures', blank=True, null=True)
+    photo = models.ImageField(upload_to="profile_pictures", blank=True, null=True)
     # The website of this person
     website = models.URLField(max_length=255, null=True, blank=True)
     # The email address of this person
     email = models.EmailField(null=True)
     # User corresponding to this person. If user deleted, person remains.
-    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True,
-                                blank=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     # The ID given by some external auth-service
     external_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Show the email addres on public pages
-    public_email = models.BooleanField(default=False,
-        verbose_name="Make email public")
+    public_email = models.BooleanField(default=False, verbose_name="Make email public")
 
     # University of the user provided on registry
     university = models.CharField(max_length=500)
@@ -365,11 +380,11 @@ class Person(Item):
     introduction = models.TextField(null=True, blank=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __init__(self, *args, **kwargs):
         super(Person, self).__init__(*args, **kwargs)
-        self.type = 'P'
+        self.type = "P"
 
     def summary(self):
         return self.headline
@@ -379,7 +394,8 @@ class Person(Item):
         return self.name
 
     def display_handle(self):
-        return u"@%s" % (self.handle,)
+        return "@%s" % (self.handle,)
+
     display_handle.short_description = "Handle"
 
     def dict_format(self, obj=None):
@@ -389,25 +405,29 @@ class Person(Item):
         if obj is None:
             return super(Person, self).dict_format()
         else:
-            obj.update({
-                'handle': self.handle,
-                'title': self.title,
-                'name': self.name,
-                'about': self.about,
-                'photo': self.photo,
-                'website': self.website,
-                'summary': self.summary(),
-                'email': self.email,
-            })
+            obj.update(
+                {
+                    "handle": self.handle,
+                    "title": self.title,
+                    "name": self.name,
+                    "about": self.about,
+                    "photo": self.photo,
+                    "website": self.website,
+                    "summary": self.summary(),
+                    "email": self.email,
+                }
+            )
             return obj
 
     def __str__(self):
         return "[Person] %s" % (self.name,)
 
     def save(self, *args, **kwargs):
-        texts = [cleanup_for_search(self.name),
-                 cleanup_for_search(self.about),
-                 cleanup_for_search(self.headline)]
+        texts = [
+            cleanup_for_search(self.name),
+            cleanup_for_search(self.about),
+            cleanup_for_search(self.headline),
+        ]
         self.searchablecontent = "<br />".join(texts)
         super(Person, self).save(*args, **kwargs)
 
@@ -416,9 +436,11 @@ class TextItem(Item):
     # The title of the good practice
     title = models.CharField(max_length=255)
     # The WYSIWYG text of the good practice
-    text = ck_field.RichTextUploadingField(verbose_name='Text')
+    text = ck_field.RichTextUploadingField(verbose_name="Text")
     # The person who created the good practice
-    author = models.ForeignKey('Person', on_delete=models.SET_NULL, null=True, related_name='+')
+    author = models.ForeignKey(
+        "Person", on_delete=models.SET_NULL, null=True, related_name="+"
+    )
 
     def display_author(self):
         if self.author is not None:
@@ -443,12 +465,14 @@ class TextItem(Item):
         else:
             # make sure the pass by reference does not cause unexpected results
             obj = obj.copy()
-            obj.update({
-                'author': self.author.dict_format(),
-                'title': self.title,
-                'summary': self.summary(),
-                'text': self.text
-            })
+            obj.update(
+                {
+                    "author": self.author.dict_format(),
+                    "title": self.title,
+                    "summary": self.summary(),
+                    "text": self.text,
+                }
+            )
             return obj
 
     def __str__(self):
@@ -457,11 +481,12 @@ class TextItem(Item):
     @property
     def display_name(self):
         return self.title
-    
+
     def save(self, *args, **kwargs):
         self.title = self.title.strip()
-        self.searchablecontent = "<br />".join([cleanup_for_search(self.title),
-                                                cleanup_for_search(self.text)])
+        self.searchablecontent = "<br />".join(
+            [cleanup_for_search(self.title), cleanup_for_search(self.text)]
+        )
         # On create, not update
         if self.pk is None:
             super(TextItem, self).save(*args, **kwargs)
@@ -479,23 +504,24 @@ class TextItem(Item):
 class GoodPractice(TextItem):
     def __init__(self, *args, **kwargs):
         super(GoodPractice, self).__init__(*args, **kwargs)
-        self.type = 'G'
+        self.type = "G"
 
 
 class Information(TextItem):
     def __init__(self, *args, **kwargs):
         super(Information, self).__init__(*args, **kwargs)
-        self.type = 'I'
+        self.type = "I"
 
 
 class CpdActivity(models.Model):
-
     def __init__(self, *args, **kwargs):
         super(CpdActivity, self).__init__(*args, **kwargs)
-        self.type = 'U'
+        self.type = "U"
 
     # The person who can be contacted for more info on the project
-    user_case = models.ForeignKey('UserCase', on_delete=models.CASCADE, related_name='+')
+    user_case = models.ForeignKey(
+        "UserCase", on_delete=models.CASCADE, related_name="+"
+    )
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
@@ -506,30 +532,32 @@ class CpdActivity(models.Model):
         else:
             # make sure the pass by reference does not cause unexpected results
             obj = obj.copy()
-            obj.update({
-                'author': self.author,
-                'title': self.title,
-                'text': self.text,
-                'summary': self.summary(),
-                'contact': self.contact.dict_format(),
-                'begin_date': self.begin_date,
-                'end_date': self.end_date
-            })
+            obj.update(
+                {
+                    "author": self.author,
+                    "title": self.title,
+                    "text": self.text,
+                    "summary": self.summary(),
+                    "contact": self.contact.dict_format(),
+                    "begin_date": self.begin_date,
+                    "end_date": self.end_date,
+                }
+            )
             return obj
 
 
 class UserCase(TextItem):
     def __init__(self, *args, **kwargs):
         super(UserCase, self).__init__(*args, **kwargs)
-        self.type = 'U'
+        self.type = "U"
 
-    wallpaper = models.ImageField(upload_to='user_cases', blank=True, null=True)
+    wallpaper = models.ImageField(upload_to="user_cases", blank=True, null=True)
 
-    context_goals = ck_field.RichTextUploadingField(verbose_name='Context and Goals')
+    context_goals = ck_field.RichTextUploadingField(verbose_name="Context and Goals")
 
-    cpd_activities = ck_field.RichTextUploadingField(verbose_name='CPD Activities')
+    cpd_activities = ck_field.RichTextUploadingField(verbose_name="CPD Activities")
 
-    evaluation = ck_field.RichTextUploadingField(verbose_name='Evaluation')
+    evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
@@ -540,22 +568,25 @@ class UserCase(TextItem):
         else:
             # make sure the pass by reference does not cause unexpected results
             obj = obj.copy()
-            obj.update({
-                'wallpaper': self.wallpaper,
-                'author': self.author.dict_format(),
-                'title': self.title,
-                'summary': self.summary(),
-                'text': self.text
-            })
+            obj.update(
+                {
+                    "wallpaper": self.wallpaper,
+                    "author": self.author.dict_format(),
+                    "title": self.title,
+                    "summary": self.summary(),
+                    "text": self.text,
+                }
+            )
             return obj
+
 
 class Project(TextItem):
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
-        self.type = 'R'
+        self.type = "R"
 
     # The person who can be contacted for more info on the project
-    contact = models.ForeignKey('Person', on_delete=models.CASCADE, related_name='+')
+    contact = models.ForeignKey("Person", on_delete=models.CASCADE, related_name="+")
     # The begin date of the project
     begin_date = models.DateTimeField(auto_now=True, editable=True)
     # The end date of the project
@@ -570,33 +601,34 @@ class Project(TextItem):
         else:
             # make sure the pass by reference does not cause unexpected results
             obj = obj.copy()
-            obj.update({
-                'author': self.author,
-                'title': self.title,
-                'text': self.text,
-                'summary': self.summary(),
-                'contact': self.contact.dict_format(),
-                'begin_date': self.begin_date,
-                'end_date': self.end_date
-            })
+            obj.update(
+                {
+                    "author": self.author,
+                    "title": self.title,
+                    "text": self.text,
+                    "summary": self.summary(),
+                    "contact": self.contact.dict_format(),
+                    "begin_date": self.begin_date,
+                    "end_date": self.end_date,
+                }
+            )
             return obj
 
 
 class Event(TextItem):
     def __init__(self, *args, **kwargs):
         super(Event, self).__init__(*args, **kwargs)
-        self.type = 'E'
+        self.type = "E"
 
     # The person who can be contacted for more info on the project
-    contact = models.ForeignKey('Person', on_delete=models.CASCADE, related_name='+')
+    contact = models.ForeignKey("Person", on_delete=models.CASCADE, related_name="+")
     # The date of the event
     date = models.DateTimeField()
-    location = models.CharField(max_length=255, blank=True, default='')
+    location = models.CharField(max_length=255, blank=True, default="")
 
     @property
     def is_past_due(self):
-        t = timezone.make_aware(datetime.now(),
-                                timezone.get_default_timezone())
+        t = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
         if t > self.date:
             return True
         return False
@@ -608,23 +640,25 @@ class Event(TextItem):
         if obj is None:
             return super(Event, self).dict_format()
         else:
-            obj.update({
-                'author': self.author,
-                'title': self.title,
-                'text': self.text,
-                'is_past_due': self.is_past_due,
-                'location': self.location,
-                'summary': self.summary(),
-                'contact': self.contact.dict_format(),
-                'date': self.date
-            })
+            obj.update(
+                {
+                    "author": self.author,
+                    "title": self.title,
+                    "text": self.text,
+                    "is_past_due": self.is_past_due,
+                    "location": self.location,
+                    "summary": self.summary(),
+                    "contact": self.contact.dict_format(),
+                    "date": self.date,
+                }
+            )
             return obj
 
 
 class Question(TextItem):
     def __init__(self, *args, **kwargs):
         super(Question, self).__init__(*args, **kwargs)
-        self.type = 'Q'
+        self.type = "Q"
 
     def __str__(self):
         return "[Question] %s" % (self.title,)
@@ -633,7 +667,7 @@ class Question(TextItem):
 class Glossary(TextItem):
     def __init__(self, *args, **kwargs):
         super(Glossary, self).__init__(*args, **kwargs)
-        self.type = 'S'
+        self.type = "S"
 
 
 # Queries can be stored to either be displayed on the main page, rss feed or to
@@ -641,12 +675,11 @@ class Glossary(TextItem):
 # results are updated (i.e. new results can be found).
 class SearchQuery(models.Model):
     # Which tags are mentioned in the query
-    tags = models.ManyToManyField(Tag, related_name='in_queries')
+    tags = models.ManyToManyField(Tag, related_name="in_queries")
     # Which persons are mentioned in the query
-    persons = models.ManyToManyField(Person,
-                                     related_name='in_queries')
+    persons = models.ManyToManyField(Person, related_name="in_queries")
     # What was the last known (cached) result of this query
-    result = models.ManyToManyField(Item, related_name='result_of')
+    result = models.ManyToManyField(Item, related_name="result_of")
     # When was the query stored
     stored = models.DateTimeField(auto_now=True)
 
@@ -668,13 +701,19 @@ class DisplayQuery(models.Model):
 
 
 class ItemAuthor(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='author_item')
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='author_person')
-    status = models.CharField(max_length=100, default='PENDING', choices=(
-        ('ACCEPTED', 'ACCEPTED'),
-        ('PENDING', 'PENDING'),
-        ('DECLINED', 'DECLINED')
-    ))
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="author_item")
+    person = models.ForeignKey(
+        Person, on_delete=models.CASCADE, related_name="author_person"
+    )
+    status = models.CharField(
+        max_length=100,
+        default="PENDING",
+        choices=(
+            ("ACCEPTED", "ACCEPTED"),
+            ("PENDING", "PENDING"),
+            ("DECLINED", "DECLINED"),
+        ),
+    )
 
     def __str__(self):
         return str(self.item) + " " + str(self.person) + " (" + self.status + ")"

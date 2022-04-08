@@ -15,7 +15,6 @@ from search.models import (
 
 
 # TODO:
-# * load pg dump data into arrays
 # * import data from arrays
 # * dry run again with fresh db backup from production
 # * create another backup and execute on production

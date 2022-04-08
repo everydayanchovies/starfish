@@ -9,8 +9,8 @@ function prepareReadMoreButtons() {
     let card = linkEl.parentElement.parentElement;
     linkEl.onclick = () => {
       if (card.classList.contains("expandable")) {
+        var wikiHref = linkEl.dataset.wikiHref;
         if (card.classList.contains("expanded")) {
-          var wikiHref = linkEl.dataset.wikiHref;
           if (wikiHref) {
             window.location = wikiHref;
           } else {
@@ -19,7 +19,11 @@ function prepareReadMoreButtons() {
           }
         } else {
           card.classList.add("expanded");
-          linkEl.textContent = "Wikipedia...";
+          if (wikiHref) {
+            linkEl.textContent = "Visit...";
+          } else {
+            linkEl.textContent = "";
+          }
         }
       } else {
         window.location = linkEl.dataset.wikiHref;

@@ -197,16 +197,16 @@ class Command(BaseCommand):
     def person_for_id(self, pid):
         parrs = [x for x in self.dumps["export_person"] if x[0] == pid]
         if not parrs:
-            print("Warning! No person found for pid " + pid)
-            return None
+            print("Warning! No person found for pid " + pid + ", using Natasa.")
+            return self.get_natasa_person()
 
         pliveobjs = [x for x in Person.objects.all() if x.name == parrs[0][1]]
         if not pliveobjs:
             return None
 
-        print("Warning! No person found in objs for pid " + pid)
+        print("Warning! No live person found for pid " + pid + ", using Natasa.")
 
-        return pliveobjs[0]
+        return self.get_natasa_person()
 
     def glossary_for_id(self, gid):
         if not gid:
@@ -241,6 +241,10 @@ class Command(BaseCommand):
                 oi.save()
 
     def import_person(self):
+        # legally we are not allowed to import people
+        # without their consent
+        return
+
         live_persons = Person.objects.all()
         for pi in self.dumps_as_objs["export_person"]:
             for pj in live_persons:
@@ -326,3 +330,6 @@ class Command(BaseCommand):
     """
     END import object
     """
+
+    def get_natasa_person(self):
+        return Person.objects.filter(name="Natasa Brouwer")[0]

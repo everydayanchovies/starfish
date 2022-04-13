@@ -172,7 +172,7 @@ class Command(BaseCommand):
         author = self.person_for_id(author_id)
         if not author:
             return None
-        return Information(
+        return Question(
             title=title,
             text=text,
             author=author,
@@ -239,6 +239,8 @@ class Command(BaseCommand):
             else:
                 print("Adding project " + oi.title)
                 oi.save()
+                oi = self.preprocess_item(oi)
+                oi.save()
 
     def import_person(self):
         # legally we are not allowed to import people
@@ -252,6 +254,8 @@ class Command(BaseCommand):
                     break
             else:
                 print("Adding person " + pi.name)
+                pi.save()
+                pi = self.preprocess_item(pi)
                 pi.save()
 
     def import_community(self):
@@ -273,6 +277,8 @@ class Command(BaseCommand):
             else:
                 print("Adding event " + oi.title)
                 oi.save()
+                oi = self.preprocess_item(oi)
+                oi.save()
 
     def import_glossary(self):
         live_glossaries = Glossary.objects.all()
@@ -282,6 +288,8 @@ class Command(BaseCommand):
                     break
             else:
                 print("Adding glossary " + gi.title)
+                gi.save()
+                gi = self.preprocess_item(gi)
                 gi.save()
 
     def import_goodpractice(self):
@@ -293,6 +301,8 @@ class Command(BaseCommand):
             else:
                 print("Adding goodpractice " + oi.title)
                 oi.save()
+                oi = self.preprocess_item(oi)
+                oi.save()
 
     def import_information(self):
         live_infos = Information.objects.all()
@@ -303,11 +313,11 @@ class Command(BaseCommand):
             else:
                 print("Adding information " + oi.title)
                 oi.save()
+                oi = self.preprocess_item(oi)
+                oi.save()
 
-    # TODO why does this not save?
     def import_question(self):
         live_questions = Question.objects.all()
-        print(Question.objects.filter(title="Hoe berekent TestVision de cijfers?"))
         for oi in self.dumps_as_objs["search_question"]:
             for oj in live_questions:
                 if oi.title == oj.title:
@@ -315,7 +325,8 @@ class Command(BaseCommand):
             else:
                 print("Adding question " + oi.title)
                 oi.save()
-                print(Question.objects.filter(title=oi.title))
+                oi = self.preprocess_item(oi)
+                oi.save()
 
     def import_tag(self):
         live_tags = Tag.objects.all()
@@ -326,6 +337,12 @@ class Command(BaseCommand):
             else:
                 print("Adding tag " + oi.handle)
                 oi.save()
+                oi = self.preprocess_item(oi)
+                oi.save()
+
+    def preprocess_item(self, item):
+        item.communities.set(Community.objects.filter(name="Public"))
+        return item
 
     """
     END import object

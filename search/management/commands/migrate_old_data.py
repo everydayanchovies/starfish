@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+import shutil
+from datetime import datetime
 
 from search.models import (
     Project,
@@ -16,15 +18,14 @@ from search.models import (
 
 
 # TODO:
-# * import data from arrays
-# * dry run again with fresh db backup from production
 # * create another backup and execute on production
 class Command(BaseCommand):
     dumps = {}
     dumps_as_objs = {}
 
     def add_arguments(self, parser):
-        parser.add_argument("path", type=str)
+        parser.add_argument("path_to_dumps", type=str)
+        parser.add_argument("path_to_db", type=str)
 
     def handle(self, *args, **options):
         # Order matters! Person and glossary must be the first and second entries in this array.
@@ -42,9 +43,13 @@ class Command(BaseCommand):
             "search_item_communities", # id, item_id, community_id
         ]
 
+        # Create backup of existing database
+        path_to_db = options["path_to_db"]
+        shutil.copyfile(path_to_db, path_to_db + "_pre_datarestoration_backup_" + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+
         for filename in dump_filenames:
             self.dumps[filename] = self.sql_to_strings(
-                options["path"] + "/" + filename + ".sql"
+                options["path_to_dumps"] + "/" + filename + ".sql"
             )
 
         for filename in dump_filenames:
@@ -84,6 +89,10 @@ class Command(BaseCommand):
     def clean_data(self, data):
         if data == "\\N":
             return None
+
+        data = data.replace("\\r\\n", "\n")
+        data = data.replace("\\t", "\t")
+        data = data.replace("media/uploads", "static")
 
         return data
 
@@ -131,6 +140,7 @@ class Command(BaseCommand):
         if not author or not contact:
             return None
         return (item_ptr_id, -1, Event(
+            draft=False,
             title=title,
             text=text,
             date=date,
@@ -145,6 +155,7 @@ class Command(BaseCommand):
         if not author:
             return None
         return (item_ptr_id, -1, Glossary(
+            draft=False,
             title=title,
             text=text,
             author=author,
@@ -156,6 +167,7 @@ class Command(BaseCommand):
         if not author:
             return None
         return (item_ptr_id, -1, GoodPractice(
+            draft=False,
             title=title,
             text=text,
             author=author,
@@ -167,6 +179,7 @@ class Command(BaseCommand):
         if not author:
             return None
         return (item_ptr_id, -1, Information(
+            draft=False,
             title=title,
             text=text,
             author=author,
@@ -178,6 +191,7 @@ class Command(BaseCommand):
         if not author:
             return None
         return (item_ptr_id, -1, Question(
+            draft=False,
             title=title,
             text=text,
             author=author,

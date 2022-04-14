@@ -332,6 +332,18 @@ def invite_collaborator(request):
             item = GoodPractice.objects.get(id=request.POST['id'])
         elif request.POST['type'] == 'U':
             item = UserCase.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'I':
+            item = Information.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'R':
+            item = Project.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'E':
+            item = Event.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'S':
+            item = Glossary.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'Q':
+            item = Question.objects.get(id=request.POST['id'])
+        else:
+            return HttpResponseBadRequest()
 
         if person.exists():
             ItemAuthor(person=person.first(), item=item).save()

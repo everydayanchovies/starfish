@@ -11,6 +11,7 @@ from search.models import (
     Information,
     Question,
     Tag,
+    Item
 )
 
 
@@ -38,6 +39,7 @@ class Command(BaseCommand):
             "search_project",  # item_ptr_id title text begin_date end_date author_id contact_id
             "search_question",  # item_ptr_id title text author_id
             "search_tag",  # id type handle alias_of_id glossary_id
+            "search_item_communities", # id, item_id, community_id
         ]
 
         for filename in dump_filenames:
@@ -50,9 +52,9 @@ class Command(BaseCommand):
             print("Executing " + fn)
             if not hasattr(self, fn):
                 continue
-            self.dumps_as_objs[filename] = filter(
+            self.dumps_as_objs[filename] = list(filter(
                 None, list(map(getattr(self, fn), self.dumps[filename]))
-            )
+            ))
 
         for filename in dump_filenames:
             fn = "import_" + filename.replace("search_", "").replace("export_", "")
@@ -95,7 +97,7 @@ class Command(BaseCommand):
         contact = self.person_for_id(contact_id)
         if not author or not contact:
             return None
-        return Project(
+        return (item_ptr_id, -1, Project(
             draft=False,
             title=title,
             text=text,
@@ -103,21 +105,24 @@ class Command(BaseCommand):
             contact=contact,
             begin_date=begin_date,
             end_date=end_date,
-        )
+        ))
 
     def arr_to_person(self, arr):
+        # due to privacy issues
+        return None
+
         item_ptr_id, name = arr
-        return Person(
+        return (item_ptr_id, -1, Person(
             id=item_ptr_id,
             name=name,
-        )
+        ))
 
     def arr_to_community(self, arr):
         cid, name, part_of_id = arr
-        return Community(
+        return (cid, -1, Community(
             name=name,
             part_of_id=part_of_id,
-        )
+        ))
 
     def arr_to_event(self, arr):
         item_ptr_id, title, text, date, location, author_id, contact_id = arr
@@ -125,70 +130,73 @@ class Command(BaseCommand):
         contact = self.person_for_id(contact_id)
         if not author or not contact:
             return None
-        return Event(
+        return (item_ptr_id, -1, Event(
             title=title,
             text=text,
             date=date,
             location=location,
             author=author,
             contact=contact,
-        )
+        ))
 
     def arr_to_glossary(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
         if not author:
             return None
-        return Glossary(
+        return (item_ptr_id, -1, Glossary(
             title=title,
             text=text,
             author=author,
-        )
+        ))
 
     def arr_to_goodpractice(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
         if not author:
             return None
-        return GoodPractice(
+        return (item_ptr_id, -1, GoodPractice(
             title=title,
             text=text,
             author=author,
-        )
+        ))
 
     def arr_to_information(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
         if not author:
             return None
-        return Information(
+        return (item_ptr_id, -1, Information(
             title=title,
             text=text,
             author=author,
-        )
+        ))
 
     def arr_to_question(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
         if not author:
             return None
-        return Question(
+        return (item_ptr_id, -1, Question(
             title=title,
             text=text,
             author=author,
-        )
+        ))
 
     def arr_to_tag(self, arr):
         tid, ttype, handle, alias_of_id, glossary_id = arr
         glossary = self.glossary_for_id(glossary_id)
         if not glossary:
             return None
-        return Tag(
+        return (tid, -1, Tag(
             type=ttype,
             handle=handle,
             alias_of_id=alias_of_id,
             glossary=glossary,
-        )
+        ))
+
+    def arr_to_item_communities(self, arr):
+        return (-1, -1, arr)
 
     """
     END array to object
@@ -230,119 +238,99 @@ class Command(BaseCommand):
     BEGIN import object
     """
 
-    def import_project(self):
-        live_projects = Project.objects.all()
-        for oi in self.dumps_as_objs["search_project"]:
-            for oj in live_projects:
-                if oi.title == oj.title:
+    def import_items(self, table_name, item_class, equality_fn):
+        live_items = item_class.objects.all()
+        for i, (old_id, new_id, oi) in enumerate(self.dumps_as_objs[table_name]):
+            for oj in live_items:
+                if equality_fn(oi, oj):
+                    self.dumps_as_objs[table_name][i] = (old_id, oj.id, oj)
                     break
             else:
-                print("Adding project " + oi.title)
+                print("Adding item " + str(oi))
                 oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+                self.dumps_as_objs[table_name][i] = (old_id, oi.id, oi)
+
+    def import_project(self):
+        self.import_items(
+            "search_project",
+            Project,
+            lambda a, b: a.title == b.title
+        )
 
     def import_person(self):
         # legally we are not allowed to import people
         # without their consent
-        return
-
-        live_persons = Person.objects.all()
-        for pi in self.dumps_as_objs["export_person"]:
-            for pj in live_persons:
-                if pi.name == pj.name:
-                    break
-            else:
-                print("Adding person " + pi.name)
-                pi.save()
-                pi = self.preprocess_item(pi)
-                pi.save()
+        pass
 
     def import_community(self):
-        live_communities = Community.objects.all()
-        for oi in self.dumps_as_objs["search_community"]:
-            for oj in live_communities:
-                if oi.name == oj.name:
-                    break
-            else:
-                print("Adding community " + oi.name)
-                oi.save()
+        self.import_items(
+            "search_community",
+            Community,
+            lambda a, b: a.name == b.name
+        )
 
     def import_event(self):
-        live_events = Event.objects.all()
-        for oi in self.dumps_as_objs["search_event"]:
-            for oj in live_events:
-                if oi.title == oj.title:
-                    break
-            else:
-                print("Adding event " + oi.title)
-                oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+        self.import_items(
+            "search_event",
+            Event,
+            lambda a, b: a.title == b.title
+        )
 
     def import_glossary(self):
-        live_glossaries = Glossary.objects.all()
-        for gi in self.dumps_as_objs["search_glossary"]:
-            for gj in live_glossaries:
-                if gi.title == gj.title:
-                    break
-            else:
-                print("Adding glossary " + gi.title)
-                gi.save()
-                gi = self.preprocess_item(gi)
-                gi.save()
+        self.import_items(
+            "search_glossary",
+            Glossary,
+            lambda a, b: a.title == b.title
+        )
 
     def import_goodpractice(self):
-        live_gps = GoodPractice.objects.all()
-        for oi in self.dumps_as_objs["search_goodpractice"]:
-            for oj in live_gps:
-                if oi.title == oj.title:
-                    break
-            else:
-                print("Adding goodpractice " + oi.title)
-                oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+        self.import_items(
+            "search_goodpractice",
+            GoodPractice,
+            lambda a, b: a.title == b.title
+        )
 
     def import_information(self):
-        live_infos = Information.objects.all()
-        for oi in self.dumps_as_objs["search_information"]:
-            for oj in live_infos:
-                if oi.title == oj.title:
-                    break
-            else:
-                print("Adding information " + oi.title)
-                oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+        self.import_items(
+            "search_information",
+            Information,
+            lambda a, b: a.title == b.title
+        )
 
     def import_question(self):
-        live_questions = Question.objects.all()
-        for oi in self.dumps_as_objs["search_question"]:
-            for oj in live_questions:
-                if oi.title == oj.title:
-                    break
-            else:
-                print("Adding question " + oi.title)
-                oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+        self.import_items(
+            "search_question",
+            Question,
+            lambda a, b: a.title == b.title
+        )
 
     def import_tag(self):
-        live_tags = Tag.objects.all()
-        for oi in self.dumps_as_objs["search_tag"]:
-            for oj in live_tags:
-                if oi.handle == oj.handle:
-                    break
-            else:
-                print("Adding tag " + oi.handle)
-                oi.save()
-                oi = self.preprocess_item(oi)
-                oi.save()
+        self.import_items(
+            "search_tag",
+            Tag,
+            lambda a, b: a.handle == b.handle
+        )
 
-    def preprocess_item(self, item):
-        item.communities.set(Community.objects.filter(name="Public"))
-        return item
+    def import_item_communities(self):
+        for (_, _, sic) in self.dumps_as_objs["search_item_communities"]:
+            _, item_id, community_id = sic
+            item = self.get_item_by_old_id(item_id)
+            community = self.get_item_by_old_id(community_id, "search_community")
+            if not item or not community:
+                print("Couldn't find item or community for mtm relation.")
+                continue
+            if isinstance(item, Community) or isinstance(item, Tag):
+                continue
+            print("Setting mtm relation for " + str(item) + " and " + str(community))
+            item.communities.add(community)
+
+    def get_item_by_old_id(self, q_old_id, table=""):
+        for (k, lst) in self.dumps_as_objs.items():
+            if table and not table == k:
+                continue
+            for old_id, new_id, item in lst:
+                if old_id == q_old_id:
+                    return item
 
     """
     END import object

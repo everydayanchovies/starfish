@@ -17,8 +17,6 @@ from search.models import (
 )
 
 
-# TODO:
-# * create another backup and execute on production
 class Command(BaseCommand):
     dumps = {}
     dumps_as_objs = {}
@@ -103,23 +101,17 @@ class Command(BaseCommand):
     def arr_to_project(self, arr):
         item_ptr_id, title, text, begin_date, end_date, author_id, contact_id = arr
         author = self.person_for_id(author_id)
-        contact = self.person_for_id(contact_id)
-        if not author or not contact:
-            return None
         return (item_ptr_id, -1, Project(
             draft=False,
             title=title,
-            text=text,
-            author=author,
-            contact=contact,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
+            contact=self.get_natasa_person(),
             begin_date=begin_date,
             end_date=end_date,
         ))
 
     def arr_to_person(self, arr):
-        # due to privacy issues
-        return None
-
         item_ptr_id, name = arr
         return (item_ptr_id, -1, Person(
             id=item_ptr_id,
@@ -136,65 +128,54 @@ class Command(BaseCommand):
     def arr_to_event(self, arr):
         item_ptr_id, title, text, date, location, author_id, contact_id = arr
         author = self.person_for_id(author_id)
-        contact = self.person_for_id(contact_id)
-        if not author or not contact:
-            return None
         return (item_ptr_id, -1, Event(
             draft=False,
             title=title,
-            text=text,
+            text=text + self.person_record_summery(author),
             date=date,
             location=location,
-            author=author,
-            contact=contact,
+            author=self.get_natasa_person(),
+            contact=self.get_natasa_person(),
         ))
 
     def arr_to_glossary(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
-        if not author:
-            return None
         return (item_ptr_id, -1, Glossary(
             draft=False,
             title=title,
-            text=text,
-            author=author,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
         ))
 
     def arr_to_goodpractice(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
-        if not author:
-            return None
         return (item_ptr_id, -1, GoodPractice(
             draft=False,
             title=title,
-            text=text,
-            author=author,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
         ))
 
     def arr_to_information(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
-        if not author:
-            return None
         return (item_ptr_id, -1, Information(
             draft=False,
             title=title,
-            text=text,
-            author=author,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
         ))
 
     def arr_to_question(self, arr):
         item_ptr_id, title, text, author_id = arr
         author = self.person_for_id(author_id)
-        if not author:
-            return None
         return (item_ptr_id, -1, Question(
             draft=False,
             title=title,
-            text=text,
-            author=author,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
         ))
 
     def arr_to_tag(self, arr):
@@ -212,6 +193,11 @@ class Command(BaseCommand):
     def arr_to_item_communities(self, arr):
         return (-1, -1, arr)
 
+    def person_record_summery(self, author):
+        if not author:
+            return ""
+        return "\n\nOriginal author: " + author.name
+
     """
     END array to object
     """
@@ -219,16 +205,14 @@ class Command(BaseCommand):
     def person_for_id(self, pid):
         parrs = [x for x in self.dumps["export_person"] if x[0] == pid]
         if not parrs:
-            print("Warning! No person found for pid " + pid + ", using Natasa.")
-            return self.get_natasa_person()
-
-        pliveobjs = [x for x in Person.objects.all() if x.name == parrs[0][1]]
-        if not pliveobjs:
+            print("Warning! No person found for pid " + pid)
             return None
 
-        print("Warning! No live person found for pid " + pid + ", using Natasa.")
+        print("\n" + parrs[0][1])
 
-        return self.get_natasa_person()
+        return Person(
+            name=parrs[0][1]
+        )
 
     def glossary_for_id(self, gid):
         if not gid:
@@ -333,7 +317,7 @@ class Command(BaseCommand):
             if not item or not community:
                 print("Couldn't find item or community for mtm relation.")
                 continue
-            if isinstance(item, Community) or isinstance(item, Tag):
+            if isinstance(item, Community) or isinstance(item, Tag) or isinstance(item, Person):
                 continue
             print("Setting mtm relation for " + str(item) + " and " + str(community))
             item.communities.add(community)

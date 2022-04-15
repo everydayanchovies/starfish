@@ -90,7 +90,7 @@ class Command(BaseCommand):
 
         data = data.replace("\\r\\n", "\n")
         data = data.replace("\\t", "\t")
-        data = data.replace("media/uploads", "static")
+        data = data.replace("media/uploads", "static/imported_media")
 
         return data
 

@@ -34,11 +34,11 @@ class Command(BaseCommand):
             "search_event",  # item_ptr_id title text date location author_id contact_id
             "search_goodpractice",  # item_ptr_id title text author_id
             "search_information",  # item_ptr_id title text author_id
-            "search_item_tags",  # id item_id tag_id
             "search_project",  # item_ptr_id title text begin_date end_date author_id contact_id
             "search_question",  # item_ptr_id title text author_id
             "search_tag",  # id type handle alias_of_id glossary_id
-            "search_item_communities", # id, item_id, community_id
+            "search_item_communities", # id item_id community_id
+            "search_item_tags", # id item_id tag_id
         ]
 
         # Create backup of existing database
@@ -66,6 +66,9 @@ class Command(BaseCommand):
                 continue
             getattr(self, fn)()
 
+        for filename in dump_filenames:
+            print("Imported " + str(len(self.dumps_as_objs[filename])) + " " + filename)
+
     def sql_to_strings(self, filepath):
         lines = []
 
@@ -91,6 +94,7 @@ class Command(BaseCommand):
         data = data.replace("\\r\\n", "\n")
         data = data.replace("\\t", "\t")
         data = data.replace("media/uploads", "static/imported_media")
+        data = data.strip()
 
         return data
 
@@ -193,6 +197,9 @@ class Command(BaseCommand):
     def arr_to_item_communities(self, arr):
         return (-1, -1, arr)
 
+    def arr_to_item_tags(self, arr):
+        return (-1, -1, arr)
+
     def person_record_summery(self, author):
         if not author:
             return ""
@@ -207,8 +214,6 @@ class Command(BaseCommand):
         if not parrs:
             print("Warning! No person found for pid " + pid)
             return None
-
-        print("\n" + parrs[0][1])
 
         return Person(
             name=parrs[0][1]
@@ -321,6 +326,19 @@ class Command(BaseCommand):
                 continue
             print("Setting mtm relation for " + str(item) + " and " + str(community))
             item.communities.add(community)
+
+    def import_item_tags(self):
+        for (_, _, sic) in self.dumps_as_objs["search_item_tags"]:
+            _, item_id, tag_id = sic
+            item = self.get_item_by_old_id(item_id)
+            tag = self.get_item_by_old_id(tag_id, "search_tag")
+            if not item or not tag:
+                print("Couldn't find item or tag for mtm relation.")
+                continue
+            if isinstance(item, Community) or isinstance(item, Tag) or isinstance(item, Person):
+                continue
+            print("Setting mtm relation for " + str(item) + " and " + str(tag))
+            item.tags.add(tag)
 
     def get_item_by_old_id(self, q_old_id, table=""):
         for (k, lst) in self.dumps_as_objs.items():

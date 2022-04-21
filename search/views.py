@@ -1,38 +1,29 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views import generic
-from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseBadRequest, HttpResponseNotFound
-from django.contrib.auth import authenticate, login, logout
-from django.core.mail import EmailMultiAlternatives
-from django.utils import timezone
-from django.contrib import messages
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import user_passes_test
-
-from search.models import *
-from search.forms import *
-from search.widgets import *
-from search import utils
-from search import retrieval
-
-from builtins import str
-
 import itertools
-import copy
-import re
 import json
 import logging
-import ldap
 import random
-
-from urllib import parse
+from builtins import str
+from urllib.error import HTTPError
 from urllib.parse import urlencode, quote
-from urllib.request import urlopen, HTTPError
-from datetime import datetime
+from urllib.request import urlopen
 
-from django.conf import settings
+import ldap
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+from django.core.mail import EmailMultiAlternatives
+from django.http import HttpResponse, HttpResponseRedirect, \
+    HttpResponseBadRequest, HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+from django.views import generic
+
+from search import retrieval
+from search import utils
+from search.forms import *
+from search.models import *
+from search.widgets import *
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL
@@ -52,10 +43,12 @@ def check_profile_completed(func):
     def inner(request, *args, **kwargs):
         if request.user.is_authenticated and request.user.person.about == "":
             messages.add_message(request, 50,
-                "<a href='%s'>Click here to complete your profile</a>" % (
-                    reverse('edit_me')))
+                                 "<a href='%s'>Click here to complete your profile</a>" % (
+                                     reverse('edit_me')))
         return func(request, *args, **kwargs)
+
     return inner
+
 
 def sorted_tags(tags):
     p, t, c, o = [], [], [], []
@@ -160,8 +153,8 @@ class InformationView(StarfishDetailView):
         for tag in self.object.tags.all():
             def get_summary():
                 try:
-                    #page_info = wikipedia.page(tag.handle, auto_suggest=True, redirect=True)
-                    #url = "https://en.wikipedia.org/?curid=" + page_info.pageid
+                    # page_info = wikipedia.page(tag.handle, auto_suggest=True, redirect=True)
+                    # url = "https://en.wikipedia.org/?curid=" + page_info.pageid
 
                     tag_dict = tag.dict_format()
                     summary = tag_dict['summary'] if not tag_dict['info'] else \
@@ -170,7 +163,7 @@ class InformationView(StarfishDetailView):
                         'tag_dict': tag.dict_format(),
                         'tag': tag.handle,
                         'raw_tag': tag,
-                        'summary': summary,#wikipedia.summary(tag.handle, sentences=1),
+                        'summary': summary,  # wikipedia.summary(tag.handle, sentences=1),
                         'title': tag.handle,
                         'url': tag.info_link
                     }
@@ -339,6 +332,18 @@ def invite_collaborator(request):
             item = GoodPractice.objects.get(id=request.POST['id'])
         elif request.POST['type'] == 'U':
             item = UserCase.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'I':
+            item = Information.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'R':
+            item = Project.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'E':
+            item = Event.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'S':
+            item = Glossary.objects.get(id=request.POST['id'])
+        elif request.POST['type'] == 'Q':
+            item = Question.objects.get(id=request.POST['id'])
+        else:
+            return HttpResponseBadRequest()
 
         if person.exists():
             ItemAuthor(person=person.first(), item=item).save()
@@ -431,7 +436,7 @@ def register_user(request):
     form = RegisterForm()
 
     return render(request, 'register.html',
-                  {'form': form, 'errors': errors })
+                  {'form': form, 'errors': errors})
 
 
 def logout_user(request):
@@ -441,11 +446,11 @@ def logout_user(request):
 
 def ivoauth(request):
     callback_url = str(request.build_absolute_uri("ivoauth/callback")) + \
-        "/?ticket={#ticket}"
+                   "/?ticket={#ticket}"
     post_data = [('token', IVOAUTH_TOKEN), ('callback_url', callback_url)]
     try:
         content = json.loads(urlopen(IVOAUTH_URL + "/ticket",
-                    urlencode(post_data).encode("utf-8")).read().decode("utf-8"))
+                                     urlencode(post_data).encode("utf-8")).read().decode("utf-8"))
     except HTTPError:
         logger.error("Invalid url")
         return HttpResponseBadRequest()
@@ -457,13 +462,14 @@ def ivoauth(request):
         logger.debug("IVO authentication failed")
     return HttpResponseBadRequest()
 
+
 def ivoauth_debug(request):
     callback_url = str(request.build_absolute_uri("ivoauth/debug_callback")) + \
-        "/?ticket={#ticket}"
+                   "/?ticket={#ticket}"
     post_data = [('token', IVOAUTH_TOKEN), ('callback_url', callback_url)]
     try:
         content = json.loads(urlopen(IVOAUTH_URL + "/ticket",
-                    urlencode(post_data).encode("utf-8")).decode("utf-8"))
+                                     urlencode(post_data).encode("utf-8")).decode("utf-8"))
     except HTTPError:
         logger.error("Invalid url")
         return HttpResponseBadRequest()
@@ -474,6 +480,7 @@ def ivoauth_debug(request):
     else:
         logger.debug("IVO authentication failed")
     return HttpResponseBadRequest()
+
 
 def ivoauth_debug_callback(request):
     # Retrieve ticket given by ivoauth and use it
@@ -496,6 +503,7 @@ def ivoauth_debug_callback(request):
         external_id = "surfconext/" + attributes["saml:sp:NameID"]["Value"]
         return HttpResponse(external_id)
     return HttpResponseBadRequest()
+
 
 def ivoauth_callback(request):
     # Retrieve ticket given by ivoauth and use it
@@ -533,14 +541,14 @@ def ivoauth_callback(request):
                 subject = "Surfconext login: missing 'givenName'"
                 text_content = "handle: %s\n\n%s" % (person.handle,
                                                      json.dumps(content))
-                from_email = 'warning@'+HOSTNAME
+                from_email = 'warning@' + HOSTNAME
                 to = ADMIN_NOTIFICATION_EMAIL
                 msg = EmailMultiAlternatives(subject, text_content, from_email,
                                              to)
                 msg.send(fail_silently=True)
             else:
                 person.name = first_name + ' ' + surname
-            #displayname = attributes["urn:mace:dir:attribute-def:displayName"][0]
+            # displayname = attributes["urn:mace:dir:attribute-def:displayName"][0]
             person.email = email
             person.public_email = False
             person.external_id = external_id
@@ -760,7 +768,7 @@ def comment(request):
         # This is a hack!
         request.POST._mutable = True
         request.POST['author'] = request.user.person
-        request.POST['title'] = 'comment'    # This is a placeholder
+        request.POST['title'] = 'comment'  # This is a placeholder
         request.POST._mutable = False
         commentform = CommentForm(request.POST)
         if commentform.is_valid():
@@ -868,7 +876,7 @@ def browse(request):
     if selected_community is not None:
         try:
             selected_community = Community.objects.get(
-                    pk=int(selected_community))
+                pk=int(selected_community))
         except Community.DoesNotExist:
             selected_communities = user_communities
         else:
@@ -892,7 +900,7 @@ def browse(request):
     def sorting_key(item):
         if sort == "recent":
             date_ref = datetime.now(timezone.utc)
-            return (item['featured'], date_ref-item['create_date'])
+            return (item['featured'], date_ref - item['create_date'])
         else:
             if item['type'] == "Person":
                 return (item['featured'], item['name'].split(" ")[-1])
@@ -925,6 +933,7 @@ def browse(request):
         'first_active': first_active,
     })
 
+
 @check_profile_completed
 def search(request):
     user_communities = utils.get_user_communities(request.user)
@@ -947,7 +956,7 @@ def search(request):
         def sorting_key(item):
             if sort == "recent":
                 date_ref = datetime.now(timezone.utc)
-                return (item['featured'], date_ref-item['create_date'])
+                return (item['featured'], date_ref - item['create_date'])
             else:
                 if item['type'] == "Person":
                     return (item['featured'], item['name'].split(" ")[-1])
@@ -1020,14 +1029,14 @@ def search(request):
         results_by_type = {}
         special = None
         first_active = ""
-        
+
         used_tags = set([x.tag for x in
-            Item.tags.through.objects.all() if
-                len(set(user_communities)&set(x.item.communities.all()))])
+                         Item.tags.through.objects.all() if
+                         len(set(user_communities) & set(x.item.communities.all()))])
         used_tags_by_type = []
         for tag_type in Tag.TAG_TYPES:
             tags = [tag.handle for tag in used_tags if
-                tag.type == tag_type[0]]
+                    tag.type == tag_type[0]]
             random.shuffle(tags)
             used_tags_by_type.append([
                 tag_type,
@@ -1035,7 +1044,7 @@ def search(request):
             ])
 
     # do not return events that are past due date
-    #if 'Event' in results_by_type:
+    # if 'Event' in results_by_type:
     #    results_by_type['Event'] = [e for e in results_by_type['Event']
     #                                if not e['is_past_due']]
 
@@ -1043,7 +1052,7 @@ def search(request):
 
     if request.user.is_staff:
         new_users = len(Person.objects.filter(draft=True))
-        
+
     pending_invitations = []
 
     if request.user.is_authenticated:
@@ -1051,7 +1060,7 @@ def search(request):
             pending_invitations = ItemAuthor.objects.filter(
                 status='PENDING',
                 person=Person.objects.get(user=request.user))
-        
+
     return render(request, 'index.html', {
         'special': special,
         'results': results_by_type,
@@ -1059,7 +1068,7 @@ def search(request):
         'query': query,
         'dym_query': dym_query,
         'dym_query_raw': dym_query_raw,
-        'cols': 1,      # replaces len(results_by_type)
+        'cols': 1,  # replaces len(results_by_type)
         'first_active': first_active,
         'user_communities': user_communities,
         'community': community,
@@ -1070,6 +1079,7 @@ def search(request):
         'pending_invitations': pending_invitations
     })
 
+
 @user_passes_test(lambda u: u.is_superuser)
 def validate_profiles(request):
     profiles = Person.objects.filter(draft=True)
@@ -1077,11 +1087,14 @@ def validate_profiles(request):
         'profiles': profiles
     })
 
+
 def privacy_policy(request):
     return render(request, 'privacy-policy.html')
 
+
 def terms_of_service(request):
     return render(request, 'terms-of-service.html')
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def validate_accept(request):
@@ -1094,6 +1107,7 @@ def validate_accept(request):
 
     return redirect('/validate')
 
+
 @user_passes_test(lambda u: u.is_superuser)
 def validate_reject(request):
     _id = request.GET.get('person', -1)
@@ -1104,6 +1118,7 @@ def validate_reject(request):
 
     return redirect('/validate')
 
+
 @login_required
 def accept_invitation(request):
     ia = get_object_or_404(ItemAuthor, pk=request.GET.get('pk', -1))
@@ -1111,6 +1126,7 @@ def accept_invitation(request):
     ia.save()
 
     return redirect('/')
+
 
 @login_required
 def decline_invitation(request):

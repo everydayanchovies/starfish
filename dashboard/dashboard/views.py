@@ -1,17 +1,15 @@
-from django.db.models import Q
-from django.template.context_processors import csrf
 from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
 from django.forms.models import modelform_factory
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from django.template.context_processors import csrf
 from django.views import generic
-from django.http import HttpResponse, HttpResponseBadRequest, \
-    HttpResponseRedirect
-from search.models import *
-from django.conf import settings
-from search.forms import *
-from search.utils import parse_tags, get_user_communities
-from dashboard.forms import *
 
+from dashboard.forms import *
+from search.forms import *
+from search.models import *
+from search.utils import parse_tags, get_user_communities
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 TAG_REQUEST_MESSAGE = settings.TAG_REQUEST_MESSAGE
@@ -26,9 +24,9 @@ class QuerySetMock:
 
     def __getattribute__(self, key):
         if key == "all" or key == "l":
-            return super(QuerySetMock,self).__getattribute__(key)
+            return super(QuerySetMock, self).__getattribute__(key)
         else:
-            qs = super(QuerySetMock,self).__getattribute__('qs')
+            qs = super(QuerySetMock, self).__getattribute__('qs')
             return qs.__getattribute__(key)
 
     def all(self):
@@ -37,7 +35,7 @@ class QuerySetMock:
 
 def contribute(request):
     return render(request, 'contribute_options.html',
-        {'user_communities': get_user_communities(request.user)})
+                  {'user_communities': get_user_communities(request.user)})
 
 
 def contributions(request):
@@ -46,7 +44,8 @@ def contributions(request):
         c = {}
 
         colab = ItemAuthor.objects.filter(person=person, status='ACCEPTED').values_list('item', flat=True)
-        c['goodpractice'] = GoodPractice.objects.filter(Q(author=person) | Q(id__in=colab)).order_by('title') #| ItemAuthor.objects.filter(person=person.email).values('item')
+        c['goodpractice'] = GoodPractice.objects.filter(Q(author=person) | Q(id__in=colab)).order_by(
+            'title')  # | ItemAuthor.objects.filter(person=person.email).values('item')
         c['information'] = Information.objects.filter(Q(author=person) | Q(id__in=colab)).order_by('title')
         c['project'] = Project.objects.filter(Q(author=person) | Q(id__in=colab)).order_by('title')
         c['event'] = Event.objects.filter(Q(author=person) | Q(id__in=colab)).order_by('title')
@@ -65,7 +64,7 @@ def edit_me(request):
     if request.user.is_authenticated:
         person = Person.objects.get(user=request.user)
         PersonForm = modelform_factory(Person,
-         fields=('headline', 'email', 'website', 'public_email', 'about', 'photo'))
+                                       fields=('headline', 'email', 'website', 'public_email', 'about', 'photo'))
         if request.method == "POST":
             if request.FILES.get('photo'):
                 person.photo = request.FILES.get('photo')
@@ -165,7 +164,7 @@ class EditForm(generic.View):
             # Communities
             user_communities = get_user_communities(request.user)
             communities = Community.objects.filter(pk__in=[c.id for c in
-                user_communities])
+                                                           user_communities])
 
             # Existing object
             elems = request.path.strip("/").split("/")
@@ -204,15 +203,14 @@ class EditForm(generic.View):
                 c = {
                     "links": Item.objects.order_by('type'),
                     "form": form,
-                     "all_communities": Community.objects.all(),
-                     "form_communities": communities,
-                     "user_communities": user_communities,
-                     "is_new": True
+                    "all_communities": Community.objects.all(),
+                    "form_communities": communities,
+                    "user_communities": user_communities,
+                    "is_new": True
                 }
 
-
             c.update(csrf(request))
-            #renderer=form.renderer
+            # renderer=form.renderer
             return render(request, self.template_name, c, )
         else:
             # TODO usability
@@ -225,7 +223,7 @@ class EditForm(generic.View):
             # Communities
             user_communities = get_user_communities(request.user)
             communities = Community.objects.filter(pk__in=[c.id for c in
-                user_communities])
+                                                           user_communities])
 
             # Existing object
             elems = request.path.strip("/").split("/")
@@ -237,7 +235,7 @@ class EditForm(generic.View):
                 if obj.author:
                     post_v["author"] = obj.author.id
                 form = self.form_class(post_v, instance=obj,
-                        communities=communities)
+                                       communities=communities)
             except ValueError:  # New object
                 form = self.form_class(post_v, communities=communities)
             if form.is_valid():
@@ -269,7 +267,7 @@ class EditForm(generic.View):
                 redirect = self.success_url + obj_id
 
                 messages.add_message(request, messages.INFO,
-                     ITEM_UPDATED_MSG.format(self.model_class.__name__))
+                                     ITEM_UPDATED_MSG.format(self.model_class.__name__))
                 return HttpResponseRedirect(redirect)
             else:
                 return render(request, self.template_name, {

@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,7 +200,7 @@
     {% for message in messages %}
         {% if message.level == 50 %}
             <div id="msg_success" class="alert alert-info"
-                 style='margin-top: -30px; text-align: center; font-size: larger; padding: 5px; font-weight: bold;'>
+                 style='text-align: center; font-size: larger; padding: 5px; font-weight: bold;'>
                 <i class="glyphicon glyphicon-info-sign"></i>
                 {{ message|safe }}
             </div>

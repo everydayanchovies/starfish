@@ -1,21 +1,21 @@
-from django.forms import widgets
-from search.signals import unknown_tag_signal
-from search.utils import parse_tags
-from search.models import Tag
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.forms import widgets
+
+from search.models import Tag
+from search.signals import unknown_tag_signal
+from search.utils import parse_tags
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 
 
 class TagInput(widgets.Widget):
-
     class Media:
         js = ('jquery-ui.min.js', 'tag-it.js', 'tagit_search_input.js')
         css = {'all': ('jquery-ui-1.10.3.custom.css', 'jquery.tagit.css')}
 
     def render(self, name, value, attrs=None, renderer=None):
-        #final_attrs = self.build_attrs(attrs)
+        # final_attrs = self.build_attrs(attrs)
         tid = "id_" + name
         delim = SEARCH_SETTINGS['syntax']['DELIM']
         tsymb = SEARCH_SETTINGS['syntax']['TAG']
@@ -27,8 +27,8 @@ class TagInput(widgets.Widget):
         script = "<script type='text/javascript'>"
         script += "$(function(){make_tagit(\"%s\",\"%s\");})" % (tid, delim)
         script += "</script>"
-        return script + "<input class='form-control' type='text' " +\
-            "name='%s' id='%s' value='%s' />" % (name, tid, value)
+        return script + "<input class='form-control' type='text' " + \
+               "name='%s' id='%s' value='%s' />" % (name, tid, value)
 
     def value_from_datadict(self, data, files, name):
         raw_value = data.get(name, None)
@@ -42,6 +42,7 @@ class TagInput(widgets.Widget):
             return [tag.id for tag in tags]
         else:
             return None
+
 
 class NonAdminFilteredSelectMultiple(FilteredSelectMultiple):
     @property

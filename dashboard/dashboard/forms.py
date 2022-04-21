@@ -1,5 +1,5 @@
-from django.forms import Form, CharField
 from django.core.validators import validate_email
+from django.forms import Form, CharField
 
 
 class ChangePasswordForm(Form):
@@ -30,6 +30,6 @@ class ChangeEmailForm(Form):
             newemail = cleaned_data['newemail']
             confirmnewemail = cleaned_data['confirmnewemail']
             if confirmnewemail != newemail:
-                self.errors['confirmnewemail'] =\
+                self.errors['confirmnewemail'] = \
                     "Both email addresses must be equal!"
         return cleaned_data

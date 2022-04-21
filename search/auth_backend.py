@@ -8,6 +8,7 @@ class PasswordlessAuthBackend(ModelBackend):
     """Log in to Django without providing a password.
 
     """
+
     def authenticate(self, username=None):
         try:
             return User.objects.get(username=username)
@@ -23,7 +24,7 @@ class PasswordlessAuthBackend(ModelBackend):
 
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        try: #to allow authentication through phone number or any other field, modify the below statement
+        try:  # to allow authentication through phone number or any other field, modify the below statement
             print(username)
             print([u.email for u in User.objects.all()])
             user = User.objects.get(Q(username__iexact=username) | Q(email__iexact=username))

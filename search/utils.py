@@ -1,9 +1,13 @@
-from django.conf import settings
-from search.models import Tag, Person, Community
-import string, random
 import functools
+import random
+import string
+
+from django.conf import settings
+
+from search.models import Tag, Person, Community
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
+
 
 def get_user_communities(user):
     if user.is_authenticated:
@@ -11,7 +15,8 @@ def get_user_communities(user):
         return expand_communities(communities)
     return [Community.objects.get(pk=1)]
 
-#def expand_communities(qs):
+
+# def expand_communities(qs):
 def expand_communities(communities):
     communities_list = set([])
     parents = set([])
@@ -24,7 +29,8 @@ def expand_communities(communities):
         expanded_parents = expand_communities(parents)
     else:
         expanded_parents = []
-    return list(set( list(communities_list) + parents+expanded_parents))
+    return list(set(list(communities_list) + parents + expanded_parents))
+
 
 def parse_tags(query):
     tag_tokens, person_tokens, literal_tokens = parse_query(query)
@@ -37,8 +43,9 @@ def parse_tags(query):
                     'person': [t[0] for t in person_tokens
                                if not t in handles],
                     'literal': [t[0] for t in literal_tokens if not
-                                t in handles]}
+                    t in handles]}
     return tags, unknown_tags
+
 
 def parse_query(query):
     """
@@ -74,11 +81,11 @@ def parse_query(query):
             # If symbol is the escape character
             elif symbol == syntax['ESCAPE']:
                 # If a special character is being escaped
-                if i < len(query)-1 and query[i+1] in syntax.values():
+                if i < len(query) - 1 and query[i + 1] in syntax.values():
                     # Add the escape character + the escaped character
                     #  as normal symbols. The escape character will be taken
                     #  out later.
-                    token = query[i]+query[i+1]
+                    token = query[i] + query[i + 1]
                     # Jump over the escaped character
                     i += 1
                     # Update span to prevent it from including this character
@@ -126,7 +133,7 @@ def parse_query(query):
                 # If literal token was not ended
                 if token is not None:
                     # Add token to literals
-                    literals.append((token, (a, a + len(token)+1)))
+                    literals.append((token, (a, a + len(token) + 1)))
                     # Clear token
                     token = None
             # If symbol is something else
@@ -167,9 +174,9 @@ def parse_query(query):
             # If symbol is the escape character
             elif symbol == syntax['ESCAPE']:
                 # If a special character is being escaped
-                if i < len(query)-1 and query[i+1] in syntax.values():
+                if i < len(query) - 1 and query[i + 1] in syntax.values():
                     # Add the character as normal symbol
-                    token = query[i+1]
+                    token = query[i + 1]
                     # Jump over the escaped character
                     i += 1
                 else:
@@ -345,14 +352,14 @@ def did_you_mean(tags, persons, literals, query, template="%s"):
         if item is None:
             handle = ""
         elif isinstance(item, Person):
-            handle = s_person+item.handle
+            handle = s_person + item.handle
         else:
-            handle = s_tag+item.handle
+            handle = s_tag + item.handle
 
         # Construct new dym_query with suggestion in place
-        dym_query = "%s%s%s" % (dym_query[:tspan[0]+offset],
+        dym_query = "%s%s%s" % (dym_query[:tspan[0] + offset],
                                 template % (handle,),
-                                dym_query[tspan[1]+offset:])
+                                dym_query[tspan[1] + offset:])
         # Update offset in dym_query coordinates
         offset += len(template % (handle,)) - len(query[tspan[0]:tspan[1]])
 

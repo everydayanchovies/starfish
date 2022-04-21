@@ -1,8 +1,8 @@
 # Django settings for starfish project.
 
 
-import os
 import json
+import os
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -10,8 +10,12 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BASE_DIR) + os.sep + "Starfish-master"
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # JSON-based secrets
-secrets = json.load(open(os.path.join(PROJECT_ROOT, "secrets.json")))
+with open(os.path.join(PROJECT_ROOT, "secrets.json")) as file:
+    secrets = json.load(file)
+
 
 def get_secret(setting, secrets=secrets):
     """Get the secret variable or return explicit exception."""
@@ -21,13 +25,14 @@ def get_secret(setting, secrets=secrets):
         error_msg = "Set the {0} environment variable".format(setting)
         raise ImproperlyConfigured(error_msg)
 
+
 SEARCH_SETTINGS = {
     'syntax': {
-        "DELIM": "|", # Delimeter of tokens
-        "PERSON": "@", # Start of person token
-        "TAG": "#", # Start of tag token
-        "LITERAL": "\"", # Start of literal group (ignores DELIM, PERSON and TAG)
-        "ESCAPE": "\\" # Symbol to indicate the next symbol is a normal symbol
+        "DELIM": "|",  # Delimeter of tokens
+        "PERSON": "@",  # Start of person token
+        "TAG": "#",  # Start of tag token
+        "LITERAL": "\"",  # Start of literal group (ignores DELIM, PERSON and TAG)
+        "ESCAPE": "\\"  # Symbol to indicate the next symbol is a normal symbol
     },
     'allowPartialPersonHandles': True,
     'alwaysIncludeMentionedPersons': True
@@ -48,19 +53,18 @@ DEBUG = True
 
 SERVER_EMAIL = get_secret("SERVER_EMAIL")
 ADMINS = (get_secret("ADMIN_EMAIL")
-)
+          )
 
 MANAGERS = ADMINS
 
-
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.postgresql',
-        #'NAME': get_secret('DB_NAME'),
-        #'USER': get_secret('DB_USER'),
-        #'PASSWORD': get_secret('DB_PWD'),
-        #'HOST': '',
-        #'PORT': get_secret('DB_PORT'),
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': get_secret('DB_NAME'),
+        # 'USER': get_secret('DB_USER'),
+        # 'PASSWORD': get_secret('DB_PWD'),
+        # 'HOST': '',
+        # 'PORT': get_secret('DB_PORT'),
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'db.sqlite',
     }
@@ -123,12 +127,11 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("SECRET_KEY")
-
 
 # template settings
 TEMPLATES = [
@@ -137,7 +140,7 @@ TEMPLATES = [
         'DIRS': [
             # insert your TEMPLATE_DIRS here
         ],
-        'APP_DIRS' : True,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
@@ -180,7 +183,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'search',
-	'dashboard',
+    'dashboard',
     'widget_tweaks',
     'bootstrap3_datetime',
     'ckeditor',
@@ -190,19 +193,19 @@ INSTALLED_APPS = (
 CKEDITOR_UPLOAD_PATH = "uploads/"
 
 CKEDITOR_CONFIGS = {
-   'default': {
-       'toolbar_Full': [
+    'default': {
+        'toolbar_Full': [
             ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', 'SpellChecker', 'Undo', 'Redo'],
             ['Link', 'Unlink', 'Anchor'],
             ['Image', 'Flash', 'Table', 'HorizontalRule'],
             ['TextColor', 'BGColor'],
             ['Smiley', 'SpecialChar'], ['Source'],
-            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-            ['NumberedList','BulletedList'],
-            ['Indent','Outdent'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['NumberedList', 'BulletedList'],
+            ['Indent', 'Outdent'],
             ['Maximize'],
         ],
-   },
+    },
 }
 
 SERIALIZATION_MODULES = {'json-unicode': 'serializers.json_unicode'}
@@ -260,22 +263,22 @@ PASSWORD_HASHERS = (
 )
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL='/'
+LOGIN_REDIRECT_URL = '/'
 
 ITEM_TYPES = (
-              ('G', 'Good Practice'),
-              ('R', 'Project'),
-              ('E', 'Event'),
-              ('S', 'Glossary'),
-              ('I', 'Information'),
-              ('P', 'Person'),
-              ('Q', 'Question'),
-              ('U', 'User Case'),
-              )
+    ('G', 'Good Practice'),
+    ('R', 'Project'),
+    ('E', 'Event'),
+    ('S', 'Glossary'),
+    ('I', 'Information'),
+    ('P', 'Person'),
+    ('Q', 'Question'),
+    ('U', 'User Case'),
+)
 
 IVOAUTH_TOKEN = get_secret("IVO_TOKEN")
 IVOAUTH_URL = "https://auth.innovatievooronderwijs.nl"
 AUTHENTICATION_BACKENDS = (
-            'search.auth_backend.EmailBackend',
-            #'search.auth_backend.PasswordlessAuthBackend',
+    'search.auth_backend.EmailBackend',
+    # 'search.auth_backend.PasswordlessAuthBackend',
 )

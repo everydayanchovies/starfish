@@ -1,12 +1,13 @@
-from django.db import models
-from django.db.models import Q
-
-from django.conf import settings
-from search.models import Item, Tag, Person, Community
-from search import utils
 import functools
 
+from django.conf import settings
+from django.db.models import Q
+
+from search import utils
+from search.models import Item, Tag, Person
+
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
+
 
 def retrieve(query, dict_format=False, communities_list=None):
     '''
@@ -100,9 +101,9 @@ def retrieve(query, dict_format=False, communities_list=None):
     if not communities_list:
         communities_list = []
     else:
-        communities_list = functools.reduce(lambda x, y: x+y,
-                map(lambda c: c.get_parents()+[c], communities_list))
-    community_q = functools.reduce(lambda q,c: q|Q(communities=c), communities_list, Q())
+        communities_list = functools.reduce(lambda x, y: x + y,
+                                            map(lambda c: c.get_parents() + [c], communities_list))
+    community_q = functools.reduce(lambda q, c: q | Q(communities=c), communities_list, Q())
     items = items.filter(community_q)
 
     # Add literal contraints

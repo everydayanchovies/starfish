@@ -1,5 +1,5 @@
 secrets.json
-*.sqlite
+*.sqlite*
 myenviromen
 media
 venv*

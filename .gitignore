@@ -5,3 +5,4 @@ media
 **/venv*
 *__pycache__/
 .log
+search/static/imported_media

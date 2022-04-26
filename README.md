@@ -73,6 +73,13 @@ You are now ready to run the development server:
 (venv) $ python manage.py runserver
 ```
 
+### Run production server
+
+``` shell
+./scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1
+```
+
+
 ### Using your user account...
 To use your user account, first login to the admin page and create a person for
 the user.

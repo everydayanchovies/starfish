@@ -4,4 +4,7 @@ set -x
 
 cd /home/ubuntu/Starfish-master
 
-/usr/bin/python3 manage.py runserver starfish-education.eu:8000 &
+source venvdj3/bin/activate
+
+uwsgi --ini uwsgi_prod.ini
+

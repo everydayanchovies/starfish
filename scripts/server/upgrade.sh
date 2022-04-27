@@ -16,4 +16,5 @@ python manage.py collectstatic --noinput
 # exit python venv
 deactivate
 
-./scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1
+echo "To serve, run"
+echo "./scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1"

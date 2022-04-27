@@ -205,6 +205,8 @@ CKEDITOR_CONFIGS = {
             ['Indent', 'Outdent'],
             ['Maximize'],
         ],
+        'allowedContent': True,
+        'extraAllowedContent': 'iframe[*]',
     },
 }
 

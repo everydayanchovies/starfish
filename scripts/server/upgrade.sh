@@ -8,13 +8,17 @@ cp db.sqlite /home/ubuntu/db_backups/misc/db_$(date +%F-%T).sqlite
 
 git pull --ff-only
 
+set +x
 # enter python venv
 source venvdj3/bin/activate
+set -x
 
 python manage.py collectstatic --noinput
 
+set +x
 # exit python venv
 deactivate
+set -x
 
 set +x
 

@@ -16,5 +16,7 @@ python manage.py collectstatic --noinput
 # exit python venv
 deactivate
 
+unset -x
+
 echo "To serve, run"
-echo "./scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1"
+echo "/home/ubuntu/Starfish-master/scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1"

@@ -4,6 +4,8 @@ set -x
 
 cd /home/ubuntu/Starfish-master
 
+cp db.sqlite /home/ubuntu/db_backups/misc/db_$(date +%F-%T).sqlite
+
 git pull --ff-only
 
 pkill uwsgi

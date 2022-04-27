@@ -8,6 +8,12 @@ cp db.sqlite /home/ubuntu/db_backups/misc/db_$(date +%F-%T).sqlite
 
 git pull --ff-only
 
-pkill uwsgi
+# enter python venv
+source venvdj3/bin/activate
+
+python manage.py collectstatic
+
+# exit python venv
+deactivate
 
 ./scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1

@@ -4,7 +4,7 @@ set -x
 
 cd /home/ubuntu/Starfish-master
 
-source venvdj3/bin/activate
+pkill uwsgi
 
 uwsgi --ini uwsgi_prod.ini
 

@@ -11,7 +11,7 @@ git pull --ff-only
 # enter python venv
 source venvdj3/bin/activate
 
-python manage.py collectstatic
+python manage.py collectstatic --noinput
 
 # exit python venv
 deactivate

@@ -4,7 +4,7 @@ set -x
 
 cd /home/ubuntu/Starfish-master
 
-pkill uwsgi
+sudo pkill -f uwsgi -9
 
 uwsgi --ini uwsgi_prod.ini
 

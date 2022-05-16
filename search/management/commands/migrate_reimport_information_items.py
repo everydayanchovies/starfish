@@ -4,14 +4,10 @@ import shutil
 from datetime import datetime
 
 from search.models import (
-    Project,
+    Information,
     Person,
     Community,
-    Event,
     Glossary,
-    GoodPractice,
-    Information,
-    Question,
     Tag,
     Item
 )
@@ -26,17 +22,12 @@ class Command(BaseCommand):
         parser.add_argument("path_to_db", type=str)
 
     def handle(self, *args, **options):
-        # Order matters! Person and glossary must be the first and second entries in this array.
         dump_filenames = [
             "export_person",  # item_ptr_id name
             "search_glossary",  # item_ptr_id title text author_id
             "search_community",  # id name part_of_id
             "search_tag",  # id type handle alias_of_id glossary_id
-            "search_event",  # item_ptr_id title text date location author_id contact_id
-            "search_goodpractice",  # item_ptr_id title text author_id
             "search_information",  # item_ptr_id title text author_id
-            "search_project",  # item_ptr_id title text begin_date end_date author_id contact_id
-            "search_question",  # item_ptr_id title text author_id
             "search_item_communities", # id item_id community_id
             "search_item_tags", # id item_id tag_id
         ]
@@ -67,7 +58,7 @@ class Command(BaseCommand):
             getattr(self, fn)()
 
         for filename in dump_filenames:
-            print("Imported " + str(len(self.dumps_as_objs[filename])) + " " + filename)
+            print("Processed " + str(len(self.dumps_as_objs[filename])) + " " + filename)
 
     def sql_to_strings(self, filepath):
         lines = []
@@ -102,44 +93,11 @@ class Command(BaseCommand):
     BEGIN array to object
     """
 
-    def arr_to_project(self, arr):
-        item_ptr_id, title, text, begin_date, end_date, author_id, contact_id = arr
-        author = self.person_for_id(author_id)
-        return (item_ptr_id, -1, Project(
-            draft=False,
-            title=title,
-            text=text + self.person_record_summery(author),
-            author=self.get_natasa_person(),
-            contact=self.get_natasa_person(),
-            begin_date=begin_date,
-            end_date=end_date,
-        ))
-
     def arr_to_person(self, arr):
         item_ptr_id, name = arr
         return (item_ptr_id, -1, Person(
             id=item_ptr_id,
             name=name,
-        ))
-
-    def arr_to_community(self, arr):
-        cid, name, part_of_id = arr
-        return (cid, -1, Community(
-            name=name,
-            part_of_id=part_of_id,
-        ))
-
-    def arr_to_event(self, arr):
-        item_ptr_id, title, text, date, location, author_id, contact_id = arr
-        author = self.person_for_id(author_id)
-        return (item_ptr_id, -1, Event(
-            draft=False,
-            title=title,
-            text=text + self.person_record_summery(author),
-            date=date,
-            location=location,
-            author=self.get_natasa_person(),
-            contact=self.get_natasa_person(),
         ))
 
     def arr_to_glossary(self, arr):
@@ -152,34 +110,11 @@ class Command(BaseCommand):
             author=self.get_natasa_person(),
         ))
 
-    def arr_to_goodpractice(self, arr):
-        item_ptr_id, title, text, author_id = arr
-        author = self.person_for_id(author_id)
-        return (item_ptr_id, -1, GoodPractice(
-            draft=False,
-            title=title,
-            text=text + self.person_record_summery(author),
-            author=self.get_natasa_person(),
-        ))
-
-    def arr_to_information(self, arr):
-        item_ptr_id, title, text, author_id = arr
-        author = self.person_for_id(author_id)
-        return (item_ptr_id, -1, Information(
-            draft=False,
-            title=title,
-            text=text + self.person_record_summery(author),
-            author=self.get_natasa_person(),
-        ))
-
-    def arr_to_question(self, arr):
-        item_ptr_id, title, text, author_id = arr
-        author = self.person_for_id(author_id)
-        return (item_ptr_id, -1, Question(
-            draft=False,
-            title=title,
-            text=text + self.person_record_summery(author),
-            author=self.get_natasa_person(),
+    def arr_to_community(self, arr):
+        cid, name, part_of_id = arr
+        return (cid, -1, Community(
+            name=name,
+            part_of_id=part_of_id,
         ))
 
     def arr_to_tag(self, arr):
@@ -192,6 +127,16 @@ class Command(BaseCommand):
             handle=handle,
             alias_of_id=alias_of_id,
             glossary=glossary,
+        ))
+
+    def arr_to_information(self, arr):
+        item_ptr_id, title, text, author_id = arr
+        author = self.person_for_id(author_id)
+        return (item_ptr_id, -1, Information(
+            draft=False,
+            title=title,
+            text=text + self.person_record_summery(author),
+            author=self.get_natasa_person(),
         ))
 
     def arr_to_item_communities(self, arr):
@@ -237,6 +182,7 @@ class Command(BaseCommand):
 
         return gliveobjs[0]
 
+
     """
     BEGIN import object
     """
@@ -253,13 +199,6 @@ class Command(BaseCommand):
                 oi.save()
                 self.dumps_as_objs[table_name][i] = (old_id, oi.id, oi)
 
-    def import_project(self):
-        self.import_items(
-            "search_project",
-            Project,
-            lambda a, b: a.title == b.title
-        )
-
     def import_person(self):
         # legally we are not allowed to import people
         # without their consent
@@ -272,38 +211,10 @@ class Command(BaseCommand):
             lambda a, b: a.name == b.name
         )
 
-    def import_event(self):
-        self.import_items(
-            "search_event",
-            Event,
-            lambda a, b: a.title == b.title
-        )
-
     def import_glossary(self):
         self.import_items(
             "search_glossary",
             Glossary,
-            lambda a, b: a.title == b.title
-        )
-
-    def import_goodpractice(self):
-        self.import_items(
-            "search_goodpractice",
-            GoodPractice,
-            lambda a, b: a.title == b.title
-        )
-
-    def import_information(self):
-        self.import_items(
-            "search_information",
-            Information,
-            lambda a, b: a.title == b.title
-        )
-
-    def import_question(self):
-        self.import_items(
-            "search_question",
-            Question,
             lambda a, b: a.title == b.title
         )
 
@@ -313,6 +224,23 @@ class Command(BaseCommand):
             Tag,
             lambda a, b: a.handle == b.handle
         )
+
+    def import_information(self):
+        live_items = Information.objects.all()
+        for i, (old_id, new_id, oi) in enumerate(self.dumps_as_objs["search_information"]):
+            for oj in live_items:
+                if oi.title == oj.title:
+                    print("Overwriting item " + str(oj))
+                    oj.draft = oi.draft
+                    oj.author = oi.author
+                    oj.text = oi.text
+                    oj.save()
+                    self.dumps_as_objs["search_information"][i] = (old_id, oj.id, oj)
+                    break
+            else:
+                print("Adding item " + str(oi))
+                oi.save()
+                self.dumps_as_objs["search_information"][i] = (old_id, oi.id, oi)
 
     def import_item_communities(self):
         for (_, _, sic) in self.dumps_as_objs["search_item_communities"]:
@@ -325,6 +253,8 @@ class Command(BaseCommand):
             if isinstance(item, Community) or isinstance(item, Tag) or isinstance(item, Person):
                 continue
             print("Setting mtm relation for " + str(item) + " and " + str(community))
+            print(item)
+            print(community)
             item.communities.add(community)
 
     def import_item_tags(self):

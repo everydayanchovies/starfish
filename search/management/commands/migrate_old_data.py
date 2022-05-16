@@ -185,8 +185,6 @@ class Command(BaseCommand):
     def arr_to_tag(self, arr):
         tid, ttype, handle, alias_of_id, glossary_id = arr
         glossary = self.glossary_for_id(glossary_id)
-        if not glossary:
-            return None
         return (tid, -1, Tag(
             type=ttype,
             handle=handle,
@@ -332,8 +330,11 @@ class Command(BaseCommand):
             _, item_id, tag_id = sic
             item = self.get_item_by_old_id(item_id)
             tag = self.get_item_by_old_id(tag_id, "search_tag")
-            if not item or not tag:
-                print("Couldn't find item or tag for mtm relation.")
+            if not item:
+                print("Couldn't find item for mtm relation.")
+                continue
+            if not tag:
+                print("Couldn't find tag for mtm relation.")
                 continue
             if isinstance(item, Community) or isinstance(item, Tag) or isinstance(item, Person):
                 continue

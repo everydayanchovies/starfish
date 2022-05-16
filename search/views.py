@@ -1030,6 +1030,7 @@ def search(request):
         special = None
         first_active = ""
 
+        # FIXME: this is godawful slow
         used_tags = set([x.tag for x in
                          Item.tags.through.objects.all() if
                          len(set(user_communities) & set(x.item.communities.all()))])

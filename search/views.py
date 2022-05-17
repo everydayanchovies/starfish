@@ -1030,10 +1030,22 @@ def search(request):
         special = None
         first_active = ""
 
-        # FIXME: this is godawful slow
-        used_tags = set([x.tag for x in
-                         Item.tags.through.objects.all() if
-                         len(set(user_communities) & set(x.item.communities.all()))])
+        used_tags = set(Tag.objects.raw("""
+        SELECT t.id, t.handle, t.type
+        FROM search_tag as t
+        WHERE EXISTS (
+            SELECT sic.id, sic.item_id, sic.community_id
+            FROM search_item_communities as sic
+            WHERE sic.community_id IN (""" + ",".join([str(uc.id) for uc in user_communities]) + """)
+                AND EXISTS (
+                    SELECT sit.id, sit.item_id, sit.tag_id
+                    FROM search_item_tags as sit
+                    WHERE sit.item_id = sic.item_id
+                        AND t.id = sit.tag_id
+            )
+        )
+        """))
+
         used_tags_by_type = []
         for tag_type in Tag.TAG_TYPES:
             tags = [tag.handle for tag in used_tags if

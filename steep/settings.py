@@ -164,7 +164,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'steep.urls'
@@ -173,7 +172,6 @@ ROOT_URLCONF = 'steep.urls'
 WSGI_APPLICATION = 'steep.wsgi.application'
 
 INSTALLED_APPS = (
-    'debug_toolbar',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -286,7 +284,3 @@ AUTHENTICATION_BACKENDS = (
     'search.auth_backend.EmailBackend',
     # 'search.auth_backend.PasswordlessAuthBackend',
 )
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-]

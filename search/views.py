@@ -7,8 +7,6 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode, quote
 from urllib.request import urlopen
 
-from django.views.decorators.cache import cache_page
-
 import ldap
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -870,7 +868,7 @@ def tag(request, handle):
     else:
         return redirect('/?q=' + symb + handle)
 
-@cache_page(60 * 60 * 24)
+
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)

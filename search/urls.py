@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import include, path, re_path
 
 from search import views, apis
 
@@ -76,4 +76,6 @@ urlpatterns = [re_path(r'^$',
                        views.ivoauth_callback, name='ivoauth_callback'),
                re_path(r'ivoauth$',
                        views.ivoauth, name='ivoauth'),
+
+    path('__debug__/', include('debug_toolbar.urls')),
                ]

@@ -137,6 +137,15 @@ class StarfishDetailView(generic.DetailView):
         context['community_links'] = links
         return context
 
+    def get_object(self, queryset=None):
+        o = super().get_object(queryset=queryset)
+
+        if o.author and o.author.is_ghost:
+            o.author.handle = "John Dee"
+            o.author.id = 1
+
+        return o
+
 
 class InformationView(StarfishDetailView):
     model = Information

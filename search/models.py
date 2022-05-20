@@ -383,6 +383,8 @@ class Person(Item):
     # Optional introduction given by the user on registry
     introduction = models.TextField(null=True, blank=True)
 
+    is_ghost = models.BooleanField(default=False, verbose_name="Make this author anonymous")
+
     class Meta:
         ordering = ["name"]
 

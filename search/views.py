@@ -125,23 +125,27 @@ class StarfishDetailView(generic.DetailView):
         user_communities = set(utils.get_user_communities(self.request.user))
         context['user_communities'] = user_communities
 
-        # Filter links for communities
-        links = filter(
-            lambda x: len(set(x.communities.all()) & user_communities) > 0,
-            self.get_object().links.all())
+        def links_filter(link):
+            if len(set(link.communities.all()) & user_communities) == 0:
+                return False
+            if link.type == 'E' and link.downcast().is_past_due:
+                return False
+            if link.type == 'P' and link.dict_format()['is_ghost']:
+                return False
+            return True
 
-        # Remove events that have already passed
-        links = set(filter(
-            lambda x: not x.downcast().is_past_due if x.type == "E" else True,
-            links))
-        context['community_links'] = links
+        # Filter links for communities
+        context['community_links'] = set(filter(links_filter, self.get_object().links.all()))
+
         return context
 
     def get_object(self, queryset=None):
         o = super().get_object(queryset=queryset)
 
         if o.author and o.author.is_ghost:
-            o.author.handle = "John Dee"
+            o.author.handle = "john.dee"
+            o.author.name = "John Dee"
+            o.author.email = "johndee@example.com"
             o.author.id = 1
 
         return o
@@ -902,10 +906,14 @@ def browse(request):
 
     results = {}
 
-    # Ensure unique results
+    # Append the dict_format representation of the item to the results
     for item in items:
-        # Append the dict_format representation of the item to the results
-        results[item.id] = item.dict_format()
+        item_dict = item.dict_format()
+        # hide anonymous authors
+        if item_dict['type'] == 'Person' and item_dict['is_ghost']:
+            continue
+        results[item.id] = item_dict
+
     results = results.values()
 
     def sorting_key(item):

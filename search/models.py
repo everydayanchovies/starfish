@@ -421,6 +421,7 @@ class Person(Item):
                     "website": self.website,
                     "summary": self.summary(),
                     "email": self.email,
+                    "is_ghost": self.is_ghost,
                 }
             )
             return obj

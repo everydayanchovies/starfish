@@ -29,6 +29,9 @@ Now install dependencies:
 (venv) $ pip install -r requirements.txt
 ```
 
+### Cache
+Install and setup a local instance of memcached before serving.
+
 ### Settings
 add secrets.json file in root of project with following inside:
 

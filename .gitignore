@@ -8,3 +8,4 @@ media
 search/static/imported_media
 *.sock
 scratch/
+.DS_Store

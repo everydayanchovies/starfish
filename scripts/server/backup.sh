@@ -9,4 +9,4 @@ set +x
 source venvdj3/bin/activate
 set -x
 
-python manage.py backup_database
+python manage.py backup_database /home/ubuntu/Starfish-master/db.sqlite

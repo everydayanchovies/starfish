@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
 from html.parser import HTMLParser
-
 import ckeditor_uploader.fields as ck_field
 import wikipedia
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -119,7 +119,7 @@ class Tag(models.Model):
             info_dict = {
                 "title": self.glossary.title,
                 "text": self.glossary.text,
-                "author": self.glossary.author,
+                "authors": [a.dict_format() for a in self.glossary.authors.all()],
                 "summary": self.glossary.summary(max_len=480),
             }
         return {
@@ -383,7 +383,9 @@ class Person(Item):
     # Optional introduction given by the user on registry
     introduction = models.TextField(null=True, blank=True)
 
-    is_ghost = models.BooleanField(default=False, verbose_name="Make this author anonymous")
+    is_ghost = models.BooleanField(
+        default=False, verbose_name="Make this author anonymous"
+    )
 
     class Meta:
         ordering = ["name"]
@@ -444,16 +446,19 @@ class TextItem(Item):
     title = models.CharField(max_length=255)
     # The WYSIWYG text of the good practice
     text = ck_field.RichTextUploadingField(verbose_name="Text")
-    # The person who created the good practice
+    # TODO authors: remove this field (replaced with field authors)
+    # but first run command to migrate data from author field to authors
     author = models.ForeignKey(
         "Person", on_delete=models.SET_NULL, null=True, related_name="+"
     )
+    # The person who created the good practice
+    authors = models.ManyToManyField(Person)
 
     def display_author(self):
-        if self.author is not None:
-            return self.author.name
-        else:
-            return "<No author>"
+        if authors := self.authors.all():
+            return ", ".join([a.name for a in authors])
+
+        return "<No author>"
 
     display_author.short_description = "Author"
 
@@ -474,7 +479,7 @@ class TextItem(Item):
             obj = obj.copy()
             obj.update(
                 {
-                    "author": self.author.dict_format(),
+                    "authors": [a.dict_format() for a in self.authors.all()],
                     "title": self.title,
                     "summary": self.summary(),
                     "text": self.text,
@@ -497,13 +502,14 @@ class TextItem(Item):
         # On create, not update
         if self.pk is None:
             super(TextItem, self).save(*args, **kwargs)
-            # Add self to author links
-            if not self in self.author.links.all():
-                self.author.link(self)
-                self.author.save()
 
-        # Link to the author
-        self.link(self.author)
+        # Add self to author links and vica versa
+        for author in [a for a in self.authors.all() if self not in a.links.all()]:
+
+            author.link(self)
+            author.save()
+
+            self.link(author)
 
         super(TextItem, self).save(*args, **kwargs)
 
@@ -541,7 +547,7 @@ class CpdActivity(models.Model):
             obj = obj.copy()
             obj.update(
                 {
-                    "author": self.author,
+                    "authors": [a.dict_format() for a in self.authors.all()],
                     "title": self.title,
                     "text": self.text,
                     "summary": self.summary(),
@@ -578,7 +584,7 @@ class UserCase(TextItem):
             obj.update(
                 {
                     "wallpaper": self.wallpaper,
-                    "author": self.author.dict_format(),
+                    "authors": [a.dict_format() for a in self.authors.all()],
                     "title": self.title,
                     "summary": self.summary(),
                     "text": self.text,
@@ -610,7 +616,7 @@ class Project(TextItem):
             obj = obj.copy()
             obj.update(
                 {
-                    "author": self.author,
+                    "authors": [a.dict_format() for a in self.authors.all()],
                     "title": self.title,
                     "text": self.text,
                     "summary": self.summary(),
@@ -649,7 +655,7 @@ class Event(TextItem):
         else:
             obj.update(
                 {
-                    "author": self.author,
+                    "authors": [a.dict_format() for a in self.authors.all()],
                     "title": self.title,
                     "text": self.text,
                     "is_past_due": self.is_past_due,

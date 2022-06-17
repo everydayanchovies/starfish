@@ -3,83 +3,47 @@
 {% load static %}
 
 {% block header %}
-    <script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
 
-    {{ form.media }}
+{{ form.media }}
 {% endblock %}
 
 {% block content %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
 
-    {% if is_new %}
-        <style>ul.errorlist {
-            display: none;
-        }</style>
-    {% endif %}
+{% if is_new %}
+<style>
+    ul.errorlist {
+        display: none;
+    }
+</style>
+{% endif %}
 
-    <script>
-        $(document).ready(function () {
-            $('.js-example-basic-multiple').select2();
+<script>
+    $(document).ready(function () {
+        $('.js-example-basic-multiple').select2();
 
-            alertify.defaults.transition = "slide";
-            alertify.defaults.theme.ok = "btn btn-primary";
-            alertify.defaults.theme.cancel = "btn btn-danger";
-            alertify.defaults.theme.input = "form-control";
-        });
-    </script>
+        alertify.defaults.transition = "slide";
+        alertify.defaults.theme.ok = "btn btn-primary";
+        alertify.defaults.theme.cancel = "btn btn-danger";
+        alertify.defaults.theme.input = "form-control";
+    });
+</script>
 
-    <div class="container item-container">
-        <div class="row well">
+<div class="container item-container">
+    <div class="row well">
         <h1>Good Practice</h1>
 
         <form method="post">
             {% csrf_token %}
 
             <div class="row">
-                {% if obj.author %}
-                    <div class="col-xs-12" style="margin-bottom: 20px;">
-                        <strong>Authors</strong>
-
-                        <div class="row">
-                            <div class="col-xs-12 col-md-6">
-                                <div class="input-group">
-                                    <span class="input-group-addon" id="sizing-addon2">Owner</span>
-
-                                    <input type="text" class="form-control" value="{{ obj.author.name }}" disabled
-                                           aria-describedby="sizing-addon2">
-                                </div>
-                            </div>
-
-                            <div class="col-xs-12 col-md-6">
-
-                                <button class="btn btn-info" onclick="alertify.prompt(
-                                        'Send invitation', 'Enter the person\'s email below. If the person exists he/she will receive an invitation to contribute.', '',
-                                        function(evt, value) {
-                                        $.post('/invite-collaborator', {'invitee': value, 'csrfmiddlewaretoken': '{{ csrf_token }}', 'type': '{{ obj.type }}', 'id': '{{ obj.id }}'}, function(data) {
-                                        alertify.success('Invitation send to ' + value);
-                                        }).fail( function(xhr, textStatus, errorThrown) {
-                                        alertify.error('Failed to send invitation to ' + value);
-                                        });
-                                        },
-                                        function() { alertify.error('Invitation cancelled') });" type="button"
-                                >
-                                    Invite contributor
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <ul>
-                            {%for author in obj.authors %}
-                                <li>{{author.person}}</li>
-                            {%endfor%}
-                        </ul>
-                    </div>
-                {% endif %}
+                {% include "./partials/authors.html" with obj=obj %}
 
                 <div class="col-md-10 col-xs-10">
                     <strong>Title of the Good Practice</strong>
@@ -96,7 +60,7 @@
             <div class="row">
                 <div class="col-xs-12" style="margin-top: 20px;">
                     <strong>Content</strong>
-                    <br/>
+                    <br />
                     {{ form.text.errors }}
                     {{ form.text }}
                 </div>
@@ -126,8 +90,7 @@
 
             {% include 'disclaimer.html' %}
 
-            <input style="margin-top: 15px;"
-                   class="btn btn-default pull-right" type="submit" value="Contribute"/>
+            <input style="margin-top: 15px;" class="btn btn-default pull-right" type="submit" value="Contribute" />
         </form>
     </div>
     {% include 'licence.html' %}

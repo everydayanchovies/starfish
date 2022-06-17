@@ -1,42 +1,16 @@
 {% extends 'base.html' %}
-	{% block content %}
+{% block content %}
 
-<div class="row well" style='margin-bottom: 0px;'>
-	<div class="col-lg-10">
-		<h1 style='margin: 0px;'>
-			{{ event.title }}
-		</h1>
-		<span class="text-muted">Posted by <a href="/person/{{ event.author.id }}">{{ syntax.PERSON }}{{ event.author.handle }}</a> on {{ event.create_date }}</span>
-
-		{% if event.exp_date %}
-			<span class="text-muted pull-right">Valid until {{ event.exp_date }}</span>
-		{% endif %}
-	</div>
-	<div class="col-lg-2" style='padding-top: 20px'>
-		<p>
-    <span class='btn btn-primary' style='width:100%;'
-      onclick="load_questionform('{{event.type}}', '{{event.id}}', '#questionbox')">
-				Ask a question
-	  </span>
-		</p>
-      {% if search %}
-      <p>
-        <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>
-          Search
-        </a>
-      </p>
-      {% endif %}
-	</div>
-</div>
+{% include 'partials/item_header_alt.html' with item=event %}
 
 {% include 'tag_list.html' %}
 
-<div class="row" style="margin-top: 15px;" >
-		{% if event.text %}
-			{% if community_links|length %}
-				<div class="col-lg-9 highlight">
-			{% else %}
-				<div class="col-lg-12 highlight">
+<div class="row" style="margin-top: 15px;">
+	{% if event.text %}
+	{% if community_links|length %}
+	<div class="col-lg-9 highlight">
+		{% else %}
+		<div class="col-lg-12 highlight">
 			{% endif %}
 			<div class="pull-right well">
 				{% if event.is_past_due %}
@@ -49,30 +23,30 @@
 			{% autoescape off %}
 			{{ event.text }}
 			{% endautoescape %}
-			<hr style='margin-bottom: 10px;'/>
-      {% include 'licence.html' %}
-			</div>
+			<hr style='margin-bottom: 10px;' />
+			{% include 'licence.html' %}
+		</div>
 		{% endif %}
 		{% if community_links|length %}
-			{% if event.text %}
-				<div class="col-lg-3" style='padding-right: 0px;'>
-					<div class='highlight' style='padding: 20px'>
-			{% else %}
+		{% if event.text %}
+		<div class="col-lg-3" style='padding-right: 0px;'>
+			<div class='highlight' style='padding: 20px'>
+				{% else %}
 				<div class="col-lg-12 highlight">
-			{% endif %}
-			<h3 style='margin-top: 0px;'>See also</h3>
-      {% include 'link_list.html' with item=event%}
-			{% if event.about %}
+					{% endif %}
+					<h3 style='margin-top: 0px;'>See also</h3>
+					{% include 'link_list.html' with item=event%}
+					{% if event.about %}
 				</div>
-			{% endif %}
+				{% endif %}
 			</div>
-		{% endif %}
-</div>
-<div class="row">
-	<div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;"  >
-		<a name="question"></a>
-	</div>
-</div>
+			{% endif %}
+		</div>
+		<div class="row">
+			<div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;">
+				<a name="question"></a>
+			</div>
+		</div>
 
-{% endblock %}
-{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}
+		{% endblock %}
+		{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

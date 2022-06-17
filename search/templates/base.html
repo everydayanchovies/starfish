@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118966130-1"></script>
@@ -41,199 +42,195 @@
 
     <title>{% block title %}Starfish{% endblock %}</title>
 
-    <!-- Bootstrap core CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-
-    <!-- Custom styles for this template -->
-    <link href="{% static 'search.css' %}" rel="stylesheet">
-    <link href="{% static 'css/bttn.css' %}" rel="stylesheet">
     <link href="{% static 'bootstrap.icon-large.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/quill.snow.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bttn.css' %}" rel="stylesheet">
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'search.css' %}" rel="stylesheet">
+    <link href="{% static 'css/normalize.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/slick.css' %}" rel="stylesheet">
+    <link href="{% static 'css/slick-theme.css' %}" rel="stylesheet">
+
     <script src="{% static 'jquery-2.0.3.min.js' %}"></script>
-    <script src="{% static 'api.js' %}"></script>
-    <script src="{% static 'interface.js' %}"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.5.0/slick-theme.css" rel="stylesheet"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.5.0/slick.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.5.0/slick.css" rel="stylesheet"/>
+    <script src="{% static 'js/slick.js' %}"></script>
+    <script defer src="{% static 'api.js' %}"></script>
+    <script defer src="{% static 'interface.js' %}"></script>
+    <script src="{% static 'js/quill.js' %}"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
 
     {% block header %}{% endblock %}
 </head>
 
 <body>
-<div id="lightbox" style="display: none">
-    <div class="container"
-         onclick="event.cancelBubble=true;">
-        <div id="lightbox_content_wrap" class="container" style="display: block;">
-            <div id="lightbox_content" style="margin: 40px;">
+    <div id="lightbox" style="display: none">
+        <div class="container" onclick="event.cancelBubble=true;">
+            <div id="lightbox_content_wrap" class="container" style="display: block;">
+                <div id="lightbox_content" style="margin: 40px;">
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{% if user.is_authenticated %}
+    {% if user.is_authenticated %}
     {% if user.person.draft %}
-        <div class="alert alert-warning" role="alert" style="margin: 0; border-radius: 0;">
-            Your account has not been verified by a staff member. Once you have been verified you are able to post new
-            contributions.
-        </div>
+    <div class="alert alert-warning" role="alert" style="margin: 0; border-radius: 0;">
+        Your account has not been verified by a staff member. Once you have been verified you are able to post new
+        contributions.
+    </div>
     {% endif %}
-{% endif %}
+    {% endif %}
 
-<!-- Fixed navbar -->
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation"
-     style="background-color: rgb(20, 50, 70); height: 61px; border: none;">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="{% url 'index' %}">
-						<span style="position: relative; font-size: 100%; top: 6px; color: white;">
-                            Starfish
-                        </span>
-            </a>
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div class="collapse navbar-collapse" id="navbar-collapse">
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation"
+        style="background-color: rgb(20, 50, 70); height: 61px; border: none;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'index' %}">
+                    <span style="position: relative; font-size: 100%; top: 6px; color: white;">
+                        Starfish
+                    </span>
+                </a>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse">
 
-            {% if user_communities|length > 1 %}
+                {% if user_communities|length > 1 %}
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-									<span class="btn btn-success btn-sm" style="width: 100%">
-                                        <i class="glyphicon glyphicon-th-list"></i>
-                                        Browse
-                                    </span>
+                            <span class="btn btn-success btn-sm" style="width: 100%">
+                                <i class="glyphicon glyphicon-th-list"></i>
+                                Browse
+                            </span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a href="{% url 'browse' %}">Everything</a></li>
                             {% for community in user_communities %}
-                                <li><a href="{% url 'browse' %}/?community={{ community.id }}">{{ community.name }}</a>
-                                </li>
+                            <li><a href="{% url 'browse' %}/?community={{ community.id }}">{{ community.name }}</a>
+                            </li>
                             {% endfor %}
                         </ul>
                     </li>
                 </ul>
-            {% else %}
+                {% else %}
                 <ul class="nav navbar-nav">
                     <li>
                         <a href="{% url 'browse' %}">
-								<span class="btn btn-success btn-sm"
-                                      style="width: 100%; background-color: rgb(200, 180, 70); border: none; border-radius: 50px;">
-									<i class="glyphicon glyphicon-th-list"></i>
-									Browse
-								</span>
+                            <span class="btn btn-success btn-sm"
+                                style="width: 100%; background-color: rgb(200, 180, 70); border: none; border-radius: 50px;">
+                                <i class="glyphicon glyphicon-th-list"></i>
+                                Browse
+                            </span>
                         </a>
                     </li>
                 </ul>
-            {% endif %}
-            {% if user.is_authenticated %}
+                {% endif %}
+                {% if user.is_authenticated %}
                 <ul id="account-div" class="nav navbar-nav navbar-right">
-            {% else %}
-                <ul id="account-div" style='display:none'
-                    class="nav navbar-nav navbar-right">
-            {% endif %}
+                    {% else %}
+                    <ul id="account-div" style='display:none' class="nav navbar-nav navbar-right">
+                        {% endif %}
 
-            <li><a href="/dashboard/contribute">
-								<span class="btn btn-sm btn-link" style="width: 100%; color: white;">
-									Contribute
-								</span>
-            </a></li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-									<span class="btn btn-sm btn-primary" style="width: 100%">
-									  <i class="glyphicon glyphicon-user"></i>
-										Account
-									</span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="/dashboard/me">Edit My Profile</a></li>
-                    <li><a href="/dashboard/contributions">
-                        My Contributions
-                    </a></li>
-                    <li><a href="/dashboard/settings">
-                        Account settings
-                    </a></li>
-                    <li>
-                        <a href='/logout'>Logout</a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-            </ul>
-            {% if user.is_authenticated %}
-                <ul id="no-account-div" style='display:none'
-                    class="nav navbar-nav navbar-right">
-            {% else %}
-                <ul id="no-account-div" class="nav navbar-nav navbar-right">
-            {% endif %}
+                        <li><a href="/dashboard/contribute">
+                                <span class="btn btn-sm btn-link" style="width: 100%; color: white;">
+                                    Contribute
+                                </span>
+                            </a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="btn btn-sm btn-primary" style="width: 100%">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                    Account
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/dashboard/me">Edit My Profile</a></li>
+                                <li><a href="/dashboard/contributions">
+                                        My Contributions
+                                    </a></li>
+                                <li><a href="/dashboard/settings">
+                                        Account settings
+                                    </a></li>
+                                <li>
+                                    <a href='/logout'>Logout</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                    </ul>
+                    {% if user.is_authenticated %}
+                    <ul id="no-account-div" style='display:none' class="nav navbar-nav navbar-right">
+                        {% else %}
+                        <ul id="no-account-div" class="nav navbar-nav navbar-right">
+                            {% endif %}
 
-            <li>
-                <a href="/login">
-								<span class="btn btn-primary"
-                                      style="width: 100%; background-color: transparent; border: none;">
-									Login
-								</span>
-                </a>
-            </li>
+                            <li>
+                                <a href="/login">
+                                    <span class="btn btn-primary"
+                                        style="width: 100%; background-color: transparent; border: none;">
+                                        Login
+                                    </span>
+                                </a>
+                            </li>
 
-            <li>
-                <a href="/register">
-								<span class="btn btn-primary"
-                                      style="width: 100%; background-color: transparent; border: none;">
-									Register
-								</span>
-                </a>
-            </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-{% if messages %}
-    {% for message in messages %}
-        {% if message.level == 50 %}
-            <div id="msg_success" class="alert alert-info"
-                 style='text-align: center; font-size: larger; padding: 5px; font-weight: bold;'>
-                <i class="glyphicon glyphicon-info-sign"></i>
-                {{ message|safe }}
+                            <li>
+                                <a href="/register">
+                                    <span class="btn btn-primary"
+                                        style="width: 100%; background-color: transparent; border: none;">
+                                        Register
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
             </div>
-        {% endif %}
+        </div>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    {% if message.level == 50 %}
+    <div id="msg_success" class="alert alert-info"
+        style='text-align: center; font-size: larger; padding: 5px; font-weight: bold;'>
+        <i class="glyphicon glyphicon-info-sign"></i>
+        {{ message|safe }}
+    </div>
+    {% endif %}
     {% endfor %}
-{% endif %}
+    {% endif %}
 
-<div id="wrap" style="margin: 0; padding: 0;">
-    <!-- Begin page content -->
-    <div class="container">
-        <div id="msg_success" class="alert alert-success" style='display:none'>
+    <div id="wrap" style="margin: 0; padding: 0;">
+        <!-- Begin page content -->
+        <div class="container">
+            <div id="msg_success" class="alert alert-success" style='display:none'>
+            </div>
+            <div id="msg_info" class="alert alert-info" style='display:none'>
+            </div>
+            <div id="msg_error" class="alert alert-danger" style='display:none'>
+            </div>
         </div>
-        <div id="msg_info" class="alert alert-info" style='display:none'>
-        </div>
-        <div id="msg_error" class="alert alert-danger" style='display:none'>
-        </div>
+
+        {% block content %}
+        {% endblock %}
     </div>
 
-    {% block content %}
-    {% endblock %}
-</div>
-
-<footer>
-    <div class="container">
-        <p class="text-muted credit">&copy; Starfish Education
-            - icons by <a target=_blank href="http://www.glyphicons.com">glyphicons.com</a></p>
-    </div>
     <footer>
+        <div class="container">
+            <p class="text-muted credit">&copy; Starfish Education
+                - icons by <a target=_blank href="http://www.glyphicons.com">glyphicons.com</a></p>
+        </div>
+        <footer>
 
 
-        <script src="{% static 'js/bootstrap.min.js' %}"></script>
-        <script src="{% static 'js/alertify.min.js' %}"></script>
-        <link href="{% static 'css/alertify.min.css' %}" rel="stylesheet">
+            <script src="{% static 'js/bootstrap.min.js' %}"></script>
+            <script src="{% static 'js/alertify.min.js' %}"></script>
+            <link href="{% static 'css/alertify.min.css' %}" rel="stylesheet">
 </body>
+
 </html>
 {# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

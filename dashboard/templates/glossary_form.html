@@ -3,21 +3,25 @@
 {% load static %}
 
 {% block header %}
-    <script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
-    {{ form.media }}
+<script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
+{{ form.media }}
 {% endblock %}
 
 
 {% block content %}
 
 {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-  {% endfor %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
 {% if is_new %}
-<style>ul.errorlist {display: none;}</style>
+<style>
+    ul.errorlist {
+        display: none;
+    }
+</style>
 {% endif %}
 
 <script>
@@ -32,117 +36,79 @@
 </script>
 
 <div class="container item-container">
-        <div class="row well">
-            <h1>Glossary</h1>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
+    <div class="row well">
+        <h1>Glossary</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-                <div class="row">
-                    {% if obj.author %}
-                        <div class="col-xs-12" style="margin-bottom: 20px;">
-                            <strong>Authors</strong>
+            <div class="row">
 
-                            <div class="row">
-                                <div class="col-xs-12 col-md-6">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="sizing-addon2">Owner</span>
+                {% include "./partials/authors.html" with obj=obj %}
 
-                                        <input type="text" class="form-control" value="{{ obj.author.name }}" disabled
-                                               aria-describedby="sizing-addon2">
-                                    </div>
-                                </div>
-
-                                <div class="col-xs-12 col-md-6">
-
-                                    <button class="btn btn-info" onclick="alertify.prompt(
-                                            'Send invitation', 'Enter the person\'s email below. If the person exists he/she will receive an invitation to contribute.', '',
-                                            function(evt, value) {
-                                            $.post('/invite-collaborator', {'invitee': value, 'csrfmiddlewaretoken': '{{ csrf_token }}', 'type': '{{ obj.type }}', 'id': '{{ obj.id }}'}, function(data) {
-                                            alertify.success('Invitation send to ' + value);
-                                            }).fail( function(xhr, textStatus, errorThrown) {
-                                            alertify.error('Failed to send invitation to ' + value);
-                                            });
-                                            },
-                                            function() { alertify.error('Invitation cancelled') });" type="button"
-                                    >
-                                        Invite contributor
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <ul>
-                                {%for author in obj.authors %}
-                                    <li>{{author.person}}</li>
-                                {%endfor%}
-                            </ul>
+                <div class="col-sm-12 col-md-8">
+                    <div class="row">
+                        <div class="col-md-10 col-xs-10">
+                            <strong>Glossary Title</strong>
+                            {{ form.title.errors }}
+                            {{ form.title|attr:"class:form-control" }}
                         </div>
-                    {% endif %}
-                    
-                    <div class="col-sm-12 col-md-8">
-                        <div class="row">
-                            <div class="col-md-10 col-xs-10">
-                                <strong>Glossary Title</strong>
-                                {{ form.title.errors }}
-                                {{ form.title|attr:"class:form-control" }}
-                            </div>
-                            <div class="col-md-2 col-xs-12">
-                                <strong>Draft</strong>
-                                {{ form.draft.errors }}
-                                {{ form.draft }}
-                            </div>
+                        <div class="col-md-2 col-xs-12">
+                            <strong>Draft</strong>
+                            {{ form.draft.errors }}
+                            {{ form.draft }}
                         </div>
                     </div>
                 </div>
-                
-                <br/>
-                
-                <div class="row">
-                    <div class="col-lg-12">
-                        <strong>Text</strong><br/>
-             			{{ form.text.errors }}
-             			{{ form.text }}
-        			</div>
-        		</div>
-        		<div class="row">
-                    
-                    <div class="col-sm-8 col-md-9">
-                        {{ form.contact.label_tag }}
-                        {{ form.contact.errors }}
-                        {{ form.contact|attr:"class:form-control" }}
-                    </div>
+            </div>
+
+            <br />
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <strong>Text</strong><br />
+                    {{ form.text.errors }}
+                    {{ form.text }}
                 </div>
+            </div>
+            <div class="row">
+
+                <div class="col-sm-8 col-md-9">
+                    {{ form.contact.label_tag }}
+                    {{ form.contact.errors }}
+                    {{ form.contact|attr:"class:form-control" }}
+                </div>
+            </div>
 
 
-                <div class="row">
-                    <div class="col-lg-12">
-                        {{ form.tags.label_tag }}<br/>
-                        {{ form.tags.errors }}
-                        {{ form.tags|safe }}
-                    </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    {{ form.tags.label_tag }}<br />
+                    {{ form.tags.errors }}
+                    {{ form.tags|safe }}
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-lg-6 col-md-12">
-                        {{ form.links.label_tag }}<br/>
-                        {{ form.links.errors }}
-                        {{ form.links|safe }}
-                    </div>
-                    <div class="col-lg-6 col-md-12">
-                        {{ form.communities.label_tag }}<br/>
-                        {{ form.communities.errors }}
-                        {{ form.communities|attr:"class:form-control" }}
-                    </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-12">
+                    {{ form.links.label_tag }}<br />
+                    {{ form.links.errors }}
+                    {{ form.links|safe }}
                 </div>
+                <div class="col-lg-6 col-md-12">
+                    {{ form.communities.label_tag }}<br />
+                    {{ form.communities.errors }}
+                    {{ form.communities|attr:"class:form-control" }}
+                </div>
+            </div>
 
-                <div> 
-                    {% include 'disclaimer.html' %}
-                </div>
-                
-                <input style="margin-top: 40px;"
-                       class="btn btn-default pull-right" type="submit" value="Contribute"/>
-            </form>
-        </div>
-    {% include 'licence.html' %}
+            <div>
+                {% include 'disclaimer.html' %}
+            </div>
+
+            <input style="margin-top: 40px;" class="btn btn-default pull-right" type="submit" value="Contribute" />
+        </form>
     </div>
+    {% include 'licence.html' %}
+</div>
 {% endblock %}
 {# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

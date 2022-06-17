@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search', '0001_initial'),
+        ("search", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='person',
-            name='is_ghost',
-            field=models.BooleanField(default=False, verbose_name='Make anything related to this author invisible'),
+            model_name="person",
+            name="is_ghost",
+            field=models.BooleanField(
+                default=False,
+                verbose_name="Make anything related to this author invisible",
+            ),
         ),
     ]

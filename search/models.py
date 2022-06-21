@@ -446,11 +446,6 @@ class TextItem(Item):
     title = models.CharField(max_length=255)
     # The WYSIWYG text of the good practice
     text = ck_field.RichTextUploadingField(verbose_name="Text")
-    # TODO authors: remove this field (replaced with field authors)
-    # but first run command to migrate data from author field to authors
-    author = models.ForeignKey(
-        "Person", on_delete=models.SET_NULL, null=True, related_name="+"
-    )
     # The person who created the good practice
     authors = models.ManyToManyField(Person)
 

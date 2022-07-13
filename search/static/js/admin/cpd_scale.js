@@ -13,16 +13,26 @@ window.onload = () => {
 
   const makeLabel = () => {
     if (scaleParentList.value) {
+      return (
+        scaleParentList.selectedOptions[0].label.split(" - ")[0] +
+        scaleInput.value
+      );
+    } else {
+      return scaleTypeList.selectedOptions[0].value + "-" + scaleInput.value;
+    }
+  };
+
+  const toggleScaleParent = () => {
+    if (scaleParentList.value) {
       scaleParentListContainer.style.display = "none";
-      return scaleParentList.selectedOptions[0].label + scaleInput.value;
     } else {
       scaleParentListContainer.style.display = "block";
-      return scaleTypeList.selectedOptions[0].value + "-" + scaleInput.value;
     }
   };
 
   const updateLabel = () => {
     titleH2.textContent = "Scale label: " + makeLabel();
+    toggleScaleParent();
   };
 
   scaleParentList.onchange = updateLabel;

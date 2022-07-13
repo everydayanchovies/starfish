@@ -126,6 +126,14 @@ class CPDScale(models.Model):
     def __str__(self):
         return f"{self.get_label()} - {self.title}"
 
+    def save(self, *args, **kwargs):
+        super(CPDScale, self).save(*args, **kwargs)
+
+        # create related tag
+        if not Tag.objects.filter(type=Tag.TT_CPD, handle=self.get_label()):
+            tag = Tag(type=Tag.TT_CPD, handle=self.get_label())
+            tag.save()
+
     class Meta:
         verbose_name = "CPD Scale"
         verbose_name_plural = "CPD Scales"
@@ -146,11 +154,17 @@ class CPDQuestion(models.Model):
 
 
 class Tag(models.Model):
+    TT_PEDAGOGY = "P"
+    TT_TECHNOLOGY = "T"
+    TT_CONTENT = "C"
+    TT_CONTEXT = "O"
+    TT_CPD = "D"
     TAG_TYPES = (
-        ("P", "Pedagogy"),
-        ("T", "Technology"),
-        ("C", "Content"),
-        ("O", "Context/Topic"),
+        (TT_PEDAGOGY, "Pedagogy"),
+        (TT_TECHNOLOGY, "Technology"),
+        (TT_CONTENT, "Content"),
+        (TT_CONTEXT, "Context/Topic"),
+        (TT_CPD, "Special/CPD"),
     )
     # The type of this tag, used for coloring
     type = models.CharField(max_length=1, choices=TAG_TYPES)

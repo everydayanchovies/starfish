@@ -84,6 +84,67 @@ def cleanup_for_search(raw_text):
     return text
 
 
+class CPDClassification(models.Model):
+    scales = models.ManyToManyField("CPDScale", blank=True)
+    description = models.TextField()
+
+    def __str__(self):
+        return (
+            ", ".join([s.get_label() for s in self.scales.all()])
+            + " - "
+            + self.description[:100]
+        )
+
+    class Meta:
+        verbose_name = "CPD Classification"
+        verbose_name_plural = "CPD Classifications"
+
+
+class CPDScale(models.Model):
+    ST_COMPETENCES = "P1"
+    ST_ATTITUDES = "P2"
+    ST_ACTIVITIES = "P3"
+    SCALE_TYPE_CHOICES = [
+        (ST_COMPETENCES, "Competences"),
+        (ST_ATTITUDES, "Attitudes"),
+        (ST_ACTIVITIES, "CPD Activities"),
+    ]
+
+    title = models.CharField(max_length=255)
+    scale_parent = models.ForeignKey(
+        "CPDScale", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    scale_type = models.CharField(max_length=50, choices=SCALE_TYPE_CHOICES)
+    scale = models.CharField(max_length=3)
+
+    def get_label(self):
+        if parent := self.scale_parent:
+            return f"{parent.get_label()}{self.scale}"
+        else:
+            return f"{self.scale_type}-{self.scale}"
+
+    def __str__(self):
+        return f"{self.get_label()} - {self.title}"
+
+    class Meta:
+        verbose_name = "CPD Scale"
+        verbose_name_plural = "CPD Scales"
+
+        unique_together = (("scale_type", "scale", "scale_parent"),)
+
+
+class CPDQuestion(models.Model):
+    question = models.CharField(max_length=255)
+    scale = models.ForeignKey("CPDScale", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"({self.scale.get_label()}) {self.question}"
+
+    class Meta:
+        verbose_name = "CPD Question"
+        verbose_name_plural = "CPD Questions"
+
+
 class Tag(models.Model):
     TAG_TYPES = (
         ("P", "Pedagogy"),

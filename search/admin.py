@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms import TextInput
 
 from search.models import *
 
@@ -103,6 +104,19 @@ class TagAdmin(admin.ModelAdmin):
         return s.formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class CPDClassificationAdmin(admin.ModelAdmin):
+    filter_horizontal = ["scales"]
+
+
+class CPDScaleAdmin(admin.ModelAdmin):
+    class Media:
+        js = ("js/admin/cpd_scale.js",)
+
+
+class CPDQuestionAdmin(admin.ModelAdmin):
+    pass
+
+
 class GlossaryAdmin(TextItemAdmin):
     actions = ["duplicate_as_info"]
 
@@ -151,3 +165,6 @@ admin.site.register(Template)
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Item)
 admin.site.register(ItemAuthor)
+admin.site.register(CPDClassification, CPDClassificationAdmin)
+admin.site.register(CPDScale, CPDScaleAdmin)
+admin.site.register(CPDQuestion, CPDQuestionAdmin)

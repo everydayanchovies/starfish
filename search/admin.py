@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.forms import TextInput
+from django.db.models import Q
 
 from search.models import *
 
@@ -109,6 +110,23 @@ class CPDClassificationAdmin(admin.ModelAdmin):
 
 
 class CPDScaleAdmin(admin.ModelAdmin):
+    id = None
+
+    def get_form(self, request, obj=None, **kwargs):
+        # fetch own model id in database
+        if obj:
+            self.id = obj.id
+        return super(CPDScaleAdmin, self).get_form(request, obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # don't allow recursive child-parent relation
+        # aka, hide self from scale_parent dropdown
+        if db_field.name == "scale_parent":
+            kwargs["queryset"] = CPDScale.objects.filter(~Q(id=self.id))
+        return super(CPDScaleAdmin, self).formfield_for_foreignkey(
+            db_field, request, **kwargs
+        )
+
     class Media:
         js = ("js/admin/cpd_scale.js",)
 

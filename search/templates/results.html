@@ -1,7 +1,7 @@
 {% load static %}
 
 <script>
-     var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase'];
+     var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase', 'cpd_classification'];
 
  $(function () {
      if (!!(fa = "{{first_active}}")) {
@@ -127,6 +127,13 @@
                         User Cases <span class="badge pull-right">{{ results.UserCase|length }}</span></a>
                     </li>
                 {% endif %}
+
+
+                {% if results.CPDClassification %}
+                    <li id="tab-results-cpd-classification"><a onclick="showResults('cpd_classification');">
+                        CPD Scenarios <span class="badge pull-right">{{ results.CPDClassification|length }}</span></a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>
@@ -187,6 +194,7 @@
             {% endwith %}
         {% endif %}
     </div>
+
     <div id="usercase-results" style="display:none;">
         {% if results.UserCase %}
             {% with results.UserCase as results %}
@@ -194,6 +202,15 @@
             {% endwith %}
         {% endif %}
     </div>
+
+    <div id="cpd_classification-results" style="display:none;">
+        {% if results.CPDClassification%}
+            {% with results.CPDClassification as results %}
+                {% include 'groups/cpd_classification_results.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+
 {% else %}
     <div class="alert alert-warning col-md-7 col-sm-12 col-md-offset-2">
         No items were matched to your query. Try searching differently, or click <a href='/browse'>here</a> to browse

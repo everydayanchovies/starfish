@@ -4,13 +4,15 @@ from django.conf import settings
 from django.db.models import Q
 
 from search import utils
-from search.models import Item, Tag, Person
+from search.models import CPDClassification, Item, Tag, Person
+
+from datetime import datetime, timezone
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 
 
 def retrieve(query, dict_format=False, communities_list=None):
-    '''
+    """
     A query contains one or more tokens starting with the following symbols
     @ - indicates user
     # - indicates tags
@@ -20,14 +22,15 @@ def retrieve(query, dict_format=False, communities_list=None):
 
     Any query is a conjunction of disjunctions of similar tokens:
     (#tag1 v #tag2 v #tag3) ^ (@user1 v @user2) ^ "literal"
-    '''
+    """
 
     # Parse query into tag, person and literal tokens
     tag_tokens, person_tokens, literal_tokens = utils.parse_query(query)
 
     # Try to find query suggestions
     dym_query, dym_query_raw = utils.did_you_mean(
-        tag_tokens, person_tokens, literal_tokens, query, "<b>%s</b>")
+        tag_tokens, person_tokens, literal_tokens, query, "<b>%s</b>"
+    )
 
     # Extract the tokens, discard location information
     tag_tokens = map(lambda x: x[0], tag_tokens)
@@ -55,8 +58,9 @@ def retrieve(query, dict_format=False, communities_list=None):
     # If tags were used
     if len(tag_tokens) > 0:
         # Fetch all mentioned tags and their aliases
-        tags = Tag.objects.select_related('alias_of').filter(
-            handle__iregex=r'^(' + '|'.join(tag_tokens) + ')$')
+        tags = Tag.objects.select_related("alias_of").filter(
+            handle__iregex=r"^(" + "|".join(tag_tokens) + ")$"
+        )
         # Add tag aliases
         tags_extended = set([])
         for tag in tags:
@@ -81,12 +85,14 @@ def retrieve(query, dict_format=False, communities_list=None):
     # If persons were used
     if len(person_tokens) > 0:
         # If settings set to allow partial person handles
-        if SEARCH_SETTINGS['allowPartialPersonHandles']:
+        if SEARCH_SETTINGS["allowPartialPersonHandles"]:
             persons = Person.objects.filter(
-                handle__iregex=r'^(' + '|'.join(person_tokens) + ')')
+                handle__iregex=r"^(" + "|".join(person_tokens) + ")"
+            )
         else:
             persons = Person.objects.filter(
-                handle__iregex=r'^(' + '|'.join(person_tokens) + ')$')
+                handle__iregex=r"^(" + "|".join(person_tokens) + ")$"
+            )
     else:
         # Else, set persons to be empty
         persons = []
@@ -101,9 +107,12 @@ def retrieve(query, dict_format=False, communities_list=None):
     if not communities_list:
         communities_list = []
     else:
-        communities_list = functools.reduce(lambda x, y: x + y,
-                                            map(lambda c: c.get_parents() + [c], communities_list))
-    community_q = functools.reduce(lambda q, c: q | Q(communities=c), communities_list, Q())
+        communities_list = functools.reduce(
+            lambda x, y: x + y, map(lambda c: c.get_parents() + [c], communities_list)
+        )
+    community_q = functools.reduce(
+        lambda q, c: q | Q(communities=c), communities_list, Q()
+    )
     items = items.filter(community_q)
 
     # Add literal contraints
@@ -133,7 +142,7 @@ def retrieve(query, dict_format=False, communities_list=None):
     items = list(items)
 
     # If settings set to always include mentioned persons
-    if SEARCH_SETTINGS['alwaysIncludeMentionedPersons']:
+    if SEARCH_SETTINGS["alwaysIncludeMentionedPersons"]:
         # If persons were used in filter
         if len(persons) > 0:
             # Add them to the items as well
@@ -163,6 +172,13 @@ def retrieve(query, dict_format=False, communities_list=None):
 
     # Initialize results
     results = {}
+
+    for cpd_classification in CPDClassification.objects.all():
+        item_dict = cpd_classification.dict_format()
+        item_dict["type"] = "CPDClassification"
+        item_dict["featured"] = datetime.now(timezone.utc)
+        item_dict["create_date"] = datetime.now(timezone.utc)
+        results[cpd_classification.id] = item_dict
 
     # Generate search results
     if dict_format:

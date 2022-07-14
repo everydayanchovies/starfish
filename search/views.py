@@ -976,6 +976,13 @@ def browse(request):
             continue
         results[item.id] = item_dict
 
+    for cpd_classification in CPDClassification.objects.all():
+        item_dict = cpd_classification.dict_format()
+        item_dict["type"] = "CPDClassification"
+        item_dict["featured"] = datetime.now(timezone.utc)
+        item_dict["create_date"] = datetime.now(timezone.utc)
+        results[cpd_classification.id] = item_dict
+
     results = results.values()
 
     def sorting_key(item):
@@ -1108,7 +1115,9 @@ def search(request):
                         )
                     else:
                         trimmed.append(t)
-                result["tags"] = itertools.chain(*trimmed)
+                # FIXME fix collapsed tags in browse/search page
+                # and fix CPD tags being filtered out by the logic above
+                # result["tags"] = itertools.chain(*trimmed)
         used_tags_by_type = []
     else:
         query = ""

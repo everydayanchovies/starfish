@@ -108,14 +108,19 @@ class CPDClassification(models.Model):
             return None
 
         # find existing classification
-        if (
-            classifications := CPDClassification.objects.all()
-            .filter(scales__in=[s.id for s in scales])
-            .distinct()
-        ):
+        # I am not sure how best to do this with Django's query API
+        if classifications := [
+            c
+            for c in CPDClassification.objects.all().filter(
+                scales__in=[s.id for s in scales]
+            )  # pre filter to speed things up
+            # and then ensure exact result (slow)
+            if set([s.id for s in c.scales.all()]) == set([s.id for s in scales])
+        ]:
             classification = classifications[0]
+            print(classification)
         else:
-            # create if doesn't exist
+            # create classification if doesn't exist
             classification = CPDClassification()
             classification.save()
             for s in scales:
@@ -142,6 +147,23 @@ class CPDClassification(models.Model):
             + " - "
             + self.description[:100]
         )
+
+    def dict_format(self, obj=None):
+        # Fill dict format at this level
+        # make sure the pass by reference does not cause unexpected results
+        if obj is None:
+            obj = {}
+        obj = obj.copy()
+        obj.update(
+            {
+                "id": self.id,
+                "title": self.title(),
+                "description": self.description,
+                "scales": [s.dict_format() for s in list(self.scales.all())],
+                "tags": [s.tag().dict_format() for s in list(self.scales.all())],
+            }
+        )
+        return obj
 
     class Meta:
         verbose_name = "CPD Classification"
@@ -184,9 +206,32 @@ class CPDScale(models.Model):
         super(CPDScale, self).save(*args, **kwargs)
 
         # create related tag
-        if not Tag.objects.filter(type=Tag.TT_CPD, handle=self.label()):
+        if not self.tag():
             tag = Tag(type=Tag.TT_CPD, handle=self.label())
             tag.save()
+
+    def tag(self):
+        if found_tags := Tag.objects.filter(type=Tag.TT_CPD, handle=self.label()):
+            return found_tags[0]
+        return None
+
+    def dict_format(self, obj=None):
+        # Fill dict format at this level
+        # make sure the pass by reference does not cause unexpected results
+        if obj is None:
+            obj = {}
+        obj = obj.copy()
+        obj.update(
+            {
+                "id": self.id,
+                "title": self.title,
+                "scale_parent": self.scale_parent.dict_format()
+                if self.scale_parent
+                else "",
+                "scale_type": self.scale_type,
+            }
+        )
+        return obj
 
     class Meta:
         verbose_name = "CPD Scale"
@@ -713,6 +758,9 @@ class UserCase(TextItem):
         cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
+
+        # this function creates the cpd classification as a side effect
+        _ = self.get_cpd_classification()
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the

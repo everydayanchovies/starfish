@@ -700,6 +700,20 @@ class UserCase(TextItem):
 
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
+    def save(self, *args, **kwargs):
+        super(UserCase, self).save(*args, **kwargs)
+
+        # delete all relations with CPD tags
+        cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
+        for cpd_tag in cpd_tags:
+            self.tags.remove(cpd_tag)
+
+        # reconstruct CPD tag relations
+        cpd_scales = [q.scale.label() for q in self.cpd_questions.all()]
+        cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
+        for cpd_tag in cpd_tags:
+            self.tags.add(cpd_tag)
+
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
         client.

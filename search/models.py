@@ -88,6 +88,19 @@ class CPDClassification(models.Model):
     scales = models.ManyToManyField("CPDScale", blank=True)
     description = models.TextField()
 
+    def get_title(self):
+        scales = []
+        if competencies := self.scales.all().filter(scale_type=CPDScale.ST_COMPETENCES):
+            scales = competencies
+        elif attitudes := self.scales.all().filter(scale_type=CPDScale.ST_ATTITUDES):
+            scales = attitudes
+        elif activities := self.scales.all().filter(scale_type=CPDScale.ST_ACTIVITIES):
+            scales = activities
+        else:
+            return ""
+
+        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.get_label() for s in scales])})"
+
     def __str__(self):
         return (
             ", ".join([s.get_label() for s in self.scales.all()])

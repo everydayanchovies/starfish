@@ -114,7 +114,9 @@ class CPDScale(models.Model):
     scale_parent = models.ForeignKey(
         "CPDScale", on_delete=models.SET_NULL, null=True, blank=True
     )
-    scale_type = models.CharField(max_length=50, choices=SCALE_TYPE_CHOICES)
+    scale_type = models.CharField(
+        max_length=50, choices=SCALE_TYPE_CHOICES, default=ST_COMPETENCES
+    )
     scale = models.CharField(max_length=3)
 
     def get_label(self):
@@ -127,6 +129,10 @@ class CPDScale(models.Model):
         return f"{self.get_label()} - {self.title}"
 
     def save(self, *args, **kwargs):
+        # if parent_scale is set, inherit its scale_type
+        if parent := self.scale_parent:
+            self.scale_type = parent.scale_type
+
         super(CPDScale, self).save(*args, **kwargs)
 
         # create related tag

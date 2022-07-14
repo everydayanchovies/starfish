@@ -90,6 +90,9 @@ class CPDClassification(models.Model):
 
     @staticmethod
     def GET_DEFINING_SCALES(scales):
+        if not scales:
+            return None
+
         if competencies := [
             s for s in scales if s.scale_type == CPDScale.ST_COMPETENCES
         ]:
@@ -101,6 +104,9 @@ class CPDClassification(models.Model):
 
     @staticmethod
     def FIND_BY_DEFINING_SCALES(scales):
+        if not scales:
+            return None
+
         # find existing classification
         if (
             classifications := CPDClassification.objects.all()

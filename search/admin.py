@@ -80,6 +80,9 @@ class ItemAdmin(admin.ModelAdmin):
                 .order_by("last_name")
             )
 
+        if "cpd_questions" in form.base_fields:
+            self.filter_horizontal.append("cpd_questions")
+
         return form
 
 

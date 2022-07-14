@@ -88,8 +88,37 @@ class CPDClassification(models.Model):
     scales = models.ManyToManyField("CPDScale", blank=True)
     description = models.TextField()
 
-    def get_title(self):
-        scales = []
+    @staticmethod
+    def GET_DEFINING_SCALES(scales):
+        if competencies := [
+            s for s in scales if s.scale_type == CPDScale.ST_COMPETENCES
+        ]:
+            return competencies
+        elif attitudes := [s for s in scales if s.scale_type == CPDScale.ST_ATTITUDES]:
+            return attitudes
+
+        return scales
+
+    @staticmethod
+    def FIND_BY_DEFINING_SCALES(scales):
+        # find existing classification
+        if (
+            classifications := CPDClassification.objects.all()
+            .filter(scales__in=[s.id for s in scales])
+            .distinct()
+        ):
+            classification = classifications[0]
+        else:
+            # create if doesn't exist
+            classification = CPDClassification()
+            classification.save()
+            for s in scales:
+                classification.scales.add(s)
+
+        return classification
+
+    def title(self):
+        # this is faster than using GET_DEFINING_SCALES
         if competencies := self.scales.all().filter(scale_type=CPDScale.ST_COMPETENCES):
             scales = competencies
         elif attitudes := self.scales.all().filter(scale_type=CPDScale.ST_ATTITUDES):
@@ -99,11 +128,11 @@ class CPDClassification(models.Model):
         else:
             return ""
 
-        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.get_label() for s in scales])})"
+        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
 
     def __str__(self):
         return (
-            ", ".join([s.get_label() for s in self.scales.all()])
+            ", ".join([s.label() for s in self.scales.all()])
             + " - "
             + self.description[:100]
         )
@@ -132,14 +161,14 @@ class CPDScale(models.Model):
     )
     scale = models.CharField(max_length=3)
 
-    def get_label(self):
+    def label(self):
         if parent := self.scale_parent:
-            return f"{parent.get_label()}{self.scale}"
+            return f"{parent.label()}{self.scale}"
         else:
             return f"{self.scale_type}-{self.scale}"
 
     def __str__(self):
-        return f"{self.get_label()} - {self.title}"
+        return f"{self.label()} - {self.title}"
 
     def save(self, *args, **kwargs):
         # if parent_scale is set, inherit its scale_type
@@ -149,8 +178,8 @@ class CPDScale(models.Model):
         super(CPDScale, self).save(*args, **kwargs)
 
         # create related tag
-        if not Tag.objects.filter(type=Tag.TT_CPD, handle=self.get_label()):
-            tag = Tag(type=Tag.TT_CPD, handle=self.get_label())
+        if not Tag.objects.filter(type=Tag.TT_CPD, handle=self.label()):
+            tag = Tag(type=Tag.TT_CPD, handle=self.label())
             tag.save()
 
     class Meta:
@@ -165,7 +194,7 @@ class CPDQuestion(models.Model):
     scale = models.ForeignKey("CPDScale", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"({self.scale.get_label()}) {self.question}"
+        return f"({self.scale.label()}) {self.question}"
 
     class Meta:
         verbose_name = "CPD Question"
@@ -659,6 +688,10 @@ class UserCase(TextItem):
 
     cpd_activities = ck_field.RichTextUploadingField(verbose_name="CPD Activities")
 
+    cpd_questions = models.ManyToManyField(
+        "CPDQuestion", blank=True, editable=True, related_name="cpd_questions"
+    )
+
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def dict_format(self, obj=None):
@@ -680,6 +713,11 @@ class UserCase(TextItem):
                 }
             )
             return obj
+
+    def get_cpd_classification(self):
+        all_scales = [q.scale for q in self.cpd_questions.all()]
+        defining_scales = CPDClassification.GET_DEFINING_SCALES(all_scales)
+        return CPDClassification.FIND_BY_DEFINING_SCALES(defining_scales)
 
 
 class Project(TextItem):

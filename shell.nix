@@ -49,6 +49,8 @@ EOF
       if test -f /home/ubuntu/; then
         sh ./scripts/server/serve.sh;
       else
+        pkill -9 memcached;
+        memcached -l localhost -p 11211 &
         sf runserver;
       fi
     }

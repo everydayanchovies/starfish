@@ -2,46 +2,23 @@
 
 with pkgs;
 
-let
-  my-python = pkgs.python39;
-  python-with-my-packages = my-python.withPackages (p: with p; [
-    wheel
-    # TODO try to get this moved over to requirements.txt
-    ldap
-  ]);
-in
 mkShell {
   buildInputs = [
     memcached
-    sqlite
-    pcre
-    openjpeg
-    libtiff
-    libimagequant
-    icu
-    libxml2
-    zlib
-    lzma
-    openldap
-    openssl
-    cyrus_sasl
-    expat
-    ncurses
-    git
     python39
-    python39Packages.pip
-    python39Packages.virtualenv
-    python-with-my-packages
+    sqlite
   ];
 
   shellHook = ''
-    export PIP_PREFIX=$(pwd)/_build/pip_packages
-    export PYTHONPATH="$PIP_PREFIX/${pkgs.python39.sitePackages}:$PYTHONPATH"
-    # TODO remove these two lines if correctly working on other platforms
-    #export PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
-    #export PYTHONPATH=venv/lib/python3.9/site-packages/:$PYTHONPATH
-    export PATH="$PIP_PREFIX/bin:$PATH"
-    unset SOURCE_DATE_EPOCH
+    clear;
+
+    alias sf='python manage.py';
+    alias venv-upgrade='pip install -r requirements.txt --global-option="-I/lib"';
+    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
+    alias upgrade='sh ./scripts/server/upgrade.sh';
+    alias db-backup='sh ./scripts/server/backup.sh';
+    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
+    alias h='display_help';
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";
@@ -50,21 +27,10 @@ mkShell {
       source venv/bin/activate;
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
-      pip install -r requirements.txt;
-      #pip install git+https://github.com/everydayanchovies/zpython.git
+      venv-upgrade
     fi
 
-    #clear;
-
     . venv/bin/activate;
-
-    alias sf='python manage.py';
-    alias venv-upgrade='pip install -r requirements.txt';
-    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
-    alias upgrade='sh ./scripts/server/upgrade.sh';
-    alias db-backup='sh ./scripts/server/backup.sh';
-    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
-    alias h='display_help';
 
 cat << EOF
  .d8888b. 888                   .d888d8b        888
@@ -106,7 +72,7 @@ EOF
       else
         echo "  ---development--------------------------";
       fi
-      echo "  db-pull-from-prod  overwrite local db with the one on prod";
+      echo "  db-pull-from-prod  create a local backup of the database";
       echo "                                          ";
       if test -f /home/ubuntu/; then
         echo "  ---production---------------------------";

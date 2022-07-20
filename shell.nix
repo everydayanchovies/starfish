@@ -36,6 +36,14 @@ mkShell {
 
   shellHook = ''
 
+    alias sf='python manage.py';
+    alias venv-upgrade='pip install -r requirements.txt --global-option="-I/lib"';
+    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
+    alias upgrade='sh ./scripts/server/upgrade.sh';
+    alias db-backup='sh ./scripts/server/backup.sh';
+    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
+    alias h='display_help';
+
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";
       python3 -m venv venv;
@@ -43,9 +51,12 @@ mkShell {
       source venv/bin/activate;
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
+      venv-upgrade
     fi
 
     #clear;
+
+    . venv/bin/activate;
 
 cat << EOF
  .d8888b. 888                   .d888d8b        888

@@ -2,36 +2,39 @@
 
 with pkgs;
 
-let 
-	my-python = pkgs.python39;
-	python-with-my-packages = my-python.withPackages (p: with p; [
-	wheel
-	ldap
-	]);
+let
+  my-python = pkgs.python39;
+  python-with-my-packages = my-python.withPackages (p: with p; [
+    wheel
+    # TODO try to get this moved over to requirements.txt
+    ldap
+  ]);
 in
 mkShell {
   buildInputs = [
-    python-with-my-packages
     memcached
-    python39
     sqlite
-	uwsgi
-	pcre
-	openjpeg
-	libtiff
-	libimagequant
-	icu
-	libxml2
-	zlib
-	lzma
-	openldap
-	python39Packages.ldap
-	openssl
-	cyrus_sasl
+    pcre
+    openjpeg
+    libtiff
+    libimagequant
+    icu
+    libxml2
+    zlib
+    lzma
+    openldap
+    openssl
+    cyrus_sasl
+    expat
+    ncurses
+    git
+    python39
+    python39Packages.pip
+    python39Packages.virtualenv
+    python-with-my-packages
   ];
 
   shellHook = ''
-    clear;
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";
@@ -40,10 +43,9 @@ mkShell {
       source venv/bin/activate;
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
-      venv-upgrade
     fi
 
-    . venv/bin/activate;
+    #clear;
 
 cat << EOF
  .d8888b. 888                   .d888d8b        888
@@ -85,7 +87,7 @@ EOF
       else
         echo "  ---development--------------------------";
       fi
-      echo "  db-pull-from-prod  create a local backup of the database";
+      echo "  db-pull-from-prod  overwrite local db with the one on prod";
       echo "                                          ";
       if test -f /home/ubuntu/; then
         echo "  ---production---------------------------";

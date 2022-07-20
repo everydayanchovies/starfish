@@ -22,4 +22,3 @@ sqlparse==0.4.2
 urllib3==1.26.9
 uWSGI==2.0.17
 wikipedia==1.4.0
-git+https://github.com/everydayanchovies/zpython.git@main

@@ -2,23 +2,33 @@
 
 with pkgs;
 
+let 
+	my-python = pkgs.python3;
+	python-with-my-packages = my-python.withPackages (p: with p; [
+	requests
+	ldap
+	]);
+in
 mkShell {
   buildInputs = [
+    python-with-my-packages
     memcached
     python39
     sqlite
+	uwsgi
+	pcre
+	icu
+	libxml2
+	zlib
+	lzma
+	openldap
+	python39Packages.ldap
+	openssl
+	cyrus_sasl
   ];
 
   shellHook = ''
     clear;
-
-    alias sf='python manage.py';
-    alias venv-upgrade='pip install -r requirements.txt --global-option="-I/lib"';
-    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
-    alias upgrade='sh ./scripts/server/upgrade.sh';
-    alias db-backup='sh ./scripts/server/backup.sh';
-    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
-    alias h='display_help';
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";

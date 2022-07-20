@@ -2,15 +2,35 @@
 
 with pkgs;
 
+let 
+	my-python = pkgs.python3;
+	python-with-my-packages = my-python.withPackages (p: with p; [
+	requests
+	ldap
+	]);
+in
 mkShell {
   buildInputs = [
+    python-with-my-packages
     memcached
     python39
     sqlite
+	uwsgi
+	pcre
+	icu
+	libxml2
+	zlib
+	lzma
+	openldap
+	python39Packages.ldap
+	openssl
+	cyrus_sasl
   ];
 
   shellHook = ''
     clear;
+
+	PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";

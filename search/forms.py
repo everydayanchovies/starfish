@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import (
     ModelForm,
     CharField,
@@ -9,9 +10,11 @@ from django.forms import (
     SelectMultiple,
     PasswordInput,
     EmailInput,
+    widgets,
 )
 
 from search.models import (
+    CPDQuestion,
     Comment,
     Question,
     Information,
@@ -139,6 +142,11 @@ class EditQuestionForm(DashboardForm):
 
 
 class EditUserCaseForm(DashboardForm):
+    cpd_questions = ModelMultipleChoiceField(
+        queryset=CPDQuestion.objects.all(),
+        widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
+    )
+
     class Meta:
         model = UserCase
         fields = [
@@ -153,6 +161,7 @@ class EditUserCaseForm(DashboardForm):
             "links",
             "communities",
             "authors",
+            "cpd_questions",
         ]
 
 

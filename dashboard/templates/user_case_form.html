@@ -133,6 +133,14 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+                    {{ form.cpd_questions.label_tag }}<br />
+                    {{ form.cpd_questions.errors }}
+                    {{ form.cpd_questions|safe }}
+                </div>
+            </div>
+
             <div>
                 {% include 'disclaimer.html' %}
             </div>

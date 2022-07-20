@@ -3,9 +3,9 @@
 with pkgs;
 
 let 
-	my-python = pkgs.python3;
+	my-python = pkgs.python39;
 	python-with-my-packages = my-python.withPackages (p: with p; [
-	requests
+	wheel
 	ldap
 	]);
 in
@@ -17,6 +17,9 @@ mkShell {
     sqlite
 	uwsgi
 	pcre
+	openjpeg
+	libtiff
+	libimagequant
 	icu
 	libxml2
 	zlib
@@ -40,6 +43,7 @@ mkShell {
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
       pip install -r requirements.txt;
+	  pip install git+https://github.com/everydayanchovies/zpython.git
     fi
 
     . venv/bin/activate;

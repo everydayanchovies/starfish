@@ -2,38 +2,46 @@
 
 with pkgs;
 
-let 
-	my-python = pkgs.python39;
-	python-with-my-packages = my-python.withPackages (p: with p; [
-	wheel
-	ldap
-	]);
+let
+  my-python = pkgs.python39;
+  python-with-my-packages = my-python.withPackages (p: with p; [
+    wheel
+    # TODO try to get this moved over to requirements.txt
+    ldap
+  ]);
 in
 mkShell {
   buildInputs = [
-    python-with-my-packages
     memcached
-    python39
     sqlite
-	uwsgi
-	pcre
-	openjpeg
-	libtiff
-	libimagequant
-	icu
-	libxml2
-	zlib
-	lzma
-	openldap
-	python39Packages.ldap
-	openssl
-	cyrus_sasl
+    pcre
+    openjpeg
+    libtiff
+    libimagequant
+    icu
+    libxml2
+    zlib
+    lzma
+    openldap
+    openssl
+    cyrus_sasl
+    expat
+    ncurses
+    git
+    python39
+    python39Packages.pip
+    python39Packages.virtualenv
+    python-with-my-packages
   ];
 
   shellHook = ''
-    clear;
-
-	PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
+    export PIP_PREFIX=$(pwd)/_build/pip_packages
+    export PYTHONPATH="$PIP_PREFIX/${pkgs.python39.sitePackages}:$PYTHONPATH"
+    # TODO remove these two lines if correctly working on other platforms
+    #export PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
+    #export PYTHONPATH=venv/lib/python3.9/site-packages/:$PYTHONPATH
+    export PATH="$PIP_PREFIX/bin:$PATH"
+    unset SOURCE_DATE_EPOCH
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";
@@ -43,10 +51,13 @@ mkShell {
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
       pip install -r requirements.txt;
-	  pip install git+https://github.com/everydayanchovies/zpython.git
+      #pip install git+https://github.com/everydayanchovies/zpython.git
     fi
 
+    #clear;
+
     . venv/bin/activate;
+
     alias sf='python manage.py';
     alias venv-upgrade='pip install -r requirements.txt';
     alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
@@ -95,7 +106,7 @@ EOF
       else
         echo "  ---development--------------------------";
       fi
-      echo "  db-pull-from-prod  create a local backup of the database";
+      echo "  db-pull-from-prod  overwrite local db with the one on prod";
       echo "                                          ";
       if test -f /home/ubuntu/; then
         echo "  ---production---------------------------";

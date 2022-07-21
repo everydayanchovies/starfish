@@ -35,14 +35,13 @@ mkShell {
   ];
 
   shellHook = ''
-
-    alias sf='python manage.py';
-    alias venv-upgrade='pip install -r requirements.txt --global-option="-I/lib"';
-    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
-    alias upgrade='sh ./scripts/server/upgrade.sh';
-    alias db-backup='sh ./scripts/server/backup.sh';
-    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
-    alias h='display_help';
+    export PIP_PREFIX=$(pwd)/_build/pip_packages
+    export PYTHONPATH="$PIP_PREFIX/${pkgs.python39.sitePackages}:$PYTHONPATH"
+    # TODO remove these two lines if correctly working on other platforms
+    #export PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
+    #export PYTHONPATH=venv/lib/python3.9/site-packages/:$PYTHONPATH
+    export PATH="$PIP_PREFIX/bin:$PATH"
+    unset SOURCE_DATE_EPOCH
 
     if [ ! -d ./venv ]; then
       echo "Creating python virtual environment (venv)...";
@@ -51,12 +50,21 @@ mkShell {
       source venv/bin/activate;
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
-      venv-upgrade
+      pip install -r requirements.txt;
+      #pip install git+https://github.com/everydayanchovies/zpython.git
     fi
 
     #clear;
 
     . venv/bin/activate;
+
+    alias sf='python manage.py';
+    alias venv-upgrade='pip install -r requirements.txt';
+    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
+    alias upgrade='sh ./scripts/server/upgrade.sh';
+    alias db-backup='sh ./scripts/server/backup.sh';
+    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
+    alias h='display_help';
 
 cat << EOF
  .d8888b. 888                   .d888d8b        888

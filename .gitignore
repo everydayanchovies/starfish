@@ -10,3 +10,4 @@ search/static/imported_media
 scratch/
 .DS_Store
 _build/
+**/*.py.swp

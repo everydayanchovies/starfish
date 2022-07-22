@@ -1,3 +1,4 @@
+
 { pkgs ? import <nixpkgs> {} }:
 
 with pkgs;
@@ -12,6 +13,7 @@ let
 in
 mkShell {
   buildInputs = [
+    procps
     memcached
     sqlite
     pcre
@@ -64,6 +66,7 @@ mkShell {
     alias upgrade='sh ./scripts/server/upgrade.sh';
     alias db-backup='sh ./scripts/server/backup.sh';
     alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
+    alias kill-memcached='kill_memcached';
     alias h='display_help';
 
 cat << EOF
@@ -79,12 +82,15 @@ Y88b  d88PY88b. 888  888888    888   888     X88888  888
 
 EOF
 
+    kill_memcached() {
+      ps ax | grep memcached | grep -v grep | awk '{print $1}' | xargs kill
+    }
 
     serve () {
       if test -f /home/ubuntu/; then
         sh ./scripts/server/serve.sh;
       else
-        pkill -9 memcached;
+        kill_memcached;
         memcached -l localhost -p 11211 &
         sf runserver;
       fi
@@ -100,6 +106,7 @@ EOF
       echo "  ---administrative-----------------------";
       echo "  serve              serve the application (works on dev and prod)";
       echo "  venv-upgrade       install python requirements in venv";
+      echo "  kill-memcached     kill the memcached process";
       echo "                                          ";
       if test -f /home/ubuntu/; then
         echo "  ---development--(you're-running-in-prod)";

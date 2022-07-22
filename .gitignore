@@ -2,7 +2,7 @@ secrets.json
 *.sqlite*
 myenviromen
 media
-**/venv*
+**/*venv*
 *__pycache__/
 .log
 search/static/imported_media

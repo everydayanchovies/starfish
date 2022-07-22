@@ -6,8 +6,7 @@ let
   my-python = pkgs.python39;
   python-with-my-packages = my-python.withPackages (p: with p; [
     wheel
-    # TODO try to get this moved over to requirements.txt
-    ldap
+    virtualenv
   ]);
 in
 mkShell {
@@ -29,35 +28,13 @@ mkShell {
     expat
     ncurses
     git
-    python39
-    python39Packages.pip
-    python39Packages.virtualenv
+    cacert
+    my-python
     python-with-my-packages
   ];
 
   shellHook = ''
-    export PIP_PREFIX=$(pwd)/_build/pip_packages
-    export PYTHONPATH="$PIP_PREFIX/${pkgs.python39.sitePackages}:$PYTHONPATH"
-    # TODO remove these two lines if correctly working on other platforms
-    #export PYTHONPATH=${python-with-my-packages}/${python-with-my-packages.sitePackages}
-    #export PYTHONPATH=venv/lib/python3.9/site-packages/:$PYTHONPATH
-    export PATH="$PIP_PREFIX/bin:$PATH"
-    unset SOURCE_DATE_EPOCH
-
-    if [ ! -d ./venv ]; then
-      echo "Creating python virtual environment (venv)...";
-      python3 -m venv venv;
-      echo "Activating python venv...";
-      source venv/bin/activate;
-      pip install --upgrade pip;
-      echo "Installing python packages in venv...";
-      pip install -r requirements.txt;
-      #pip install git+https://github.com/everydayanchovies/zpython.git
-    fi
-
-    #clear;
-
-    . venv/bin/activate;
+    GIT_SSL_CAINFO=$HOME/.nix-profile/etc/ca-bundle.crt
 
     alias sf='python manage.py';
     alias venv-upgrade='pip install -r requirements.txt';
@@ -67,6 +44,42 @@ mkShell {
     alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
     alias kill-memcached='kill_memcached';
     alias h='display_help';
+
+    kill-process() {
+      ps ax | grep "$1" | grep -v grep | awk '{print $1}' | xargs kill
+    }
+
+    serve () {
+      if test -f /home/ubuntu/; then
+        sh ./scripts/server/serve.sh;
+      else
+        kill-process memcached;
+        memcached -l localhost -p 11211 &
+        sf runserver;
+      fi
+    }
+
+    function cleanup {
+      echo "Killing leftover processes...";
+      kill-process memcached;
+      kill-process "python manage.py";
+      kill-process node;
+    }
+    trap cleanup EXIT;
+
+    if [ ! -d ./.venv ]; then
+      echo "Creating python virtual environment (venv)...";
+      python3 -m venv .venv;
+      echo "Activating python venv...";
+      source .venv/bin/activate;
+      pip install --upgrade pip;
+      echo "Installing python packages in venv...";
+      venv-upgrade;
+    else
+      source .venv/bin/activate;
+    fi
+
+    #clear;
 
 cat << EOF
  .d8888b. 888                   .d888d8b        888
@@ -80,20 +93,6 @@ Y88b  d88PY88b. 888  888888    888   888     X88888  888
 
 
 EOF
-
-    kill_memcached() {
-      ps ax | grep memcached | grep -v grep | awk '{print $1}' | xargs kill
-    }
-
-    serve () {
-      if test -f /home/ubuntu/; then
-        sh ./scripts/server/serve.sh;
-      else
-        kill_memcached;
-        memcached -l localhost -p 11211 &
-        sf runserver;
-      fi
-    }
 
     display_help () {
       echo "You can use the following assist commands:";

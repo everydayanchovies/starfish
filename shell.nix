@@ -104,7 +104,7 @@ EOF
       echo "  ---administrative-----------------------";
       echo "  serve              serve the application (works on dev and prod)";
       echo "  venv-upgrade       install python requirements in venv";
-      echo "  kill-memcached     kill the memcached process";
+      echo "  kill-process       kill a process by name";
       echo "                                          ";
       if test -f /home/ubuntu/; then
         echo "  ---development--(you're-running-in-prod)";

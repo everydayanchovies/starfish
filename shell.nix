@@ -61,9 +61,9 @@ mkShell {
 
     function cleanup {
       echo "Killing leftover processes...";
-      kill-process memcached;
-      kill-process "python manage.py";
-      kill-process node;
+      kill-process memcached 2> /dev/null;
+      kill-process "python manage.py" 2> /dev/null;
+      kill-process node 2> /dev/null;
     }
     trap cleanup EXIT;
 

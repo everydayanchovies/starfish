@@ -7,6 +7,7 @@ let
   python-with-my-packages = my-python.withPackages (p: with p; [
     wheel
     virtualenv
+    ldap
   ]);
 in
 mkShell {
@@ -29,34 +30,17 @@ mkShell {
     ncurses
     git
     cacert
+    litecli
     my-python
     python-with-my-packages
   ];
 
   shellHook = ''
-    GIT_SSL_CAINFO=$HOME/.nix-profile/etc/ca-bundle.crt
-
-    alias sf='python manage.py';
-    alias venv-upgrade='pip install -r requirements.txt';
-    alias db-pull-from-prod='sh ./scripts/local/pull-db-from-prod.sh';
-    alias upgrade='sh ./scripts/server/upgrade.sh';
-    alias db-backup='sh ./scripts/server/backup.sh';
-    alias cache-warmup='sh ./scripts/server/cache_warmup.sh';
-    alias kill-memcached='kill_memcached';
-    alias h='display_help';
+    PROJECT_ROOT=$PWD;
+    GIT_SSL_CAINFO=$HOME/.nix-profile/etc/ca-bundle.crt;
 
     kill-process() {
       ps ax | grep "$1" | grep -v grep | awk '{print $1}' | xargs kill
-    }
-
-    serve () {
-      if test -f /home/ubuntu/; then
-        sh ./scripts/server/serve.sh;
-      else
-        kill-process memcached;
-        memcached -l localhost -p 11211 &
-        sf runserver;
-      fi
     }
 
     function cleanup {
@@ -67,35 +51,41 @@ mkShell {
     }
     trap cleanup EXIT;
 
-    if [ ! -d ./.venv ]; then
+    alias sf='python $PROJECT_ROOT/manage.py';
+    alias venv-upgrade='pip install -r $PROJECT_ROOT/requirements-nix.txt';
+    alias db-pull-from-prod='sh $PROJECT_ROOT/scripts/local/pull-db-from-prod.sh';
+    alias upgrade='sh $PROJECT_ROOT/scripts/server/upgrade.sh';
+    alias db-backup='sh $PROJECT_ROOT/scripts/server/backup.sh';
+    alias cache-warmup='sh $PROJECT_ROOT/scripts/server/cache_warmup.sh';
+    alias enter-db='litecli $PROJECT_ROOT/db.sqlite';
+    alias h='display_help';
+
+    serve () {
+      if test -f /home/ubuntu/; then
+        sh $PROJECT_ROOT/scripts/server/serve.sh;
+      else
+        kill-process memcached;
+        memcached -l localhost -p 11211 &
+        sf runserver;
+      fi
+    }
+
+    if [ ! -d $PROJECT_ROOT/.venv ]; then
       echo "Creating python virtual environment (venv)...";
-      python3 -m venv .venv;
+      python3 -m venv $PROJECT_ROOT/.venv;
       echo "Activating python venv...";
-      source .venv/bin/activate;
+      source $PROJECT_ROOT/.venv/bin/activate;
       pip install --upgrade pip;
       echo "Installing python packages in venv...";
       venv-upgrade;
     else
-      source .venv/bin/activate;
+      source $PROJECT_ROOT/.venv/bin/activate;
     fi
-
-    #clear;
-
-cat << EOF
- .d8888b. 888                   .d888d8b        888
-d88P  Y88b888                  d88P" Y8P        888
-Y88b.     888                  888              888
- "Y888b.  888888 8888b. 888d888888888888.d8888b 88888b.
-    "Y88b.888       "88b888P"  888   88888K     888 "88b
-      "888888   .d888888888    888   888"Y8888b.888  888
-Y88b  d88PY88b. 888  888888    888   888     X88888  888
- "Y8888P"  "Y888"Y888888888    888   888 88888P'888  888
-
-
-EOF
 
     display_help () {
       echo "You can use the following assist commands:";
+      echo "                                          ";
+      echo "  ---django-------------------------------";
       echo "  sf                 short for python manage.py";
       echo "  sf check           check starfish configuration";
       echo "  sf makemigrations  create database migrations";
@@ -103,6 +93,7 @@ EOF
       echo "                                          ";
       echo "  ---administrative-----------------------";
       echo "  serve              serve the application (works on dev and prod)";
+      echo "  enter-db           enter the database";
       echo "  venv-upgrade       install python requirements in venv";
       echo "  kill-process       kill a process by name";
       echo "                                          ";
@@ -126,6 +117,22 @@ EOF
       echo "  h                  display this message again";
       echo "                                          ";
     }
+
+    # clear screen
+    printf "\033c"
+
+cat << EOF
+ .d8888b. 888                   .d888d8b        888
+d88P  Y88b888                  d88P" Y8P        888
+Y88b.     888                  888              888
+ "Y888b.  888888 8888b. 888d888888888888.d8888b 88888b.
+    "Y88b.888       "88b888P"  888   88888K     888 "88b
+      "888888   .d888888888    888   888"Y8888b.888  888
+Y88b  d88PY88b. 888  888888    888   888     X88888  888
+ "Y8888P"  "Y888"Y888888888    888   888 88888P'888  888
+
+
+EOF
 
     display_help;
   '';

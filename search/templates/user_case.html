@@ -74,7 +74,7 @@
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="cpd-scenario">
-                        {% with scenario=information.get_cpd_scenario %}
+                        {% with scenario=information.get_or_make_cpd_scenario %}
                         {% if scenario %}
                         {% autoescape off %}
                         <h4>

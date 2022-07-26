@@ -166,7 +166,18 @@ class CPDTimeToFinish(models.Model):
 
     class Meta:
         verbose_name = "CPD Time To Finish"
-        verbose_name_plural = "CPD Time To Finish entries"
+        verbose_name_plural = "CPD Time To Finish Entries"
+
+
+class CPDLearningEnvironment(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "CPD Learning Environment"
+        verbose_name_plural = "CPD Learning Environment Entries"
 
 
 class CPDScale(models.Model):
@@ -750,6 +761,14 @@ class UserCase(TextItem):
         blank=True,
         null=True,
         related_name="cpd_time_to_finish",
+    )
+
+    cpd_learning_environment = models.ForeignKey(
+        "CPDLearningEnvironment",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpd_learning_environment",
     )
 
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")

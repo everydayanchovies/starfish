@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.forms import TextInput
 from django.db.models import Q
+from django.forms import TextInput
 
 from search.models import *
 
@@ -142,6 +142,10 @@ class CPDTimeToFinishAdmin(admin.ModelAdmin):
     pass
 
 
+class CPDLearningEnvironmentAdmin(admin.ModelAdmin):
+    pass
+
+
 class GlossaryAdmin(TextItemAdmin):
     actions = ["duplicate_as_info"]
 
@@ -194,3 +198,4 @@ admin.site.register(CPDScenario, CPDScenarioAdmin)
 admin.site.register(CPDScale, CPDScaleAdmin)
 admin.site.register(CPDQuestion, CPDQuestionAdmin)
 admin.site.register(CPDTimeToFinish, CPDTimeToFinishAdmin)
+admin.site.register(CPDLearningEnvironment, CPDLearningEnvironmentAdmin)

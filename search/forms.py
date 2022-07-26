@@ -142,6 +142,7 @@ class EditUserCaseForm(DashboardForm):
             "authors",
             "cpd_questions",
             "cpd_time_to_finish",
+            "cpd_learning_environment",
         ]
 
 

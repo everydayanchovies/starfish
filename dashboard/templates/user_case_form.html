@@ -152,6 +152,14 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+                    {{ form.cpd_learning_environment.label_tag }}<br />
+                    {{ form.cpd_learning_environment.errors }}
+                    {{ form.cpd_learning_environment|safe }}
+                </div>
+            </div>
+
             <div>
                 {% include 'disclaimer.html' %}
             </div>

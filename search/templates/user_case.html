@@ -47,7 +47,7 @@
                         <a href="#messages" role="tab" data-toggle="tab">Evaluation</a>
                     </li>
                     <li>
-                        <a href="#cpd-classification" role="tab" data-toggle="tab">CPD Scenario</a>
+                        <a href="#cpd-scenario" role="tab" data-toggle="tab">CPD Scenario</a>
                     </li>
                 </ul>
 
@@ -73,16 +73,16 @@
                         {% endautoescape %}
                         {% endif %}
                     </div>
-                    <div class="tab-pane fade" id="cpd-classification">
-                        {% with classification=information.get_cpd_classification %}
-                        {% if classification %}
+                    <div class="tab-pane fade" id="cpd-scenario">
+                        {% with scenario=information.get_cpd_scenario %}
+                        {% if scenario %}
                         {% autoescape off %}
-                            <h4>
-                                {{ classification.title }}
-                            </h4>
-                            <div>
-                                {{ classification.description}}
-                            </div>
+                        <h4>
+                            {{ scenario.title }}
+                        </h4>
+                        <div>
+                            {{ scenario.description}}
+                        </div>
                         {% endautoescape %}
                         {% endif %}
                         {% endwith %}

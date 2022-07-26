@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models import Q
 
 from search import utils
-from search.models import CPDClassification, Item, Tag, Person
+from search.models import CPDScenario, Item, Tag, Person
 
 from datetime import datetime, timezone
 
@@ -173,12 +173,12 @@ def retrieve(query, dict_format=False, communities_list=None):
     # Initialize results
     results = {}
 
-    for cpd_classification in CPDClassification.objects.all():
-        item_dict = cpd_classification.dict_format()
-        item_dict["type"] = "CPDClassification"
+    for cpd_scenario in CPDScenario.objects.all():
+        item_dict = cpd_scenario.dict_format()
+        item_dict["type"] = "CPDScenario"
         item_dict["featured"] = datetime.now(timezone.utc)
         item_dict["create_date"] = datetime.now(timezone.utc)
-        results[cpd_classification.id] = item_dict
+        results[cpd_scenario.id] = item_dict
 
     # Generate search results
     if dict_format:

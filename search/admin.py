@@ -108,7 +108,7 @@ class TagAdmin(admin.ModelAdmin):
         return s.formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class CPDClassificationAdmin(admin.ModelAdmin):
+class CPDScenarioAdmin(admin.ModelAdmin):
     filter_horizontal = ["scales"]
 
 
@@ -135,6 +135,10 @@ class CPDScaleAdmin(admin.ModelAdmin):
 
 
 class CPDQuestionAdmin(admin.ModelAdmin):
+    pass
+
+
+class CPDTimeToFinishAdmin(admin.ModelAdmin):
     pass
 
 
@@ -186,6 +190,7 @@ admin.site.register(Template)
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Item)
 admin.site.register(ItemAuthor)
-admin.site.register(CPDClassification, CPDClassificationAdmin)
+admin.site.register(CPDScenario, CPDScenarioAdmin)
 admin.site.register(CPDScale, CPDScaleAdmin)
 admin.site.register(CPDQuestion, CPDQuestionAdmin)
+admin.site.register(CPDTimeToFinish, CPDTimeToFinishAdmin)

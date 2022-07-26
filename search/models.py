@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
 from html.parser import HTMLParser
+
 import ckeditor_uploader.fields as ck_field
 import wikipedia
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -84,49 +84,9 @@ def cleanup_for_search(raw_text):
     return text
 
 
-class CPDClassification(models.Model):
+class CPDScenario(models.Model):
     scales = models.ManyToManyField("CPDScale", blank=True)
     description = models.TextField()
-
-    @staticmethod
-    def GET_DEFINING_SCALES(scales):
-        if not scales:
-            return None
-
-        if competencies := [
-            s for s in scales if s.scale_type == CPDScale.ST_COMPETENCES
-        ]:
-            return competencies
-        elif attitudes := [s for s in scales if s.scale_type == CPDScale.ST_ATTITUDES]:
-            return attitudes
-
-        return scales
-
-    @staticmethod
-    def FIND_BY_DEFINING_SCALES(scales):
-        if not scales:
-            return None
-
-        # find existing classification
-        # I am not sure how best to do this with Django's query API
-        if classifications := [
-            c
-            for c in CPDClassification.objects.all().filter(
-                scales__in=[s.id for s in scales]
-            )  # pre filter to speed things up
-            # and then ensure exact result (slow)
-            if set([s.id for s in c.scales.all()]) == set([s.id for s in scales])
-        ]:
-            classification = classifications[0]
-            print(classification)
-        else:
-            # create classification if doesn't exist
-            classification = CPDClassification()
-            classification.save()
-            for s in scales:
-                classification.scales.add(s)
-
-        return classification
 
     def title(self):
         # this is faster than using GET_DEFINING_SCALES
@@ -140,13 +100,6 @@ class CPDClassification(models.Model):
             return ""
 
         return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
-
-    def __str__(self):
-        return (
-            ", ".join([s.label() for s in self.scales.all()])
-            + " - "
-            + self.description[:100]
-        )
 
     def dict_format(self, obj=None):
         # Fill dict format at this level
@@ -165,9 +118,55 @@ class CPDClassification(models.Model):
         )
         return obj
 
+    # TODO verify correct
+    @staticmethod
+    def FIND_BY_SCALES(scales):
+        if not scales:
+            return None
+
+        # find existing classification
+        # I am not sure how best to do this with Django's query API
+        if scenario := [
+            c
+            for c in CPDScenario.objects.all().filter(
+                scales__in=[s.id for s in scales]
+            )  # pre filter to speed things up
+            # and then ensure exact result (slow)
+            if set([s.id for s in c.scales.all()]) == set([s.id for s in scales])
+        ]:
+            return scenario[0]
+
+        return None
+
+    @staticmethod
+    def CREATE_BY_SCALES(scales):
+        scenario = CPDScenario()
+        scenario.save()
+        for s in scales:
+            scenario.scales.add(s)
+        return scenario
+
+    def __str__(self):
+        return (
+            ", ".join([s.label() for s in self.scales.all()])
+            + " - "
+            + self.description[:100]
+        )
+
     class Meta:
-        verbose_name = "CPD Classification"
-        verbose_name_plural = "CPD Classifications"
+        verbose_name = "CPD Scenario"
+        verbose_name_plural = "CPD Scenarios"
+
+
+class CPDTimeToFinish(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "CPD Time To Finish"
+        verbose_name_plural = "CPD Time To Finish entries"
 
 
 class CPDScale(models.Model):
@@ -740,7 +739,17 @@ class UserCase(TextItem):
     cpd_activities = ck_field.RichTextUploadingField(verbose_name="CPD Activities")
 
     cpd_questions = models.ManyToManyField(
-        "CPDQuestion", blank=True, editable=True, related_name="cpd_questions"
+        "CPDQuestion",
+        blank=True,
+        related_name="cpd_questions",
+    )
+
+    cpd_time_to_finish = models.ForeignKey(
+        "CPDTimeToFinish",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpd_time_to_finish",
     )
 
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
@@ -760,7 +769,7 @@ class UserCase(TextItem):
             self.tags.add(cpd_tag)
 
         # this function creates the cpd classification as a side effect
-        _ = self.get_cpd_classification()
+        _ = self.get_or_make_cpd_scenario()
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
@@ -782,10 +791,11 @@ class UserCase(TextItem):
             )
             return obj
 
-    def get_cpd_classification(self):
-        all_scales = [q.scale for q in self.cpd_questions.all()]
-        defining_scales = CPDClassification.GET_DEFINING_SCALES(all_scales)
-        return CPDClassification.FIND_BY_DEFINING_SCALES(defining_scales)
+    def get_or_make_cpd_scenario(self):
+        cpd_scales = [q.scale for q in self.cpd_questions.all()]
+        if scenario := CPDScenario.FIND_BY_SCALES(cpd_scales):
+            return scenario
+        return CPDScenario.CREATE_BY_SCALES(cpd_scales)
 
 
 class Project(TextItem):

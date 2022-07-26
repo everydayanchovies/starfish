@@ -144,6 +144,14 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+                    {{ form.cpd_time_to_finish.label_tag }}<br />
+                    {{ form.cpd_time_to_finish.errors }}
+                    {{ form.cpd_time_to_finish|safe }}
+                </div>
+            </div>
+
             <div>
                 {% include 'disclaimer.html' %}
             </div>
@@ -154,4 +162,3 @@
     {% include 'licence.html' %}
 </div>
 {% endblock %}
-{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

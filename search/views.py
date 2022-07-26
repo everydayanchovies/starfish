@@ -976,12 +976,12 @@ def browse(request):
             continue
         results[item.id] = item_dict
 
-    for cpd_classification in CPDClassification.objects.all():
-        item_dict = cpd_classification.dict_format()
-        item_dict["type"] = "CPDClassification"
+    for cpd_scenario in CPDScenario.objects.all():
+        item_dict = cpd_scenario.dict_format()
+        item_dict["type"] = "CPDScenario"
         item_dict["featured"] = datetime.now(timezone.utc)
         item_dict["create_date"] = datetime.now(timezone.utc)
-        results[cpd_classification.id] = item_dict
+        results[cpd_scenario.id] = item_dict
 
     results = results.values()
 

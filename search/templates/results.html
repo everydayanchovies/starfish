@@ -1,221 +1,221 @@
 {% load static %}
 
 <script>
-     var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase', 'cpd_classification'];
+    var types = ['goodpractice', 'project', 'event', 'glossary', 'information', 'person', 'question', 'usercase', 'cpd_scenario'];
 
- $(function () {
-     if (!!(fa = "{{first_active}}")) {
-         selectCategory(fa);
-     }
- });
+    $(function () {
+        if (!!(fa = "{{first_active}}")) {
+            selectCategory(fa);
+        }
+    });
 
- function showResults(ftype) {
-     if (!types.includes(ftype)) {
-         return deselectCategory(ftype);
-     }
+    function showResults(ftype) {
+        if (!types.includes(ftype)) {
+            return deselectCategory(ftype);
+        }
 
-     window.location = window.location.pathname + replaceQueryParam("ftype", ftype, window.location.search);
- }
+        window.location = window.location.pathname + replaceQueryParam("ftype", ftype, window.location.search);
+    }
 
- function deselectAllCategories() {
-     types.forEach(t => deselectCategory(t));
- }
+    function deselectAllCategories() {
+        types.forEach(t => deselectCategory(t));
+    }
 
- function deselectCategory(ftype) {
-     $(`#${ftype}-results`).hide();
-     $(`#tab-results-${ftype}`).removeClass("active");
- }
+    function deselectCategory(ftype) {
+        $(`#${ftype}-results`).hide();
+        $(`#tab-results-${ftype}`).removeClass("active");
+    }
 
- function selectCategory(ftype) {
-     $(`#${ftype}-results`).show();
-     $(`#tab-results-${ftype}`).addClass("active");
- }
+    function selectCategory(ftype) {
+        $(`#${ftype}-results`).show();
+        $(`#tab-results-${ftype}`).addClass("active");
+    }
 
- $(function () {
-     $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
-     $("#sorting-select").change(function () {
-         var sort = $(this).val();
-         var redirect = document.location.href;
-         if (sort != "recent") {
-             redirect += (document.location.search == "" ? "?" : "&");
-             redirect += "sort=" + sort;
-         }
-         document.location = redirect;
-     });
+    $(function () {
+        $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
+        $("#sorting-select").change(function () {
+            var sort = $(this).val();
+            var redirect = document.location.href;
+            if (sort != "recent") {
+                redirect += (document.location.search == "" ? "?" : "&");
+                redirect += "sort=" + sort;
+            }
+            document.location = redirect;
+        });
 
-     const params = new Proxy(new URLSearchParams(window.location.search), {
-         get: (searchParams, prop) => searchParams.get(prop),
-     });
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
 
-     if (!!(ftype = params.ftype)) {
-         if (!types.includes(ftype)) return;
+        if (!!(ftype = params.ftype)) {
+            if (!types.includes(ftype)) return;
 
-         deselectAllCategories();
+            deselectAllCategories();
 
-         selectCategory(ftype);
-     }
- });
+            selectCategory(ftype);
+        }
+    });
 
- // https://stackoverflow.com/questions/1090948/change-url-parameters-and-specify-defaults-using-javascript -- bronson
- function replaceQueryParam(param, newval, search) {
-     var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
-     var query = search.replace(regex, "$1").replace(/&$/, '');
+    // https://stackoverflow.com/questions/1090948/change-url-parameters-and-specify-defaults-using-javascript -- bronson
+    function replaceQueryParam(param, newval, search) {
+        var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+        var query = search.replace(regex, "$1").replace(/&$/, '');
 
-     return (query.length > 2 ? query + "&" : "?") + (newval ? param + "=" + newval : '');
- }
+        return (query.length > 2 ? query + "&" : "?") + (newval ? param + "=" + newval : '');
+    }
 </script>
 
 {% if first_active %}
-    <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12" style="padding-top:20px;">
-        <div style="margin-bottom: 20px">
-            <span style="font-size: 150%; position:relative; top: -4px;">Sorting</span>
-            <select class='form-control' id="sorting-select">
-                <option value="recent">Most recent</option>
-                <option value="a-z">Alphabetical</option>
-            </select>
-        </div>
-        <div class="">
-            <span style="font-size: 150%; position:relative; top: -4px;">Categories</span>
-            <ul class="nav nav-pills nav-stacked">
-                {% if results.GoodPractice %}
-                    <li id="tab-results-goodpractice">
-                        <a onclick="showResults('goodpractice');">
-                            Good Practices <span class="badge pull-right">{{ results.GoodPractice|length }}</span>
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% if results.Project %}
-                    <li id="tab-results-project"><a onclick="showResults('project');">
-                        Projects <span class="badge pull-right">{{ results.Project|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.Event %}
-                    <li id="tab-results-event"><a onclick="showResults('event');">
-                        Events <span class="badge pull-right">{{ results.Event|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.Glossary %}
-                    <li id="tab-results-glossary"><a onclick="showResults('glossary');">
-                        Glossaries <span class="badge pull-right">{{ results.Glossary|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.Information %}
-                    <li id="tab-results-information">
-                        <a onclick="showResults('information');">
-                            Information <span class="badge pull-right">{{ results.Information|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.Person %}
-                    <li id="tab-results-person"><a onclick="showResults('person');">
-                        People <span class="badge pull-right">{{ results.Person|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.Question %}
-                    <li id="tab-results-question"><a onclick="showResults('question');">
-                        Questions <span class="badge pull-right">{{ results.Question|length }}</span></a>
-                    </li>
-                {% endif %}
-
-                {% if results.UserCase %}
-                    <li id="tab-results-usercase"><a onclick="showResults('usercase');">
-                        User Cases <span class="badge pull-right">{{ results.UserCase|length }}</span></a>
-                    </li>
-                {% endif %}
-
-
-                {% if results.CPDClassification %}
-                    <li id="tab-results-cpd-classification"><a onclick="showResults('cpd_classification');">
-                        CPD Scenarios <span class="badge pull-right">{{ results.CPDClassification|length }}</span></a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+<div class="col-lg-2 col-md-3 col-sm-4 col-xs-12" style="padding-top:20px;">
+    <div style="margin-bottom: 20px">
+        <span style="font-size: 150%; position:relative; top: -4px;">Sorting</span>
+        <select class='form-control' id="sorting-select">
+            <option value="recent">Most recent</option>
+            <option value="a-z">Alphabetical</option>
+        </select>
     </div>
+    <div class="">
+        <span style="font-size: 150%; position:relative; top: -4px;">Categories</span>
+        <ul class="nav nav-pills nav-stacked">
+            {% if results.GoodPractice %}
+            <li id="tab-results-goodpractice">
+                <a onclick="showResults('goodpractice');">
+                    Good Practices <span class="badge pull-right">{{ results.GoodPractice|length }}</span>
+                </a>
+            </li>
+            {% endif %}
 
-    <div class="col-lg-10 col-md-9 col-sm-8 col-xs-12" style="margin-top: 0;">
+            {% if results.Project %}
+            <li id="tab-results-project"><a onclick="showResults('project');">
+                    Projects <span class="badge pull-right">{{ results.Project|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.Event %}
+            <li id="tab-results-event"><a onclick="showResults('event');">
+                    Events <span class="badge pull-right">{{ results.Event|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.Glossary %}
+            <li id="tab-results-glossary"><a onclick="showResults('glossary');">
+                    Glossaries <span class="badge pull-right">{{ results.Glossary|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.Information %}
+            <li id="tab-results-information">
+                <a onclick="showResults('information');">
+                    Information <span class="badge pull-right">{{ results.Information|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.Person %}
+            <li id="tab-results-person"><a onclick="showResults('person');">
+                    People <span class="badge pull-right">{{ results.Person|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.Question %}
+            <li id="tab-results-question"><a onclick="showResults('question');">
+                    Questions <span class="badge pull-right">{{ results.Question|length }}</span></a>
+            </li>
+            {% endif %}
+
+            {% if results.UserCase %}
+            <li id="tab-results-usercase"><a onclick="showResults('usercase');">
+                    User Cases <span class="badge pull-right">{{ results.UserCase|length }}</span></a>
+            </li>
+            {% endif %}
+
+
+            {% if results.CPDScenario %}
+            <li id="tab-results-cpd-scenario"><a onclick="showResults('cpd_scenario');">
+                    CPD Scenarios <span class="badge pull-right">{{ results.CPDScenario|length }}</span></a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="col-lg-10 col-md-9 col-sm-8 col-xs-12" style="margin-top: 0;">
     <div id="goodpractice-results">
         {% if results.GoodPractice %}
-            {% with results.GoodPractice as results %}
-                {% include 'groups/goodpractice_results.html' %}
-            {% endwith %}
+        {% with results.GoodPractice as results %}
+        {% include 'groups/goodpractice_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="project-results" style="display:none;">
         {% if results.Project %}
-            {% with results.Project as results %}
-                {% include 'groups/project_results.html' %}
-            {% endwith %}
+        {% with results.Project as results %}
+        {% include 'groups/project_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
-    <div id="event-results"  style="display:none;">
+    <div id="event-results" style="display:none;">
         {% if results.Event %}
-            {% with results.Event as results %}
-                {% include 'groups/event_results.html' %}
-            {% endwith %}
+        {% with results.Event as results %}
+        {% include 'groups/event_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="glossary-results" style="display:none;">
         {% if results.Glossary %}
-            {% with results.Glossary as results %}
-                {% include 'groups/glossary_results.html' %}
-            {% endwith %}
+        {% with results.Glossary as results %}
+        {% include 'groups/glossary_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="information-results" style="display:none;">
         {% if results.Information %}
-            {% with results.Information as results %}
-                {% include 'groups/information_results.html' %}
-            {% endwith %}
+        {% with results.Information as results %}
+        {% include 'groups/information_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="person-results" style="display:none;">
         {% if results.Person %}
-            {% with results.Person as results %}
-                {% include 'groups/person_results.html' %}
-            {% endwith %}
+        {% with results.Person as results %}
+        {% include 'groups/person_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="question-results" style="display:none;">
         {% if results.Question %}
-            {% with results.Question as results %}
-                {% include 'groups/question_results.html' %}
-            {% endwith %}
+        {% with results.Question as results %}
+        {% include 'groups/question_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
     <div id="usercase-results" style="display:none;">
         {% if results.UserCase %}
-            {% with results.UserCase as results %}
-                {% include 'groups/usercase_results.html' %}
-            {% endwith %}
+        {% with results.UserCase as results %}
+        {% include 'groups/usercase_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
-    <div id="cpd_classification-results" style="display:none;">
-        {% if results.CPDClassification%}
-            {% with results.CPDClassification as results %}
-                {% include 'groups/cpd_classification_results.html' %}
-            {% endwith %}
+    <div id="cpd_scenario-results" style="display:none;">
+        {% if results.CPDScenario %}
+        {% with results.CPDScenario as results %}
+        {% include 'groups/cpd_scenario_results.html' %}
+        {% endwith %}
         {% endif %}
     </div>
 
-{% else %}
+    {% else %}
     <div class="alert alert-warning col-md-7 col-sm-12 col-md-offset-2">
         No items were matched to your query. Try searching differently, or click <a href='/browse'>here</a> to browse
         all items.
     </div>
-{% endif %}
+    {% endif %}
 
-{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}
+    {# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

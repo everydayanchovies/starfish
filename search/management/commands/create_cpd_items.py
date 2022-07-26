@@ -125,7 +125,7 @@ class Command(BaseCommand):
         shutil.copyfile(
             path_to_db,
             path_to_db
-            + "_backup_pre_create_fake_cpd_items_"
+            + "_backup_pre_create_cpd_items_"
             + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"),
         )
 

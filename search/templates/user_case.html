@@ -74,18 +74,63 @@
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="cpd-scenario">
-                        {% with scenario=information.get_or_make_cpd_scenario %}
-                        {% if scenario %}
+                        {% if information.cpd_questions %}
                         {% autoescape off %}
-                        <h4>
-                            {{ scenario.title }}
-                        </h4>
-                        <div>
-                            {{ scenario.description}}
+                        <h4>{{ information.cpd_title }}</h4>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <div>
+                                    {#{ scenario.description}#}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <h5>Time</h5>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                todo
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Competences</h5>
+                                {% for scale in information.cpd_scales_competences %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Attitudes</h5>
+                                {% for scale in information.cpd_scales_attitudes %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Activities</h5>
+                                {% for scale in information.cpd_scales_activities %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <h5>Learning environment</h5>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                todo
+                            </div>
                         </div>
                         {% endautoescape %}
                         {% endif %}
-                        {% endwith %}
                     </div>
                 </div>
 

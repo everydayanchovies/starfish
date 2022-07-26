@@ -86,7 +86,6 @@ def cleanup_for_search(raw_text):
 
 class CPDScenario(models.Model):
     scales = models.ManyToManyField("CPDScale", blank=True)
-    description = models.TextField()
 
     def title(self):
         # this is faster than using GET_DEFINING_SCALES
@@ -787,9 +786,6 @@ class UserCase(TextItem):
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
 
-        # this function creates the cpd classification as a side effect
-        _ = self.get_or_make_cpd_scenario()
-
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
         client.
@@ -810,11 +806,33 @@ class UserCase(TextItem):
             )
             return obj
 
-    def get_or_make_cpd_scenario(self):
-        cpd_scales = [q.scale for q in self.cpd_questions.all()]
-        if scenario := CPDScenario.FIND_BY_SCALES(cpd_scales):
-            return scenario
-        return CPDScenario.CREATE_BY_SCALES(cpd_scales)
+    def cpd_scales(self, scale_type=None):
+        return [
+            q.scale
+            for q in self.cpd_questions.all()
+            if (not scale_type or q.scale.scale_type == scale_type)
+        ]
+
+    def cpd_scales_competences(self):
+        return self.cpd_scales(CPDScale.ST_COMPETENCES)
+
+    def cpd_scales_attitudes(self):
+        return self.cpd_scales(CPDScale.ST_ATTITUDES)
+
+    def cpd_scales_activities(self):
+        return self.cpd_scales(CPDScale.ST_ACTIVITIES)
+
+    def cpd_title(self):
+        if competencies := self.cpd_scales(CPDScale.ST_COMPETENCES):
+            scales = competencies
+        elif attitudes := self.cpd_scales(CPDScale.ST_ATTITUDES):
+            scales = attitudes
+        elif activities := self.cpd_scales(CPDScale.ST_ACTIVITIES):
+            scales = activities
+        else:
+            return ""
+
+        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
 
 
 class Project(TextItem):

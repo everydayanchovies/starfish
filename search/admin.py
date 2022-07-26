@@ -83,6 +83,9 @@ class ItemAdmin(admin.ModelAdmin):
         if "cpd_questions" in form.base_fields:
             self.filter_horizontal.append("cpd_questions")
 
+        if "cpd_learning_environment" in form.base_fields:
+            self.filter_horizontal.append("cpd_learning_environment")
+
         return form
 
 

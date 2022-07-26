@@ -1,7 +1,10 @@
-from django.core.management.base import BaseCommand
 import shutil
 from datetime import datetime
-from search.models import CPDQuestion, CPDScale
+
+from django.core.management.base import BaseCommand
+
+from search.models import (CPDLearningEnvironment, CPDQuestion, CPDScale,
+                           CPDTimeToFinish)
 
 
 class Command(BaseCommand):
@@ -81,39 +84,128 @@ class Command(BaseCommand):
     ]
 
     COMPETENCES_SCALES_QUESTIONS = [
-        ("1", "Constructive alignment", [1, 2, 3, 6]),
-        ("2", "Pedagogy, Interactive teaching", []),
-        ("2a", "Competence teaching", [9, 10, 14, 15]),
-        ("2b", "Competence design interactive teaching", [16, 19]),
-        ("3", "Pedagogy, Learning facilitation", []),
-        ("3a", "Problem solving (design and teaching)", [18, 21, 22, 23]),
+        ("1", "Constructive alignment", "sound course design", [1, 2, 3, 6]),
+        ("2", "Pedagogy, Interactive teaching", "pedagogy of interactive teaching", []),
+        ("2a", "Competence teaching", "teaching in higher education", [9, 10, 14, 15]),
+        (
+            "2b",
+            "Competence design interactive teaching",
+            "designing interactive teaching",
+            [16, 19],
+        ),
+        (
+            "3",
+            "Pedagogy, Learning facilitation",
+            "pedagogy of learning facilitation",
+            [],
+        ),
+        (
+            "3a",
+            "Problem solving (design and teaching)",
+            "facilitating problem solving",
+            [18, 21, 22, 23],
+        ),
         (
             "3b",
             "Engagement and motivation, facilitation discipline specific learning",
+            "how to engage and motivate students and how to facilitate discipline specific thinking",
             [4, 12, 13],
         ),
-        ("3c", "Deep learning", [5, 7, 8, 11]),
-        ("3d", "Organize peer-feedback, collaborative learning", [27, 28]),
-        ("4", "Technology in facilitative teaching:", []),
-        ("4a", "Use of digital tools for a pedagogical goal", [17, 25, 26, 29, 30]),
-        ("4b", "Blended learning", [20, 24]),
+        (
+            "3c",
+            "Deep learning",
+            "how to facilitate student’s deep learning and development of higher cognitive skills",
+            [5, 7, 8, 11],
+        ),
+        (
+            "3d",
+            "Organize peer-feedback, collaborative learning",
+            "organizing peer-feedback and collaborative learning ",
+            [27, 28],
+        ),
+        (
+            "4",
+            "Technology in facilitative teaching:",
+            "how to use digital technology in teaching and learning",
+            [],
+        ),
+        (
+            "4a",
+            "Use of digital tools for a pedagogical goal",
+            "how to use specific digital tools in teaching for a pedagogical goal",
+            [17, 25, 26, 29, 30],
+        ),
+        ("4b", "Blended learning", "how to use blended learning", [20, 24]),
     ]
 
     ATTITUDES_SCALES_QUESTIONS = [
-        ("1", "Motivation and self-regulation for CPD", [2, 14, 15, 16]),
-        ("2", "Pastoral interest", [3, 4, 5]),
-        ("3", "Reflection", [1, 10, 11]),
-        ("4", "Evidence informed approach", [6, 7, 13]),
-        ("5", "Knowledge sharing", [8, 9, 12, 17]),
+        (
+            "1",
+            "Motivation and self-regulation for CPD",
+            "how to stay motivated and self-regulate their continuous professional development",
+            [2, 14, 15, 16],
+        ),
+        (
+            "2",
+            "Pastoral interest",
+            "supporting student development and enabling students’ well-being in a learning process and inclusivity",
+            [3, 4, 5],
+        ),
+        ("3", "Reflection", "reflecting on own teaching practice", [1, 10, 11]),
+        (
+            "4",
+            "Evidence informed approach",
+            "practicing teaching and learning in an evidence informed way ",
+            [6, 7, 13],
+        ),
+        ("5", "Knowledge sharing", "knowledge sharing", [8, 9, 12, 17]),
     ]
 
     ACTIVITIES_SCALES_QUESTIONS = [
-        ("1", "Imparting information (trainer-centered)", [1, 2, 3]),
-        ("2", "Learning facilitation (person-centered)", [4, 5, 7, 8, 9, 10]),
-        ("3", "Collaboration", [11, 13]),
-        ("4", "Mentor-mentee support", [12, 15, 17]),
-        ("5", "(Personal/individual) expert support", [14, 16]),
-        ("6", "Knowledge sharing", [6, 18, 19]),
+        (
+            "1",
+            "Imparting information (trainer-centered)",
+            "in a trainer centered way",
+            [1, 2, 3],
+        ),
+        (
+            "2",
+            "Learning facilitation (person-centered)",
+            "in a learner centered way",
+            [4, 5, 7, 8, 9, 10],
+        ),
+        ("3", "Collaboration", "collaboratively", [11, 13]),
+        (
+            "4",
+            "Mentor-mentee support",
+            "according to mentor-mentee support principle",
+            [12, 15, 17],
+        ),
+        (
+            "5",
+            "(Personal/individual) expert support",
+            "by using personal/individual expert support",
+            [14, 16],
+        ),
+        ("6", "Knowledge sharing", "by knowledge sharing", [6, 18, 19]),
+    ]
+
+    TIME_TO_FINISH_ENTRIES = [
+        ("several hours", "several hours"),
+        ("several days", "several days"),
+        ("several weeks", "several weeks"),
+    ]
+
+    LEARNING_ENVIRONMENT_ENTRIES = [
+        ("μMOOCs", "are using a very short open online course, a micro MOOC (μMOOC)"),
+        (
+            "workplace",
+            "professionalize in a close connection to their own teaching practice (at their workplace)",
+        ),
+        (
+            "face-to-face",
+            "meet in person on location with the training staff and with other participants",
+        ),
     ]
 
     def add_arguments(self, parser):
@@ -145,17 +237,30 @@ class Command(BaseCommand):
             self.ACTIVITIES_QUESTIONS,
         )
 
+        for (title, inline_title) in self.TIME_TO_FINISH_ENTRIES:
+            ttf = CPDTimeToFinish(title=title, inline_title=inline_title)
+            ttf.save()
+
+        for (title, inline_title) in self.LEARNING_ENVIRONMENT_ENTRIES:
+            le = CPDLearningEnvironment(title=title, inline_title=inline_title)
+            le.save()
+
     def insert_scale_data(self, scale_type, scale_data, questions):
         # create parent scales
-        for (scale, title, scale_questions) in scale_data:
+        for (scale, title, inline_title, scale_questions) in scale_data:
             # parent scales don't have questions
             if scale_questions:
                 continue
-            s = CPDScale(title=title, scale=scale, scale_type=scale_type)
+            s = CPDScale(
+                title=title,
+                inline_title=inline_title,
+                scale=scale,
+                scale_type=scale_type,
+            )
             s.save()
 
         # create other scales
-        for (scale, title, scale_questions) in scale_data:
+        for (scale, title, inline_title, scale_questions) in scale_data:
             # parent scales don't have questions
             # and we already created the parent scales
             if not scale_questions:
@@ -168,6 +273,7 @@ class Command(BaseCommand):
 
             s = CPDScale(
                 title=title,
+                inline_title=inline_title,
                 scale=scale,
                 scale_parent=CPDScale.objects.get(
                     scale_type=scale_type, scale=parent_scale

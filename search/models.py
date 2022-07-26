@@ -159,6 +159,7 @@ class CPDScenario(models.Model):
 
 class CPDTimeToFinish(models.Model):
     title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
@@ -170,6 +171,7 @@ class CPDTimeToFinish(models.Model):
 
 class CPDLearningEnvironment(models.Model):
     title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
@@ -190,6 +192,7 @@ class CPDScale(models.Model):
     ]
 
     title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
     scale_parent = models.ForeignKey(
         "CPDScale", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -762,11 +765,9 @@ class UserCase(TextItem):
         related_name="cpd_time_to_finish",
     )
 
-    cpd_learning_environment = models.ForeignKey(
+    cpd_learning_environment = models.ManyToManyField(
         "CPDLearningEnvironment",
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
         related_name="cpd_learning_environment",
     )
 
@@ -833,6 +834,49 @@ class UserCase(TextItem):
             return ""
 
         return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
+
+    def cpd_description(self):
+        competences = self.cpd_scales_competences()
+        attitudes = self.cpd_scales_attitudes()
+
+        w_text = ""
+
+        if competences:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
+            w_text += " and ".join([s.inline_title.lower() for s in competences])
+            w_text += " "
+
+        if not competences and attitudes:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop attitudes in "
+
+        if competences and attitudes:
+            w_text += "and develop attitudes in "
+
+        if attitudes:
+            w_text += " and ".join([s.inline_title.lower() for s in attitudes])
+
+        w_text = w_text.strip()
+        w_text += ".\n"
+
+        if time_to_finish := self.cpd_time_to_finish:
+            w_text += (
+                "The approximate duration of a User case that follows this scenario is "
+            )
+            w_text += time_to_finish.inline_title.lower()
+
+            w_text = w_text.strip()
+            w_text += ".\n"
+
+        if learning_environments := self.cpd_learning_environment.all():
+            w_text += "In this CPD scenario the participants "
+            w_text += " and ".join(
+                [le.inline_title.lower() for le in learning_environments]
+            )
+
+            w_text = w_text.strip()
+            w_text += "."
+
+        return w_text
 
 
 class Project(TextItem):

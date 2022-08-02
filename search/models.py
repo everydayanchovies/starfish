@@ -843,7 +843,7 @@ class UserCase(TextItem):
 
         if competences:
             w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
-            w_text += " and ".join([s.inline_title.lower() for s in competences])
+            w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
             w_text += " "
 
         if not competences and attitudes:
@@ -853,7 +853,7 @@ class UserCase(TextItem):
             w_text += "and develop attitudes in "
 
         if attitudes:
-            w_text += " and ".join([s.inline_title.lower() for s in attitudes])
+            w_text += " and ".join(set([s.inline_title.lower() for s in attitudes]))
 
         w_text = w_text.strip()
         w_text += ".\n"

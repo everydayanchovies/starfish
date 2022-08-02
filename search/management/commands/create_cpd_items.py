@@ -3,8 +3,7 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 
-from search.models import (CPDLearningEnvironment, CPDQuestion, CPDScale,
-                           CPDTimeToFinish)
+from search.models import CPDLearningEnvironment, CPDQuestion, CPDScale, CPDTimeToFinish
 
 
 class Command(BaseCommand):
@@ -191,19 +190,19 @@ class Command(BaseCommand):
     ]
 
     TIME_TO_FINISH_ENTRIES = [
-        ("several hours", "several hours"),
-        ("several days", "several days"),
-        ("several weeks", "several weeks"),
+        ("Several hours", "several hours"),
+        ("Several days", "several days"),
+        ("Several weeks", "several weeks"),
     ]
 
     LEARNING_ENVIRONMENT_ENTRIES = [
         ("μMOOCs", "are using a very short open online course, a micro MOOC (μMOOC)"),
         (
-            "workplace",
+            "Workplace",
             "professionalize in a close connection to their own teaching practice (at their workplace)",
         ),
         (
-            "face-to-face",
+            "Face-to-face",
             "meet in person on location with the training staff and with other participants",
         ),
     ]

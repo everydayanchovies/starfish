@@ -60,9 +60,9 @@
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="profile">
-                        {% if information.cpd_activities %}
+                        {% if information.get_cpd_scenario.activities %}
                         {% autoescape off %}
-                        {{ information.cpd_activities }}
+                        {{ information.get_cpd_scenario.activities }}
                         {% endautoescape %}
                         {% endif %}
                     </div>
@@ -76,11 +76,11 @@
                     <div class="tab-pane fade" id="cpd-scenario">
                         {% if information.cpd_questions %}
                         {% autoescape off %}
-                        <h4>{{ information.cpd_title }}</h4>
+                        <h4>{{ information.get_cpd_scenario.title }}</h4>
                         <div class="row">
                             <div class="col-lg-12 col-md-12">
                                 <div>
-                                    {{ information.cpd_description|linebreaks }}
+                                    {{ information.get_cpd_scenario.description|linebreaks }}
                                 </div>
                             </div>
                         </div>
@@ -89,15 +89,15 @@
                                 <h5>Time</h5>
                             </div>
                             <div class="col-lg-12 col-md-12">
-                                {% if information.cpd_time_to_finish %}
-                                    {{ information.cpd_time_to_finish.title }}
+                                {% if information.get_cpd_scenario.time_to_finish %}
+                                    {{ information.get_cpd_scenario.time_to_finish.title }}
                                 {% endif %}
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-lg-4 col-md-12">
                                 <h5>Competences</h5>
-                                {% for scale in information.cpd_scales_competences %}
+                                {% for scale in information.get_cpd_scenario.scales_competences %}
                                 <div class="cpd-scale-in-list">
                                     <span>{{ scale.label }}</span>
                                     {{ scale.title }}
@@ -106,7 +106,7 @@
                             </div>
                             <div class="col-lg-4 col-md-12">
                                 <h5>Attitudes</h5>
-                                {% for scale in information.cpd_scales_attitudes %}
+                                {% for scale in information.get_cpd_scenario.scales_attitudes %}
                                 <div class="cpd-scale-in-list">
                                     <span>{{ scale.label }}</span>
                                     {{ scale.title }}
@@ -115,7 +115,7 @@
                             </div>
                             <div class="col-lg-4 col-md-12">
                                 <h5>Activities</h5>
-                                {% for scale in information.cpd_scales_activities %}
+                                {% for scale in information.get_cpd_scenario.scales_activities %}
                                 <div class="cpd-scale-in-list">
                                     <span>{{ scale.label }}</span>
                                     {{ scale.title }}
@@ -128,7 +128,7 @@
                                 <h5>Learning environment</h5>
                             </div>
                             <div class="col-lg-12 col-md-12">
-                                {% for le in information.cpd_learning_environment.all %}
+                                {% for le in information.get_cpd_scenario.learning_environments %}
                                 <div class="cpd-le-in-list">
                                     {{ le.title }}
                                 </div>

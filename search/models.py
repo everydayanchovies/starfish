@@ -84,79 +84,6 @@ def cleanup_for_search(raw_text):
     return text
 
 
-class CPDScenario(models.Model):
-    scales = models.ManyToManyField("CPDScale", blank=True)
-
-    def title(self):
-        # this is faster than using GET_DEFINING_SCALES
-        if competencies := self.scales.all().filter(scale_type=CPDScale.ST_COMPETENCES):
-            scales = competencies
-        elif attitudes := self.scales.all().filter(scale_type=CPDScale.ST_ATTITUDES):
-            scales = attitudes
-        elif activities := self.scales.all().filter(scale_type=CPDScale.ST_ACTIVITIES):
-            scales = activities
-        else:
-            return ""
-
-        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
-
-    def dict_format(self, obj=None):
-        # Fill dict format at this level
-        # make sure the pass by reference does not cause unexpected results
-        if obj is None:
-            obj = {}
-        obj = obj.copy()
-        obj.update(
-            {
-                "id": self.id,
-                "title": self.title(),
-                "description": self.description,
-                "scales": [s.dict_format() for s in list(self.scales.all())],
-                "tags": [s.tag().dict_format() for s in list(self.scales.all())],
-            }
-        )
-        return obj
-
-    # TODO verify correct
-    @staticmethod
-    def FIND_BY_SCALES(scales):
-        if not scales:
-            return None
-
-        # find existing classification
-        # I am not sure how best to do this with Django's query API
-        if scenario := [
-            c
-            for c in CPDScenario.objects.all().filter(
-                scales__in=[s.id for s in scales]
-            )  # pre filter to speed things up
-            # and then ensure exact result (slow)
-            if set([s.id for s in c.scales.all()]) == set([s.id for s in scales])
-        ]:
-            return scenario[0]
-
-        return None
-
-    @staticmethod
-    def CREATE_BY_SCALES(scales):
-        scenario = CPDScenario()
-        scenario.save()
-        for s in scales:
-            scenario.scales.add(s)
-        return scenario
-
-    def __str__(self):
-        return (
-            ", ".join([s.label() for s in self.scales.all()])
-            + " - "
-            + self.description[:100]
-        )
-
-    class Meta:
-        verbose_name = "CPD Scenario"
-        verbose_name_plural = "CPD Scenarios"
-
-
 class CPDTimeToFinish(models.Model):
     title = models.CharField(max_length=255)
     inline_title = models.CharField(max_length=255)
@@ -181,6 +108,112 @@ class CPDLearningEnvironment(models.Model):
         verbose_name_plural = "CPD Learning Environment Entries"
 
 
+## Pseudomodel
+class CPDScenario:
+    id = []
+    scales = []
+    time_to_finish = None
+    learning_environments = []
+
+    def from_usercase(usercase_id):
+        usercase = UserCase.objects.get(pk=usercase_id)
+        cpd_scenario = CPDScenario()
+        cpd_scenario.scales = [q.scale for q in usercase.cpd_questions.all()]
+        cpd_scenario.time_to_finish = usercase.cpd_time_to_finish
+        cpd_scenario.learning_environments = usercase.cpd_learning_environment.all()
+
+        w_scale_ids = [s.id for s in cpd_scenario.scales]
+        w_scale_ids.sort()
+        cpd_scenario.id = "".join(str(w_scale_ids))
+        return cpd_scenario
+
+    def dict_format(self, obj=None):
+        if obj is None:
+            obj = {}
+        obj = obj.copy()
+        obj.update(
+            {
+                "id": self.id,
+                "title": self.title,
+                "description": self.description,
+                "scales": [s.dict_format() for s in list(self.scales)],
+                "tags": [s.tag.dict_format() for s in list(self.scales)],
+            }
+        )
+        return obj
+
+    @property
+    def scales_competences(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_COMPETENCES]
+
+    @property
+    def scales_attitudes(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_ATTITUDES]
+
+    @property
+    def scales_activities(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_ACTIVITIES]
+
+    @property
+    def classification_scales(self):
+        if competencies := self.scales_competences:
+            return competencies
+        elif attitudes := self.scales_attitudes:
+            return attitudes
+        elif activities := self.scales_activities:
+            return activities
+        return []
+
+    @property
+    def title(self):
+        scales = self.classification_scales
+        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label for s in scales])})"
+
+    @property
+    def description(self):
+        competences = self.scales_competences
+        attitudes = self.scales_attitudes
+
+        w_text = ""
+
+        if competences:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
+            w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
+            w_text += " "
+
+        if not competences and attitudes:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop attitudes in "
+
+        if competences and attitudes:
+            w_text += "and develop attitudes in "
+
+        if attitudes:
+            w_text += " and ".join(set([s.inline_title.lower() for s in attitudes]))
+
+        w_text = w_text.strip()
+        w_text += ".\n"
+
+        if time_to_finish := self.time_to_finish:
+            w_text += (
+                "The approximate duration of a User case that follows this scenario is "
+            )
+            w_text += time_to_finish.inline_title.lower()
+
+            w_text = w_text.strip()
+            w_text += ".\n"
+
+        if learning_environments := self.learning_environments:
+            w_text += "In this CPD scenario the participants "
+            w_text += " and ".join(
+                [le.inline_title.lower() for le in learning_environments]
+            )
+
+            w_text = w_text.strip()
+            w_text += "."
+
+        return w_text
+
+
 class CPDScale(models.Model):
     ST_COMPETENCES = "P1"
     ST_ATTITUDES = "P2"
@@ -201,14 +234,15 @@ class CPDScale(models.Model):
     )
     scale = models.CharField(max_length=3)
 
+    @property
     def label(self):
         if parent := self.scale_parent:
-            return f"{parent.label()}{self.scale}"
+            return f"{parent.label}{self.scale}"
         else:
             return f"{self.scale_type}-{self.scale}"
 
     def __str__(self):
-        return f"{self.label()} - {self.title}"
+        return f"{self.label} - {self.title}"
 
     def save(self, *args, **kwargs):
         # if parent_scale is set, inherit its scale_type
@@ -222,8 +256,9 @@ class CPDScale(models.Model):
             tag = Tag(type=Tag.TT_CPD, handle=self.label())
             tag.save()
 
+    @property
     def tag(self):
-        if found_tags := Tag.objects.filter(type=Tag.TT_CPD, handle=self.label()):
+        if found_tags := Tag.objects.filter(type=Tag.TT_CPD, handle=self.label):
             return found_tags[0]
         return None
 
@@ -745,6 +780,9 @@ class UserCase(TextItem):
         super(UserCase, self).__init__(*args, **kwargs)
         self.type = "U"
 
+    def get_cpd_scenario(self):
+        return CPDScenario.from_usercase(self.id)
+
     wallpaper = models.ImageField(upload_to="user_cases", blank=True, null=True)
 
     context_goals = ck_field.RichTextUploadingField(verbose_name="Context and Goals")
@@ -806,77 +844,6 @@ class UserCase(TextItem):
                 }
             )
             return obj
-
-    def cpd_scales(self, scale_type=None):
-        return [
-            q.scale
-            for q in self.cpd_questions.all()
-            if (not scale_type or q.scale.scale_type == scale_type)
-        ]
-
-    def cpd_scales_competences(self):
-        return self.cpd_scales(CPDScale.ST_COMPETENCES)
-
-    def cpd_scales_attitudes(self):
-        return self.cpd_scales(CPDScale.ST_ATTITUDES)
-
-    def cpd_scales_activities(self):
-        return self.cpd_scales(CPDScale.ST_ACTIVITIES)
-
-    def cpd_title(self):
-        if competencies := self.cpd_scales(CPDScale.ST_COMPETENCES):
-            scales = competencies
-        elif attitudes := self.cpd_scales(CPDScale.ST_ATTITUDES):
-            scales = attitudes
-        elif activities := self.cpd_scales(CPDScale.ST_ACTIVITIES):
-            scales = activities
-        else:
-            return ""
-
-        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label() for s in scales])})"
-
-    def cpd_description(self):
-        competences = self.cpd_scales_competences()
-        attitudes = self.cpd_scales_attitudes()
-
-        w_text = ""
-
-        if competences:
-            w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
-            w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
-            w_text += " "
-
-        if not competences and attitudes:
-            w_text += "This CPD scenario describes a User cases in which lecturers develop attitudes in "
-
-        if competences and attitudes:
-            w_text += "and develop attitudes in "
-
-        if attitudes:
-            w_text += " and ".join(set([s.inline_title.lower() for s in attitudes]))
-
-        w_text = w_text.strip()
-        w_text += ".\n"
-
-        if time_to_finish := self.cpd_time_to_finish:
-            w_text += (
-                "The approximate duration of a User case that follows this scenario is "
-            )
-            w_text += time_to_finish.inline_title.lower()
-
-            w_text = w_text.strip()
-            w_text += ".\n"
-
-        if learning_environments := self.cpd_learning_environment.all():
-            w_text += "In this CPD scenario the participants "
-            w_text += " and ".join(
-                [le.inline_title.lower() for le in learning_environments]
-            )
-
-            w_text = w_text.strip()
-            w_text += "."
-
-        return w_text
 
 
 class Project(TextItem):

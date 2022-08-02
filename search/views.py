@@ -968,15 +968,19 @@ def browse(request):
 
     results = {}
 
+    item_dicts = [item.dict_format() for item in items]
     # Append the dict_format representation of the item to the results
-    for item in items:
-        item_dict = item.dict_format()
+    for item_dict in item_dicts:
         # hide anonymous authors
         if item_dict["type"] == "Person" and item_dict["is_ghost"]:
             continue
-        results[item.id] = item_dict
+        results[item_dict["id"]] = item_dict
 
-    for cpd_scenario in CPDScenario.objects.all():
+    for cpd_scenario in [
+        CPDScenario.from_usercase(item["id"])
+        for item in item_dicts
+        if item["type"] == "User Case"
+    ]:
         item_dict = cpd_scenario.dict_format()
         item_dict["type"] = "CPDScenario"
         item_dict["featured"] = datetime.now(timezone.utc)

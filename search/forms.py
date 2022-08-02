@@ -1,13 +1,32 @@
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
-from django.forms import (CharField, EmailInput, HiddenInput, IntegerField,
-                          ModelForm, ModelMultipleChoiceField, PasswordInput,
-                          SelectMultiple, Textarea)
+from django.forms import (
+    CharField,
+    EmailInput,
+    HiddenInput,
+    IntegerField,
+    ModelForm,
+    ModelMultipleChoiceField,
+    PasswordInput,
+    SelectMultiple,
+    Textarea,
+)
 
-from search.models import (Comment, Community, CPDLearningEnvironment,
-                           CPDQuestion, Event, Glossary, GoodPractice,
-                           Information, Item, Person, Project, Question,
-                           UserCase)
+from search.models import (
+    Comment,
+    Community,
+    CPDLearningEnvironment,
+    CPDQuestion,
+    Event,
+    Glossary,
+    GoodPractice,
+    Information,
+    Item,
+    Person,
+    Project,
+    Question,
+    UserCase,
+)
 from search.widgets import TagInput
 
 # from bootstrap3_datetime.widgets import DateTimePicker
@@ -125,13 +144,13 @@ class EditUserCaseForm(DashboardForm):
     cpd_questions = ModelMultipleChoiceField(
         queryset=CPDQuestion.objects.all(),
         widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
+        required=False,
     )
 
     cpd_learning_environment = ModelMultipleChoiceField(
         queryset=CPDLearningEnvironment.objects.all(),
-        widget=FilteredSelectMultiple(
-            CPDLearningEnvironment._meta.verbose_name_plural, False
-        ),
+        widget=SelectMultiple,
+        required=False,
     )
 
     class Meta:

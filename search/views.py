@@ -974,22 +974,24 @@ def browse(request):
         # hide anonymous authors
         if item_dict["type"] == "Person" and item_dict["is_ghost"]:
             continue
+        if item_dict["type"] == "User Case":
+            cpd_scenario = CPDScenario.from_usercase(item_dict["id"])
+            item_dict["cpd_scenario"] = (
+                cpd_scenario.dict_format() if cpd_scenario else None
+            )
         results[item_dict["id"]] = item_dict
 
-    for cpd_scenario in [
+    for item_dict in [
         uc
         for uc in [
-            CPDScenario.from_usercase(item["id"])
-            for item in item_dicts
-            if item["type"] == "User Case"
+            item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
         ]
         if uc is not None
     ]:
-        item_dict = cpd_scenario.dict_format()
         item_dict["type"] = "CPDScenario"
         item_dict["featured"] = datetime.now(timezone.utc)
         item_dict["create_date"] = datetime.now(timezone.utc)
-        results[cpd_scenario.id] = item_dict
+        results[item_dict["id"]] = item_dict
 
     results = results.values()
 

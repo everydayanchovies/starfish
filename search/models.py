@@ -108,7 +108,8 @@ class CPDLearningEnvironment(models.Model):
         verbose_name_plural = "CPD Learning Environment Entries"
 
 
-## Pseudomodel
+## Pseudomodel, created to account for the way the search module works
+## If the search module is rewritten, this class can be dropped
 class CPDScenario:
     id = []
     scales = []
@@ -128,7 +129,7 @@ class CPDScenario:
 
         w_scale_ids = [s.id for s in cpd_scenario.scales]
         w_scale_ids.sort()
-        cpd_scenario.id = "".join(str(w_scale_ids))
+        cpd_scenario.id = "".join([str(s_id) for s_id in w_scale_ids])
         return cpd_scenario
 
     def dict_format(self, obj=None):

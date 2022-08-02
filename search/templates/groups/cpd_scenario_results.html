@@ -2,30 +2,32 @@
 {% load static %}
 
 {% block header %}
-    <h1>CPD Scenarios</h1>
-    <hr/>
+<h1>CPD Scenarios</h1>
+<hr />
 {% endblock %}
 
 {% block content %}
-    <div class="row row-flex">
-        {% for item in results %}
-            <div class="col-xs-12 col-md-12 col-lg-6" style="">
-                <div class="row-content">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title">
-                                  {{ item.title }}
-                            </h4>
-                            {% include 'groups/tags.html' %}
+<div class="row row-flex">
+    {% for item in results %}
+    <div class="col-xs-12 col-md-12 col-lg-6" style="">
+        <div class="row-content">
+            <div class="card">
+                <div class="card-body">
+                    <a href="/browse?ftype=usercase&cpd_scenario_id={{ item.id }}">
+                        <h4 class="card-title">
+                            {{ item.title }}
+                        </h4>
+                    </a>
+                    {% include 'groups/tags.html' %}
 
-                            <p>
-                                {{ item.description}}
-                            </p>
-                        </div>
-                    </div>
+                    <p>
+                        {{ item.description}}
+                    </p>
                 </div>
             </div>
-        {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
     </div>
 {% endblock %}
 

@@ -946,7 +946,7 @@ def tag(request, handle):
         return redirect("/?q=" + symb + handle)
 
 
-@cache_page(60 * 60 * 24)
+# @cache_page(60 * 60 * 24)
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)
@@ -977,9 +977,13 @@ def browse(request):
         results[item_dict["id"]] = item_dict
 
     for cpd_scenario in [
-        CPDScenario.from_usercase(item["id"])
-        for item in item_dicts
-        if item["type"] == "User Case"
+        uc
+        for uc in [
+            CPDScenario.from_usercase(item["id"])
+            for item in item_dicts
+            if item["type"] == "User Case"
+        ]
+        if uc is not None
     ]:
         item_dict = cpd_scenario.dict_format()
         item_dict["type"] = "CPDScenario"

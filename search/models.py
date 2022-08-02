@@ -117,8 +117,12 @@ class CPDScenario:
 
     def from_usercase(usercase_id):
         usercase = UserCase.objects.get(pk=usercase_id)
+
         cpd_scenario = CPDScenario()
         cpd_scenario.scales = [q.scale for q in usercase.cpd_questions.all()]
+        if not cpd_scenario.scales:
+            return None
+
         cpd_scenario.time_to_finish = usercase.cpd_time_to_finish
         cpd_scenario.learning_environments = usercase.cpd_learning_environment.all()
 
@@ -252,8 +256,8 @@ class CPDScale(models.Model):
         super(CPDScale, self).save(*args, **kwargs)
 
         # create related tag
-        if not self.tag():
-            tag = Tag(type=Tag.TT_CPD, handle=self.label())
+        if not self.tag:
+            tag = Tag(type=Tag.TT_CPD, handle=self.label)
             tag.save()
 
     @property
@@ -292,7 +296,7 @@ class CPDQuestion(models.Model):
     scale = models.ForeignKey("CPDScale", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"({self.scale.label()}) {self.question}"
+        return f"({self.scale.label}) {self.question}"
 
     class Meta:
         verbose_name = "CPD Question"

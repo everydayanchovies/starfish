@@ -2,14 +2,6 @@
 
 with pkgs;
 
-let
-  my-python = pkgs.python39;
-  python-with-my-packages = my-python.withPackages (p: with p; [
-    wheel
-    virtualenv
-    ldap
-  ]);
-in
 mkShell {
   buildInputs = [
     procps
@@ -33,8 +25,6 @@ mkShell {
     vim
     cacert
     litecli
-    my-python
-    python-with-my-packages
   ];
 
   shellHook = ''
@@ -45,14 +35,6 @@ mkShell {
       ps ax | grep "$1" | grep -v grep | awk '{print $1}' | xargs kill
     }
 
-    function cleanup {
-      echo "Killing leftover processes...";
-      kill-process memcached 2> /dev/null;
-      kill-process "python manage.py" 2> /dev/null;
-      kill-process node 2> /dev/null;
-    }
-    trap cleanup EXIT;
-
     alias sf='python $PROJECT_ROOT/manage.py';
     alias db-pull-from-prod='sh $PROJECT_ROOT/scripts/local/pull-db-from-prod.sh';
     alias upgrade='sh $PROJECT_ROOT/scripts/server/upgrade.sh';
@@ -62,7 +44,7 @@ mkShell {
     alias h='display_help';
 
     venv-upgrade () {
-      pip install -r $PROJECT_ROOT/requirements-nix.txt
+      pip install -r $PROJECT_ROOT/requirements.txt
       pip install https://projects.unbit.it/downloads/uwsgi-lts.tar.gz
     }
 
@@ -77,13 +59,7 @@ mkShell {
     }
 
     if [ ! -d $PROJECT_ROOT/.venv ]; then
-      echo "Creating python virtual environment (venv)...";
-      python3 -m venv $PROJECT_ROOT/.venv;
-      echo "Activating python venv...";
-      source $PROJECT_ROOT/.venv/bin/activate;
-      pip install --upgrade pip;
-      echo "Installing python packages in venv...";
-      venv-upgrade;
+      echo "Warning! Create a python virtual environment (see scripts/)."
     else
       source $PROJECT_ROOT/.venv/bin/activate;
     fi

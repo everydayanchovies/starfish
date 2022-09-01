@@ -15,6 +15,7 @@ mkShell {
     procps
     memcached
     sqlite
+    nginx
     pcre
     openjpeg
     libtiff

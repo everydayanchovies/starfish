@@ -30,6 +30,7 @@ mkShell {
     expat
     ncurses
     git
+    vim
     cacert
     litecli
     my-python
@@ -53,13 +54,17 @@ mkShell {
     trap cleanup EXIT;
 
     alias sf='python $PROJECT_ROOT/manage.py';
-    alias venv-upgrade='pip install -r $PROJECT_ROOT/requirements-nix.txt';
     alias db-pull-from-prod='sh $PROJECT_ROOT/scripts/local/pull-db-from-prod.sh';
     alias upgrade='sh $PROJECT_ROOT/scripts/server/upgrade.sh';
     alias db-backup='sh $PROJECT_ROOT/scripts/server/backup.sh';
     alias cache-warmup='sh $PROJECT_ROOT/scripts/server/cache_warmup.sh';
     alias enter-db='litecli $PROJECT_ROOT/db.sqlite';
     alias h='display_help';
+
+    venv-upgrade () {
+      pip install -r $PROJECT_ROOT/requirements-nix.txt
+      pip install https://projects.unbit.it/downloads/uwsgi-lts.tar.gz
+    }
 
     serve () {
       if test -f /home/ubuntu/; then

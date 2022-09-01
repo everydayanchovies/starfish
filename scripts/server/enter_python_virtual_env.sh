@@ -5,7 +5,7 @@ if ! test -f /home/ubuntu/; then
     exit 1
 fi
 
-PROJECT_ROOT=/home/ubuntu/starfish;
+PROJECT_ROOT=/home/ubuntu/Starfish-master;
 
 echo "Creating python virtual environment (venv)...";
 python3 -m venv $PROJECT_ROOT/.venv;

@@ -15,7 +15,7 @@ git pull --ff-only
 
 set +x
 # enter python venv
-. venvdj3/bin/activate
+. .venv/bin/activate
 set -x
 
 python manage.py collectstatic --noinput

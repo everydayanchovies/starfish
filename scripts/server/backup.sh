@@ -11,7 +11,7 @@ cd /home/ubuntu/Starfish-master || exit
 
 set +x
 # enter python venv
-. venvdj3/bin/activate
+. .venv/bin/activate
 set -x
 
 python manage.py backup_database /home/ubuntu/Starfish-master/db.sqlite

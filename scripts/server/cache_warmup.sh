@@ -1,4 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+
+if ! [ -d "/home/ubuntu/" ]; then
+    echo "This script is meant to be run on the production server only."
+    exit 1
+fi
 
 set -x
 

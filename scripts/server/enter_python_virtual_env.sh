@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-if ! test -f /home/ubuntu/; then
+if ! [ -d "/home/ubuntu/" ]; then
     echo "This script is meant to be run on the production server only."
     exit 1
 fi

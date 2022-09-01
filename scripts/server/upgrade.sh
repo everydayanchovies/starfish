@@ -1,21 +1,21 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-if ! test -f /home/ubuntu/; then
+if ! [ -d "/home/ubuntu/" ]; then
     echo "This script is meant to be run on the production server only."
     exit 1
 fi
 
 set -x
 
-cd /home/ubuntu/Starfish-master
+cd /home/ubuntu/Starfish-master || exit
 
-cp db.sqlite /home/ubuntu/db_backups/misc/db_$(date +%F-%T).sqlite
+cp db.sqlite "/home/ubuntu/db_backups/misc/db_$(date +%F-%T).sqlite"
 
 git pull --ff-only
 
 set +x
 # enter python venv
-source venvdj3/bin/activate
+. venvdj3/bin/activate
 set -x
 
 python manage.py collectstatic --noinput

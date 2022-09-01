@@ -49,7 +49,7 @@ mkShell {
     }
 
     serve () {
-      if test -f /home/ubuntu/; then
+      if [ -d /home/ubuntu/ ]; then
         sh $PROJECT_ROOT/scripts/server/serve.sh;
       else
         kill-process memcached;
@@ -79,14 +79,14 @@ mkShell {
       echo "  venv-upgrade       install python requirements in venv";
       echo "  kill-process       kill a process by name";
       echo "                                          ";
-      if test -f /home/ubuntu/; then
+      if [ -d /home/ubuntu/ ]; then
         echo "  ---development--(you're-running-in-prod)";
       else
         echo "  ---development--------------------------";
       fi
       echo "  db-pull-from-prod  overwrite local db with the one on prod";
       echo "                                          ";
-      if test -f /home/ubuntu/; then
+      if [ -d /home/ubuntu/ ]; then
         echo "  ---production---------------------------";
       else
         echo "  ---production--(you're-running-in-dev)--";

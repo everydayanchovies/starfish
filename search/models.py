@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
 from html.parser import HTMLParser
+
 import ckeditor_uploader.fields as ck_field
 import wikipedia
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -84,12 +84,238 @@ def cleanup_for_search(raw_text):
     return text
 
 
+class CPDTimeToFinish(models.Model):
+    title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "CPD Time To Finish"
+        verbose_name_plural = "CPD Time To Finish Entries"
+
+
+class CPDLearningEnvironment(models.Model):
+    title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "CPD Learning Environment"
+        verbose_name_plural = "CPD Learning Environment Entries"
+
+
+## Pseudomodel, created to account for the way the search module works
+## If the search module is rewritten, this class can be dropped
+class CPDScenario:
+    id = []
+    scales = []
+    time_to_finish = None
+    learning_environments = []
+
+    def from_usercase(usercase_id):
+        usercase = UserCase.objects.get(pk=usercase_id)
+
+        cpd_scenario = CPDScenario()
+        cpd_scenario.scales = [q.scale for q in usercase.cpd_questions.all()]
+        if not cpd_scenario.scales:
+            return None
+
+        cpd_scenario.time_to_finish = usercase.cpd_time_to_finish
+        cpd_scenario.learning_environments = usercase.cpd_learning_environment.all()
+
+        w_scale_ids = [s.id for s in cpd_scenario.scales]
+        w_scale_ids.sort()
+        cpd_scenario.id = "".join([str(s_id) for s_id in w_scale_ids])
+        return cpd_scenario
+
+    def dict_format(self, obj=None):
+        if obj is None:
+            obj = {}
+        obj = obj.copy()
+        obj.update(
+            {
+                "id": self.id,
+                "title": self.title,
+                "description": self.description,
+                "scales": [s.dict_format() for s in list(self.scales)],
+                "tags": [s.tag.dict_format() for s in list(self.scales)],
+            }
+        )
+        return obj
+
+    @property
+    def scales_competences(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_COMPETENCES]
+
+    @property
+    def scales_attitudes(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_ATTITUDES]
+
+    @property
+    def scales_activities(self):
+        return [s for s in self.scales if s.scale_type == CPDScale.ST_ACTIVITIES]
+
+    @property
+    def classification_scales(self):
+        if competencies := self.scales_competences:
+            return competencies
+        elif attitudes := self.scales_attitudes:
+            return attitudes
+        elif activities := self.scales_activities:
+            return activities
+        return []
+
+    @property
+    def title(self):
+        scales = self.classification_scales
+        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label for s in scales])})"
+
+    @property
+    def description(self):
+        competences = self.scales_competences
+        attitudes = self.scales_attitudes
+
+        w_text = ""
+
+        if competences:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
+            w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
+            w_text += " "
+
+        if not competences and attitudes:
+            w_text += "This CPD scenario describes a User cases in which lecturers develop attitudes in "
+
+        if competences and attitudes:
+            w_text += "and develop attitudes in "
+
+        if attitudes:
+            w_text += " and ".join(set([s.inline_title.lower() for s in attitudes]))
+
+        w_text = w_text.strip()
+        w_text += ".\n"
+
+        if time_to_finish := self.time_to_finish:
+            w_text += (
+                "The approximate duration of a User case that follows this scenario is "
+            )
+            w_text += time_to_finish.inline_title.lower()
+
+            w_text = w_text.strip()
+            w_text += ".\n"
+
+        if learning_environments := self.learning_environments:
+            w_text += "In this CPD scenario the participants "
+            w_text += " and ".join(
+                [le.inline_title.lower() for le in learning_environments]
+            )
+
+            w_text = w_text.strip()
+            w_text += "."
+
+        return w_text
+
+
+class CPDScale(models.Model):
+    ST_COMPETENCES = "P1"
+    ST_ATTITUDES = "P2"
+    ST_ACTIVITIES = "P3"
+    SCALE_TYPE_CHOICES = [
+        (ST_COMPETENCES, "Competences"),
+        (ST_ATTITUDES, "Attitudes"),
+        (ST_ACTIVITIES, "CPD Activities"),
+    ]
+
+    title = models.CharField(max_length=255)
+    inline_title = models.CharField(max_length=255)
+    scale_parent = models.ForeignKey(
+        "CPDScale", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    scale_type = models.CharField(
+        max_length=50, choices=SCALE_TYPE_CHOICES, default=ST_COMPETENCES
+    )
+    scale = models.CharField(max_length=3)
+
+    @property
+    def label(self):
+        if parent := self.scale_parent:
+            return f"{parent.label}{self.scale}"
+        else:
+            return f"{self.scale_type}-{self.scale}"
+
+    def __str__(self):
+        return f"{self.label} - {self.title}"
+
+    def save(self, *args, **kwargs):
+        # if parent_scale is set, inherit its scale_type
+        if parent := self.scale_parent:
+            self.scale_type = parent.scale_type
+
+        super(CPDScale, self).save(*args, **kwargs)
+
+        # create related tag
+        if not self.tag:
+            tag = Tag(type=Tag.TT_CPD, handle=self.label)
+            tag.save()
+
+    @property
+    def tag(self):
+        if found_tags := Tag.objects.filter(type=Tag.TT_CPD, handle=self.label):
+            return found_tags[0]
+        return None
+
+    def dict_format(self, obj=None):
+        # Fill dict format at this level
+        # make sure the pass by reference does not cause unexpected results
+        if obj is None:
+            obj = {}
+        obj = obj.copy()
+        obj.update(
+            {
+                "id": self.id,
+                "title": self.title,
+                "scale_parent": self.scale_parent.dict_format()
+                if self.scale_parent
+                else "",
+                "scale_type": self.scale_type,
+            }
+        )
+        return obj
+
+    class Meta:
+        verbose_name = "CPD Scale"
+        verbose_name_plural = "CPD Scales"
+
+        unique_together = (("scale_type", "scale", "scale_parent"),)
+
+
+class CPDQuestion(models.Model):
+    question = models.CharField(max_length=255)
+    scale = models.ForeignKey("CPDScale", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"({self.scale.label}) {self.question}"
+
+    class Meta:
+        verbose_name = "CPD Question"
+        verbose_name_plural = "CPD Questions"
+
+
 class Tag(models.Model):
+    TT_PEDAGOGY = "P"
+    TT_TECHNOLOGY = "T"
+    TT_CONTENT = "C"
+    TT_CONTEXT = "O"
+    TT_CPD = "D"
     TAG_TYPES = (
-        ("P", "Pedagogy"),
-        ("T", "Technology"),
-        ("C", "Content"),
-        ("O", "Context/Topic"),
+        (TT_PEDAGOGY, "Pedagogy"),
+        (TT_TECHNOLOGY, "Technology"),
+        (TT_CONTENT, "Content"),
+        (TT_CONTEXT, "Context/Topic"),
+        (TT_CPD, "Special/CPD"),
     )
     # The type of this tag, used for coloring
     type = models.CharField(max_length=1, choices=TAG_TYPES)
@@ -559,13 +785,50 @@ class UserCase(TextItem):
         super(UserCase, self).__init__(*args, **kwargs)
         self.type = "U"
 
+    def get_cpd_scenario(self):
+        return CPDScenario.from_usercase(self.id)
+
     wallpaper = models.ImageField(upload_to="user_cases", blank=True, null=True)
 
     context_goals = ck_field.RichTextUploadingField(verbose_name="Context and Goals")
 
     cpd_activities = ck_field.RichTextUploadingField(verbose_name="CPD Activities")
 
+    cpd_questions = models.ManyToManyField(
+        "CPDQuestion",
+        blank=True,
+        related_name="cpd_questions",
+    )
+
+    cpd_time_to_finish = models.ForeignKey(
+        "CPDTimeToFinish",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpd_time_to_finish",
+    )
+
+    cpd_learning_environment = models.ManyToManyField(
+        "CPDLearningEnvironment",
+        blank=True,
+        related_name="cpd_learning_environment",
+    )
+
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
+
+    def save(self, *args, **kwargs):
+        super(UserCase, self).save(*args, **kwargs)
+
+        # delete all relations with CPD tags
+        cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
+        for cpd_tag in cpd_tags:
+            self.tags.remove(cpd_tag)
+
+        # reconstruct CPD tag relations
+        cpd_scales = [q.scale.label() for q in self.cpd_questions.all()]
+        cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
+        for cpd_tag in cpd_tags:
+            self.tags.add(cpd_tag)
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the

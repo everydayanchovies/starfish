@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models import Q
+from django.forms import TextInput
 
 from search.models import *
 
@@ -78,6 +80,12 @@ class ItemAdmin(admin.ModelAdmin):
                 .order_by("last_name")
             )
 
+        if "cpd_questions" in form.base_fields:
+            self.filter_horizontal.append("cpd_questions")
+
+        if "cpd_learning_environment" in form.base_fields:
+            self.filter_horizontal.append("cpd_learning_environment")
+
         return form
 
 
@@ -101,6 +109,40 @@ class TagAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Tag.objects.filter(alias_of=None)
         s = super(TagAdmin, self)
         return s.formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class CPDScaleAdmin(admin.ModelAdmin):
+    id = None
+
+    def get_form(self, request, obj=None, **kwargs):
+        # fetch own model id in database
+        if obj:
+            self.id = obj.id
+        return super(CPDScaleAdmin, self).get_form(request, obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # don't allow recursive child-parent relation
+        # aka, hide self from scale_parent dropdown
+        if db_field.name == "scale_parent":
+            kwargs["queryset"] = CPDScale.objects.filter(~Q(id=self.id))
+        return super(CPDScaleAdmin, self).formfield_for_foreignkey(
+            db_field, request, **kwargs
+        )
+
+    class Media:
+        js = ("js/admin/cpd_scale.js",)
+
+
+class CPDQuestionAdmin(admin.ModelAdmin):
+    pass
+
+
+class CPDTimeToFinishAdmin(admin.ModelAdmin):
+    pass
+
+
+class CPDLearningEnvironmentAdmin(admin.ModelAdmin):
+    pass
 
 
 class GlossaryAdmin(TextItemAdmin):
@@ -151,3 +193,7 @@ admin.site.register(Template)
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Item)
 admin.site.register(ItemAuthor)
+admin.site.register(CPDScale, CPDScaleAdmin)
+admin.site.register(CPDQuestion, CPDQuestionAdmin)
+admin.site.register(CPDTimeToFinish, CPDTimeToFinishAdmin)
+admin.site.register(CPDLearningEnvironment, CPDLearningEnvironmentAdmin)

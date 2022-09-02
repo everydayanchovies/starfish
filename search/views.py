@@ -946,7 +946,7 @@ def tag(request, handle):
         return redirect("/?q=" + symb + handle)
 
 
-@cache_page(60 * 60 * 24)
+# @cache_page(60 * 60 * 24)
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)
@@ -968,13 +968,30 @@ def browse(request):
 
     results = {}
 
+    item_dicts = [item.dict_format() for item in items]
     # Append the dict_format representation of the item to the results
-    for item in items:
-        item_dict = item.dict_format()
+    for item_dict in item_dicts:
         # hide anonymous authors
         if item_dict["type"] == "Person" and item_dict["is_ghost"]:
             continue
-        results[item.id] = item_dict
+        if item_dict["type"] == "User Case":
+            cpd_scenario = CPDScenario.from_usercase(item_dict["id"])
+            item_dict["cpd_scenario"] = (
+                cpd_scenario.dict_format() if cpd_scenario else None
+            )
+        results[item_dict["id"]] = item_dict
+
+    for item_dict in [
+        uc
+        for uc in [
+            item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
+        ]
+        if uc is not None
+    ]:
+        item_dict["type"] = "CPDScenario"
+        item_dict["featured"] = datetime.now(timezone.utc)
+        item_dict["create_date"] = datetime.now(timezone.utc)
+        results[item_dict["id"]] = item_dict
 
     results = results.values()
 
@@ -1108,7 +1125,9 @@ def search(request):
                         )
                     else:
                         trimmed.append(t)
-                result["tags"] = itertools.chain(*trimmed)
+                # FIXME fix collapsed tags in browse/search page
+                # and fix CPD tags being filtered out by the logic above
+                # result["tags"] = itertools.chain(*trimmed)
         used_tags_by_type = []
     else:
         query = ""

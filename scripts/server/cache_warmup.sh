@@ -17,3 +17,4 @@ curl https://starfish-education.eu/browse?ftype=information > /dev/null
 curl https://starfish-education.eu/browse?ftype=person > /dev/null
 curl https://starfish-education.eu/browse?ftype=question > /dev/null
 curl https://starfish-education.eu/browse?ftype=usercase > /dev/null
+curl https://starfish-education.eu/browse?ftype=cpd_scenario > /dev/null

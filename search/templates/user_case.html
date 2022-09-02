@@ -46,6 +46,9 @@
                     <li>
                         <a href="#messages" role="tab" data-toggle="tab">Evaluation</a>
                     </li>
+                    <li>
+                        <a href="#cpd-scenario" role="tab" data-toggle="tab">CPD Scenario</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -57,9 +60,9 @@
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="profile">
-                        {% if information.cpd_activities %}
+                        {% if information.get_cpd_scenario.activities %}
                         {% autoescape off %}
-                        {{ information.cpd_activities }}
+                        {{ information.get_cpd_scenario.activities }}
                         {% endautoescape %}
                         {% endif %}
                     </div>
@@ -67,6 +70,71 @@
                         {% if information.evaluation %}
                         {% autoescape off %}
                         {{ information.evaluation }}
+                        {% endautoescape %}
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="cpd-scenario">
+                        {% if information.cpd_questions %}
+                        {% autoescape off %}
+                        <h4>{{ information.get_cpd_scenario.title }}</h4>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <div>
+                                    {{ information.get_cpd_scenario.description|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <h5>Time</h5>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                {% if information.get_cpd_scenario.time_to_finish %}
+                                    {{ information.get_cpd_scenario.time_to_finish.title }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Competences</h5>
+                                {% for scale in information.get_cpd_scenario.scales_competences %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Attitudes</h5>
+                                {% for scale in information.get_cpd_scenario.scales_attitudes %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5>Activities</h5>
+                                {% for scale in information.get_cpd_scenario.scales_activities %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ scale.label }}</span>
+                                    {{ scale.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <h5>Learning environment</h5>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                {% for le in information.get_cpd_scenario.learning_environments %}
+                                <div class="cpd-le-in-list">
+                                    {{ le.title }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% endautoescape %}
                         {% endif %}
                     </div>

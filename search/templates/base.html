@@ -60,6 +60,12 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
 
     {% block header %}{% endblock %}
+
+    {% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    {% endblock %}
+
 </head>
 
 <body>

@@ -5,8 +5,10 @@ if ! [ -d "/home/ubuntu/" ]; then
     exit 1
 fi
 
+sudo apt update
 sudo apt install -y \
+    litecli \
     build-essential \
     python3 python3-dev python3-venv python3-pip \
     libsasl2-dev libldap2-dev libssl-dev \
-    nginx
+    memcached nginx

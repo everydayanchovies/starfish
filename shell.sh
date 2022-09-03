@@ -8,6 +8,7 @@ alias upgrade='sh $PROJECT_ROOT/scripts/server/upgrade.sh';
 alias db-backup='sh $PROJECT_ROOT/scripts/server/backup.sh';
 alias cache-warmup='sh $PROJECT_ROOT/scripts/server/cache_warmup.sh';
 alias enter-db='litecli $PROJECT_ROOT/db.sqlite';
+alias prod='ssh ubuntu@starfish-education.eu';
 alias h='display_help';
 
 venv-upgrade () {
@@ -51,6 +52,7 @@ display_help () {
   else
     echo "  ---development--------------------------";
   fi
+  echo "  prod               enter the production shell";
   echo "  db-pull-from-prod  overwrite local db with the one on prod";
   echo "                                          ";
   if [ -d /home/ubuntu/ ]; then

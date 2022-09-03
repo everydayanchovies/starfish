@@ -62,7 +62,7 @@ def retrieve(query, dict_format=False, communities_list=None):
             handle__iregex=r"^(" + "|".join(tag_tokens) + ")$"
         )
         # Add tag aliases
-        tags_extended = set([])
+        tags_extended = set([Tag.objects.filter(handle=h)[0] for h in tag_tokens])
         for tag in tags:
             tags_extended.add(tag)
             if tag.alias_of is not None:
@@ -130,9 +130,10 @@ def retrieve(query, dict_format=False, communities_list=None):
         else:
             tags_by_type[key] = [tag]
 
+    # TODO this does not appear to work
     if len(tags) > 0:
         for tags in tags_by_type.values():
-            items = items.filter(tags__in=tags)
+            items = items.filter(tags__in=[t.id for t in tags])
 
     # Add person constraints
     if len(persons) > 0:
@@ -170,25 +171,44 @@ def retrieve(query, dict_format=False, communities_list=None):
     if special:
         items = filter(lambda i: i.id != special.id, items)
 
+    print(items)
+
     # Initialize results
     results = {}
 
-    for cpd_scenario in CPDScenario.objects.all():
-        item_dict = cpd_scenario.dict_format()
-        item_dict["type"] = "CPDScenario"
-        item_dict["featured"] = datetime.now(timezone.utc)
-        item_dict["create_date"] = datetime.now(timezone.utc)
-        results[cpd_scenario.id] = item_dict
-
-    # Generate search results
     if dict_format:
-        # Ensure unique results
-        for item in items:
-            # Append the dict_format representation of the item to the results
-            results[item.id] = item.dict_format()
+        item_dicts = [item.dict_format() for item in items]
+
+        for item_dict in item_dicts:
+            print(item_dict)
+            # hide anonymous authors
+            if item_dict["type"] == "Person" and item_dict["is_ghost"]:
+                continue
+            # TODO this does not appear to work
+            if item_dict["type"] == "User Case":
+                cpd_scenario = CPDScenario.from_usercase(item_dict["id"])
+                item_dict["cpd_scenario"] = (
+                    cpd_scenario.dict_format() if cpd_scenario else None
+                )
+                results[item_dict["id"]] = item_dict
+
+        for item_dict in [
+                uc
+                for uc in [
+                        item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
+                ]
+                if uc is not None
+        ]:
+            item_dict["type"] = "CPDScenario"
+            item_dict["featured"] = datetime.now(timezone.utc)
+            item_dict["create_date"] = datetime.now(timezone.utc)
+            results[item_dict["id"]] = item_dict
+
         results = results.values()
-    else:
-        results = items
+
+    if not dict_format:
+        print("Unimplemented!")
+        # TODO implement
 
     # Return the original query, a suggested query and the results
     return query, dym_query, dym_query_raw, results, special

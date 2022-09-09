@@ -60,9 +60,9 @@
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="profile">
-                        {% if information.get_cpd_scenario.activities %}
+                        {% if information.cpd_activities %}
                         {% autoescape off %}
-                        {{ information.get_cpd_scenario.activities }}
+                        {{ information.cpd_activities }}
                         {% endautoescape %}
                         {% endif %}
                     </div>

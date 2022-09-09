@@ -11,3 +11,4 @@ scratch/
 .DS_Store
 _build/
 **/*.py.swp
+__MACOSX/

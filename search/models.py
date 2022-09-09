@@ -825,7 +825,7 @@ class UserCase(TextItem):
             self.tags.remove(cpd_tag)
 
         # reconstruct CPD tag relations
-        cpd_scales = [q.scale.label() for q in self.cpd_questions.all()]
+        cpd_scales = [q.scale.label for q in self.cpd_questions.all()]
         cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)

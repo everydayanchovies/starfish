@@ -295,9 +295,10 @@ class CPDScale(models.Model):
 class CPDQuestion(models.Model):
     question = models.CharField(max_length=255)
     scale = models.ForeignKey("CPDScale", on_delete=models.CASCADE)
+    question_nr = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"({self.scale.label}) {self.question}"
+        return f"({self.scale.label}) {self.question_nr} {self.question}"
 
     class Meta:
         verbose_name = "CPD Question"
@@ -402,7 +403,8 @@ class Template(models.Model):
 
 class Community(models.Model):
     # The name of the community
-    name = models.CharField(max_length=254)
+    name = models.CharField(max_length=254,
+                            verbose_name="community")
     # abbreviation = models.CharField(max_length=50, blank=True, null=True,
     #                                default=None)
     # Communities are hierarchical
@@ -425,6 +427,9 @@ class Community(models.Model):
         if self.part_of is not None:
             return [self.part_of] + self.part_of.get_parents()
         return []
+
+    class Meta:
+        verbose_name_plural = "communities"
 
 
 class Link(models.Model):

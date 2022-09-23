@@ -17,6 +17,7 @@ from search.models import (
     Community,
     CPDLearningEnvironment,
     CPDQuestion,
+    Link,
     Event,
     Glossary,
     GoodPractice,
@@ -144,6 +145,18 @@ class EditUserCaseForm(DashboardForm):
     cpd_questions = ModelMultipleChoiceField(
         queryset=CPDQuestion.objects.all(),
         widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
+        required=False,
+    )
+
+    links = ModelMultipleChoiceField(
+        queryset=Link.objects.all(),
+        widget=FilteredSelectMultiple(Link._meta.verbose_name_plural, False),
+        required=False,
+    )
+
+    communities = ModelMultipleChoiceField(
+        queryset=Community.objects.all(),
+        widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False),
         required=False,
     )
 

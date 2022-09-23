@@ -283,7 +283,7 @@ class Command(BaseCommand):
             )
             s.save()
 
-            for scale_question in scale_questions:
+            for i, scale_question in enumerate(scale_questions):
                 # scale_question is an index starting at 1
-                q = CPDQuestion(scale=s, question=questions[scale_question - 1])
+                q = CPDQuestion(scale=s, question=questions[scale_question - 1], question_nr=i+1)
                 q.save()

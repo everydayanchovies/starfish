@@ -12,3 +12,4 @@ scratch/
 _build/
 **/*.py.swp
 __MACOSX/
+.python-version

@@ -193,6 +193,7 @@ class Command(BaseCommand):
         ("Several hours", "several hours"),
         ("Several days", "several days"),
         ("Several weeks", "several weeks"),
+        ("Several months", "several months"),
     ]
 
     LEARNING_ENVIRONMENT_ENTRIES = [
@@ -250,6 +251,7 @@ class Command(BaseCommand):
             # parent scales don't have questions
             if scale_questions:
                 continue
+
             s = CPDScale(
                 title=title,
                 inline_title=inline_title,
@@ -283,7 +285,7 @@ class Command(BaseCommand):
             )
             s.save()
 
-            for i, scale_question in enumerate(scale_questions):
+            for scale_question in scale_questions:
                 # scale_question is an index starting at 1
-                q = CPDQuestion(scale=s, question=questions[scale_question - 1], question_nr=i+1)
+                q = CPDQuestion(scale=s, question=questions[scale_question - 1], question_nr=scale_question)
                 q.save()

@@ -182,12 +182,12 @@ class CPDScenario:
         w_text = ""
 
         if competences:
-            w_text += "This CPD scenario describes a User cases in which lecturers develop their competence in "
+            w_text += "This CPD scenario describes a User case in which lecturers develop their competence in "
             w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
             w_text += " "
 
         if not competences and attitudes:
-            w_text += "This CPD scenario describes a User cases in which lecturers develop attitudes in "
+            w_text += "This CPD scenario describes a User case in which lecturers develop attitudes in "
 
         if competences and attitudes:
             w_text += "and develop attitudes in "

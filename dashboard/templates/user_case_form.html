@@ -126,6 +126,8 @@
                     {{ form.links.errors }}
                     {{ form.links|safe }}
                 </div>
+            </div>
+            <div class="row">
                 <div class="col-lg-6 col-md-12">
                     {{ form.communities.label_tag }}<br />
                     {{ form.communities.errors }}
@@ -141,6 +143,7 @@
                     </a><br />
                     {{ form.cpd_questions.errors }}
                     {{ form.cpd_questions|safe }}
+                    <script type="text/javascript" src="{% url 'jsi18n' %}"></script>
                 </div>
             </div>
 

@@ -28,8 +28,12 @@ from search.models import (
     Question,
     UserCase,
 )
-from search.widgets import TagInput
+from search.widgets import (
+    TagInput,
+)
 
+
+from django_select2 import forms as s2forms
 # from bootstrap3_datetime.widgets import DateTimePicker
 
 
@@ -96,12 +100,14 @@ class DashboardForm(ModelForm):
         self.fields["tags"].help_text = None
         if "links" in self.fields:
             self.fields["links"] = ModelMultipleChoiceField(
-                Item.objects.order_by("type"), widget=SelectMultiple, required=False
+                Item.objects.order_by("type"),
+                widget=FilteredSelectMultiple(Link._meta.verbose_name_plural, False),
+                required=False
             )
 
         if "communities" in self.fields:
             self.fields["communities"] = ModelMultipleChoiceField(
-                communities, widget=SelectMultiple
+                communities, widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False)
             )
         """
         if 'date' in self.fields:
@@ -111,10 +117,10 @@ class DashboardForm(ModelForm):
         """
 
     class Media:
-        js = ["/admin/jsi18n/"]
-        css = {
-            "all": ["admin/css/widgets.css", "css/m2m_form_widget.css"],
-        }
+            css = {
+                'all': ('/static/admin/css/widgets.css',),
+            }
+            js = ('/admin/jsi18n',)
 
 
 class EditInformationForm(DashboardForm):
@@ -145,18 +151,6 @@ class EditUserCaseForm(DashboardForm):
     cpd_questions = ModelMultipleChoiceField(
         queryset=CPDQuestion.objects.all(),
         widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
-        required=False,
-    )
-
-    links = ModelMultipleChoiceField(
-        queryset=Link.objects.all(),
-        widget=FilteredSelectMultiple(Link._meta.verbose_name_plural, False),
-        required=False,
-    )
-
-    communities = ModelMultipleChoiceField(
-        queryset=Community.objects.all(),
-        widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False),
         required=False,
     )
 

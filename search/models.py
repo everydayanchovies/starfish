@@ -447,6 +447,9 @@ class Link(models.Model):
         if reflexive:
             self.to_item.link(self.from_item)
 
+    class Meta:
+        verbose_name_plural = "links"
+
 
 class Item(models.Model):
     draft = models.BooleanField(default=True)

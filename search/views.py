@@ -240,9 +240,11 @@ class UserCaseView(InformationView):
         # Call the base implementation first to get a context
         context = super(UserCaseView, self).get_context_data(**kwargs)
         context["information"] = context["usercase"]
-        context["competences_list"] = unique(context["information"].get_cpd_scenario().scales_competences)
-        context["attitudes_list"] = unique(context["information"].get_cpd_scenario().scales_attitudes)
-        context["activities_list"] = unique(context["information"].get_cpd_scenario().scales_activities)
+        if (context["information"].get_cpd_scenario()):
+            context["competences_list"] = unique(context["information"].get_cpd_scenario().scales_competences)
+            context["attitudes_list"] = unique(context["information"].get_cpd_scenario().scales_attitudes)
+            context["activities_list"] = unique(context["information"].get_cpd_scenario().scales_activities)
+
         return context
 
 

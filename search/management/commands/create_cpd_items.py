@@ -83,9 +83,22 @@ class Command(BaseCommand):
     ]
 
     COMPETENCES_SCALES_QUESTIONS = [
-        ("1", "Constructive alignment", "sound course design", [1, 2, 3, 6]),
-        ("2", "Pedagogy, Interactive teaching", "pedagogy of interactive teaching", []),
-        ("2a", "Competence teaching", "teaching in higher education", [9, 10, 14, 15]),
+        (
+            "1",
+            "Constructive alignment",
+            "sound course design",
+            [1, 2, 3, 6]),
+        (
+            "2",
+            "Pedagogy, Interactive teaching",
+            "pedagogy of interactive teaching",
+            [],
+        ),
+        (
+            "2a",
+            "Competence teaching",
+            "teaching in higher education",
+            [9, 10, 14, 15]),
         (
             "2b",
             "Competence design interactive teaching",
@@ -134,7 +147,12 @@ class Command(BaseCommand):
             "how to use specific digital tools in teaching for a pedagogical goal",
             [17, 25, 26, 29, 30],
         ),
-        ("4b", "Blended learning", "how to use blended learning", [20, 24]),
+        (
+            "4b",
+            "Blended learning",
+            "how to use blended learning",
+            [20, 24],
+        ),
     ]
 
     ATTITUDES_SCALES_QUESTIONS = [

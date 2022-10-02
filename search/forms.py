@@ -8,7 +8,7 @@ from django.forms import (
     ModelForm,
     ModelMultipleChoiceField,
     PasswordInput,
-    SelectMultiple,
+    CheckboxSelectMultiple,
     Textarea,
 )
 
@@ -147,14 +147,14 @@ class EditQuestionForm(DashboardForm):
 
 class EditUserCaseForm(DashboardForm):
     cpd_questions = ModelMultipleChoiceField(
-        queryset=CPDQuestion.objects.all(),
+        queryset=CPDQuestion.objects.all().order_by('scale__scale_type', 'question_nr'),
         widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
         required=False,
     )
 
     cpd_learning_environment = ModelMultipleChoiceField(
         queryset=CPDLearningEnvironment.objects.all(),
-        widget=SelectMultiple,
+        widget=CheckboxSelectMultiple,
         required=False,
     )
 

@@ -298,7 +298,7 @@ class CPDQuestion(models.Model):
     question_nr = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"({self.scale.label}) {self.question_nr} {self.question}"
+        return f"{self.scale.scale_type}-{self.question_nr} {self.question}"
 
     class Meta:
         verbose_name = "CPD Question"

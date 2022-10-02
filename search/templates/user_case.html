@@ -97,27 +97,27 @@
                         <div class="row">
                             <div class="col-lg-4 col-md-12">
                                 <h5><b>Competences</b></h5>
-                                {% for scale in information.get_cpd_scenario.scales_competences %}
+                                {% for scale in competences_list %}
                                 <div class="cpd-scale-in-list">
-                                    <span>{{ scale.label }}</span>
+                                    <!-- <span>{{ scale.label }}</span> -->
                                     {{ scale.title }}
                                 </div>
                                 {% endfor %}
                             </div>
                             <div class="col-lg-4 col-md-12">
                                 <h5><b>Attitudes</b></h5>
-                                {% for scale in information.get_cpd_scenario.scales_attitudes %}
+                                {% for scale in attitudes_list %}
                                 <div class="cpd-scale-in-list">
-                                    <span>{{ scale.label }}</span>
+                                    <!-- <span>{{ scale.label }}</span> -->
                                     {{ scale.title }}
                                 </div>
                                 {% endfor %}
                             </div>
                             <div class="col-lg-4 col-md-12">
                                 <h5><b>Activities</b></h5>
-                                {% for scale in information.get_cpd_scenario.scales_activities %}
+                                {% for scale in activities_list %}
                                 <div class="cpd-scale-in-list">
-                                    <span>{{ scale.label }}</span>
+                                    <!-- <span>{{ scale.label }}</span> -->
                                     {{ scale.title }}
                                 </div>
                                 {% endfor %}

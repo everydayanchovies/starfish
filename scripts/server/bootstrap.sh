@@ -25,6 +25,7 @@ yes | sudo ufw enable
 sudo systemctl enable memcached --now
 
 sudo rm -f /etc/caddy/Caddyfile || true
+# TODO fix permissions so that the service works at all
 sudo ln -s /home/ubuntu/Starfish-master/caddy/Caddyfile /etc/caddy/
 
 sudo systemctl enable caddy --now

@@ -957,7 +957,7 @@ def tag(request, handle):
         return redirect("/?q=" + symb + handle)
 
 
-@cache_page(60 * 30)
+@cache_page(60 * 5)
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)

@@ -1,3 +1,5 @@
+from cmath import log
+import imp
 from django.contrib import messages
 from django.db.models import Q
 from django.forms.models import modelform_factory
@@ -5,11 +7,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.template.context_processors import csrf
 from django.views import generic
+import logging
 
 from dashboard.forms import *
 from search.forms import *
 from search.models import *
-from search.utils import parse_tags, get_user_communities
+from search.utils import parse_tags, get_user_communities, expire_view_cache
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 TAG_REQUEST_MESSAGE = settings.TAG_REQUEST_MESSAGE
@@ -390,7 +393,9 @@ class UserCaseForm(EditForm):
     success_url = "/dashboard/usercase"
 
     def post(self, request, *args, **kwargs):
-        print(CPDQuestion._meta.verbose_name_plural, Link._meta.verbose_name_plural, Community._meta.verbose_name_plural)
+        logger = logging.getLogger("search")
+        logger.info("logging:", CPDQuestion._meta.verbose_name_plural, Link._meta.verbose_name_plural, Community._meta.verbose_name_plural)
+
         if request.POST.get("title"):
             match = UserCase.objects.filter(title=request.POST.get("title"))
             if len(match) == 1 and request.FILES.get("wallpaper"):

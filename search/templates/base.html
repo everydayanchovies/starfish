@@ -139,61 +139,59 @@
                 {% endif %}
                 {% if user.is_authenticated %}
                 <ul id="account-div" class="nav navbar-nav navbar-right">
-                    {% else %}
-                    <ul id="account-div" style='display:none' class="nav navbar-nav navbar-right">
-                        {% endif %}
-
-                        <li><a href="/dashboard/contribute">
-                                <span class="btn btn-sm btn-link" style="width: 100%; color: white;">
-                                    Contribute
-                                </span>
-                            </a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <span class="btn btn-sm btn-primary" style="width: 100%">
-                                    <i class="glyphicon glyphicon-user"></i>
-                                    Account
-                                </span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a href="/dashboard/me">Edit My Profile</a></li>
-                                <li><a href="/dashboard/contributions">
-                                        My Contributions
-                                    </a></li>
-                                <li><a href="/dashboard/settings">
-                                        Account settings
-                                    </a></li>
-                                <li>
-                                    <a href='/logout'>Logout</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                    </ul>
-                    {% if user.is_authenticated %}
-                    <ul id="no-account-div" style='display:none' class="nav navbar-nav navbar-right">
-                        {% else %}
-                        <ul id="no-account-div" class="nav navbar-nav navbar-right">
-                            {% endif %}
-
+                {% else %}
+                <ul id="account-div" style='display:none' class="nav navbar-nav navbar-right">
+                {% endif %}
+                    <li><a href="/dashboard/contribute">
+                            <span class="btn btn-sm btn-link" style="width: 100%; color: white;">
+                                Contribute
+                            </span>
+                        </a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <span class="btn btn-sm btn-primary" style="width: 100%">
+                                <i class="glyphicon glyphicon-user"></i>
+                                Account
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/dashboard/me">Edit My Profile</a></li>
+                            <li><a href="/dashboard/contributions">
+                                    My Contributions
+                                </a></li>
+                            <li><a href="/dashboard/settings">
+                                    Account settings
+                                </a></li>
                             <li>
-                                <a href="/login">
-                                    <span class="btn btn-primary"
-                                        style="width: 100%; background-color: transparent; border: none;">
-                                        Login
-                                    </span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="/register">
-                                    <span class="btn btn-primary"
-                                        style="width: 100%; background-color: transparent; border: none;">
-                                        Register
-                                    </span>
-                                </a>
+                                <a href='/logout'>Logout</a>
                             </li>
                         </ul>
+                    </li>
+                    <li>
+                </ul>
+                    {% if user.is_authenticated %}
+                    <ul id="no-account-div" style='display:none' class="nav navbar-nav navbar-right">
+                    {% else %}
+                    <ul id="no-account-div" class="nav navbar-nav navbar-right">
+                    {% endif %}
+                        <li>
+                            <a href="/login">
+                                <span class="btn btn-primary"
+                                    style="width: 100%; background-color: transparent; border: none;">
+                                    Login
+                                </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/register">
+                                <span class="btn btn-primary"
+                                    style="width: 100%; background-color: transparent; border: none;">
+                                    Register
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
             </div>
         </div>
     </nav>

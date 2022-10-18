@@ -957,7 +957,7 @@ def tag(request, handle):
         return redirect("/?q=" + symb + handle)
 
 
-@cache_page(60 * 60 * 24)
+@cache_page(60 * 30)
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)
@@ -992,13 +992,11 @@ def browse(request):
             )
         results[item_dict["id"]] = item_dict
 
-    for item_dict in [
-        uc
-        for uc in [
+    for item_dict in [uc for uc in [
             item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
-        ]
-        if uc is not None
-    ]:
+            ]
+            if uc is not None
+            ]:
         item_dict["type"] = "CPDScenario"
         item_dict["featured"] = datetime.now(timezone.utc)
         item_dict["create_date"] = datetime.now(timezone.utc)

@@ -7,9 +7,11 @@ fi
 
 set -x
 
-cd /home/ubuntu/Starfish-master || exit
+PROJECT_ROOT=/home/ubuntu/Starfish-master;
 
-sudo pkill -f uwsgi -9
+cd $PROJECT_ROOT || exit
 
-uwsgi --ini uwsgi_prod.ini
+. "$PROJECT_ROOT/.venv/bin/activate";
+
+uwsgi --ini uwsgi_prod.ini 
 

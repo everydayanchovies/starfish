@@ -1,0 +1,17 @@
+[Unit]
+Description=SFDjango
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/Starfish-master
+ExecStart=/home/ubuntu/Starfish-master/scripts/server/serve.sh
+ExecStop=pkill -9 uwsgi
+Restart=always
+RestartSec=10
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target

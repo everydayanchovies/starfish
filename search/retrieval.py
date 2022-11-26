@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 
-
 def retrieve(query, dict_format=False, communities_list=None):
     """
     A query contains one or more tokens starting with the following symbols
@@ -171,8 +170,6 @@ def retrieve(query, dict_format=False, communities_list=None):
     if special:
         items = filter(lambda i: i.id != special.id, items)
 
-    print(items)
-
     # Initialize results
     results = {}
 
@@ -180,7 +177,6 @@ def retrieve(query, dict_format=False, communities_list=None):
         item_dicts = [item.dict_format() for item in items]
 
         for item_dict in item_dicts:
-            print(item_dict)
             # hide anonymous authors
             if item_dict["type"] == "Person" and item_dict["is_ghost"]:
                 continue
@@ -191,6 +187,9 @@ def retrieve(query, dict_format=False, communities_list=None):
                     cpd_scenario.dict_format() if cpd_scenario else None
                 )
                 results[item_dict["id"]] = item_dict
+                continue
+
+            results[item_dict["id"]] = item_dict
 
         for item_dict in [
                 uc

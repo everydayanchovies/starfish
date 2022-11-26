@@ -25,7 +25,6 @@ set +x
 deactivate
 set -x
 
-set +x
-
-echo "To serve, run"
-echo "/home/ubuntu/Starfish-master/scripts/server/serve.sh > /var/log/starfish/prod.log 2>&1"
+systemctl restart caddy
+systemctl restart memcached.service
+systemctl restart sf_django

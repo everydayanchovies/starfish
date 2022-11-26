@@ -22,19 +22,10 @@ sudo ufw allow "Nginx Full" || exit
 
 yes | sudo ufw enable
 
-sudo ln -s /home/ubuntu/Starfish-master/nginx/production.conf /etc/nginx/sites-available/starfish-production.conf
-sudo ln -s /etc/nginx/sites-available/starfish-production.conf /etc/nginx/sites-enabled/
+sudo systemctl enable memcached --now
 
-sudo systemctl enable nginx
-sudo systemctl restart nginx
+sudo rm -f /etc/caddy/Caddyfile || true
+# TODO fix permissions so that the service works at all
+sudo ln -s /home/ubuntu/Starfish-master/caddy/Caddyfile /etc/caddy/
 
-sudo snap install core
-sudo snap refresh core
-
-sudo snap install --classic certbot
-
-sudo ln -s /snap/bin/certbot /usr/bin/certbot
-
-sudo certbot --nginx
-
-sudo systemctl enable memcached
+sudo systemctl enable caddy --now

@@ -57,6 +57,40 @@
                         {% autoescape off %}
                         {{ information.context_goals }}
                         {% endautoescape %}
+                        {% with information.context_and_goals as comps_atts_acts %}
+                        <h2>
+                            Needs defined in STEM-CPD Roadmap
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12">
+                                <h5><b>Competences</b></h5>
+                                {% for comp in comps_atts_acts.0 %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ comp }}</span>
+                                    <!-- {{ scale.title }} -->
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5><b>Attitudes</b></h5>
+                                {% for att in comps_atts_acts.1 %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ att }}</span>
+                                    <!-- {{ scale.title }} -->
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5><b>Activities</b></h5>
+                                {% for act in comps_atts_acts.2 %}
+                                <div class="cpd-scale-in-list">
+                                    <span>{{ act }}</span>
+                                    <!-- {{ scale.title }} -->
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endwith %}
                         {% endif %}
                     </div>
                     <div class="tab-pane fade" id="profile">

@@ -18,6 +18,7 @@ urlpatterns = [
     re_path(r'^dashboard/', include('dashboard.urls')),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='jsi18n'),
+    path('__debug__/', include('debug_toolbar.urls')),
 ]
 
 if settings.DEBUG:

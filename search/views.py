@@ -1,5 +1,6 @@
 import itertools
 import json
+import pickle
 import logging
 import random
 from builtins import str
@@ -33,6 +34,8 @@ from search.widgets import *
 
 from zpython import *
 
+import pdb
+
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL
 HOSTNAME = settings.HOSTNAME
@@ -60,12 +63,6 @@ def check_profile_completed(func):
 
     return inner
 
-def unique( seq ):
-    seen = set()
-    for item in seq:
-        if item not in seen:
-            seen.add( item )
-            yield item
 
 def sorted_tags(tags):
     p, t, c, o = [], [], [], []
@@ -236,14 +233,16 @@ class UserCaseView(InformationView):
     model = UserCase
     template_name = "user_case.html"
 
+
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(UserCaseView, self).get_context_data(**kwargs)
+
         context["information"] = context["usercase"]
         if (context["information"].get_cpd_scenario()):
-            context["competences_list"] = unique(context["information"].get_cpd_scenario().scales_competences)
-            context["attitudes_list"] = unique(context["information"].get_cpd_scenario().scales_attitudes)
-            context["activities_list"] = unique(context["information"].get_cpd_scenario().scales_activities)
+            context["competences_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_competences))
+            context["attitudes_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_attitudes))
+            context["activities_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_activities))
 
         return context
 
@@ -957,7 +956,7 @@ def tag(request, handle):
         return redirect("/?q=" + symb + handle)
 
 
-@cache_page(60 * 5)
+#@cache_page(60 * 5)
 def browse(request):
     user_communities = utils.get_user_communities(request.user)
     selected_community = request.GET.get("community", None)
@@ -978,6 +977,8 @@ def browse(request):
     items = Item.objects.filter(communities__in=selected_communities, draft=False)
 
     results = {}
+
+
 
     item_dicts = [item.dict_format() for item in items]
     # Append the dict_format representation of the item to the results
@@ -1002,7 +1003,18 @@ def browse(request):
         item_dict["create_date"] = datetime.now(timezone.utc)
         results[item_dict["id"]] = item_dict
 
+    # with open("results.pkl", "wb") as f:
+    #     pickle.dump(results, f)
+
     results = results.values()
+
+
+    results_by_type = dict()
+    for result in results:
+        try:
+            results_by_type["".join(result["type"].split())].append(result)
+        except KeyError:
+            results_by_type["".join(result["type"].split())] = [result]
 
     def sorting_key(item):
         if sort == "recent":
@@ -1014,13 +1026,6 @@ def browse(request):
             else:
                 return (item["featured"], item["title"])
 
-    results_by_type = dict()
-    for result in results:
-        try:
-            results_by_type["".join(result["type"].split())].append(result)
-        except KeyError:
-            results_by_type["".join(result["type"].split())] = [result]
-
     for l in results_by_type.values():
         l.sort(key=sorting_key)
 
@@ -1031,6 +1036,8 @@ def browse(request):
             break
     else:
         first_active = ""
+    # with open("results_by_type.pkl", "wb") as f:
+    #     pickle.dump(results_by_type, f)
 
     return render(
         request,

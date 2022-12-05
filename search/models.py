@@ -171,7 +171,7 @@ class CPDScenario:
 
     @property
     def title(self):
-        scales = self.classification_scales
+        scales = list(dict.fromkeys(self.classification_scales))
         return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label for s in scales])})"
 
     @property
@@ -837,6 +837,20 @@ class UserCase(TextItem):
         cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
+
+    def context_and_goals(self):
+        competences = []
+        attitudes = []
+        activities = []
+
+        for question in self.cpd_questions.all():
+            if (question.scale.scale_type == "P1"):
+                competences.append(f"{question.question_nr} {question.question}")
+            elif (question.scale.scale_type == "P2"):
+                attitudes.append(f"{question.question_nr} {question.question}")
+            elif (question.scale.scale_type == "P3"):
+                activities.append(f"{question.question_nr} {question.question}")
+        return competences, attitudes, activities
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the

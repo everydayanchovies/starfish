@@ -36,6 +36,7 @@ def get_template(item):
         return ""
 
 
+
 class MLStripper(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -176,6 +177,7 @@ class CPDScenario:
 
     @property
     def description(self):
+
         competences = self.scales_competences
         attitudes = self.scales_attitudes
 
@@ -183,17 +185,18 @@ class CPDScenario:
 
         if competences:
             w_text += "This CPD scenario describes a User case in which lecturers develop their competence in "
-            w_text += " and ".join(set([s.inline_title.lower() for s in competences]))
+            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(competences), key=lambda x: x.label)])
             w_text += " "
 
-        if not competences and attitudes:
+            if attitudes:
+                w_text += "and develop attitudes in "
+
+        elif attitudes:
             w_text += "This CPD scenario describes a User case in which lecturers develop attitudes in "
 
-        if competences and attitudes:
-            w_text += "and develop attitudes in "
 
         if attitudes:
-            w_text += " and ".join(set([s.inline_title.lower() for s in attitudes]))
+            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(attitudes), key=lambda x: x.label)])
 
         w_text = w_text.strip()
         w_text += ".\n"

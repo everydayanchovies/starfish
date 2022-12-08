@@ -5,8 +5,14 @@
 <script src="/static/js/read_more_links.js"></script>
 {% endblock %}
 
+
 {% block content %}
 <div class="item-container container">
+    <style>
+        h2 {
+            font-size: 22px;
+        }
+    </style>
 
     {% include 'partials/item_header.html' with item=information%}
 
@@ -119,16 +125,6 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-lg-12 col-md-12">
-                                <h5><b>Time</b></h5>
-                            </div>
-                            <div class="col-lg-12 col-md-12">
-                                {% if information.get_cpd_scenario.time_to_finish %}
-                                    {{ information.get_cpd_scenario.time_to_finish.title }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="col-lg-4 col-md-12">
                                 <h5><b>Competences</b></h5>
                                 {% for scale in competences_list %}
@@ -158,15 +154,19 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-lg-12 col-md-12">
+                            <div class="col-lg-4 col-md-12">
                                 <h5><b>Learning environment</b></h5>
-                            </div>
-                            <div class="col-lg-12 col-md-12">
                                 {% for le in information.get_cpd_scenario.learning_environments %}
                                 <div class="cpd-le-in-list">
                                     {{ le.title }}
                                 </div>
                                 {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-12">
+                                <h5><b>Time</b></h5>
+                                {% if information.get_cpd_scenario.time_to_finish %}
+                                    {{ information.get_cpd_scenario.time_to_finish.title }}
+                                {% endif %}
                             </div>
                         </div>
                         {% endautoescape %}

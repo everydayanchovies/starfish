@@ -49,7 +49,7 @@ QUESTION_ASKED_TEXT = "{author} asked the following question: '{title}'\n" + \
                       "item can be found at {itemlink}."
 COMMENT_PLACED_TEXT = "{author} commented on {itemlink}"
 
-DEBUG = True
+DEBUG = False
 
 SERVER_EMAIL = get_secret("SERVER_EMAIL")
 ADMINS = (get_secret("ADMIN_EMAIL")

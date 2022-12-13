@@ -14,7 +14,9 @@
             return deselectCategory(ftype);
         }
 
-        window.location = window.location.pathname + replaceQueryParam("ftype", ftype, window.location.search);
+        deselectAllCategories()
+        selectCategory(ftype)
+        history.replaceState(null, null, replaceQueryParam("ftype", ftype, window.location.search))
     }
 
     function deselectAllCategories() {
@@ -39,13 +41,7 @@
     $(function () {
         $("#sorting-select option[value='{{ sort }}']").attr("selected", "")
         $("#sorting-select").change(function () {
-            var sort = $(this).val();
-            var redirect = document.location.href;
-            if (sort != "recent") {
-                redirect += (document.location.search == "" ? "?" : "&");
-                redirect += "sort=" + sort;
-            }
-            document.location = redirect;
+            window.location = window.location.pathname + replaceQueryParam("sort", $(this).val(), window.location.search);
         });
 
         const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -68,8 +64,8 @@
 
     // https://stackoverflow.com/questions/1090948/change-url-parameters-and-specify-defaults-using-javascript -- bronson
     function replaceQueryParam(param, newval, search) {
-        var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
-        var query = search.replace(regex, "$1").replace(/&$/, '');
+        let regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+        let query = search.replace(regex, "$1").replace(/&$/, '');
 
         return (query.length > 2 ? query + "&" : "?") + (newval ? param + "=" + newval : '');
     }
@@ -138,9 +134,8 @@
             </li>
             {% endif %}
 
-
             {% if results.CPDScenario %}
-            <li id="tab-results-cpd-scenario"><a onclick="showResults('cpd_scenario');">
+            <li id="tab-results-cpd_scenario"><a onclick="showResults('cpd_scenario');">
                     CPD Scenarios <span class="badge pull-right">{{ results.CPDScenario|length }}</span></a>
             </li>
             {% endif %}
@@ -227,5 +222,3 @@
         all items.
     </div>
     {% endif %}
-
-    {# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

@@ -1,5 +1,5 @@
 <div style="margin: 10px 0;">
-{% for tag in item.tags %}
+{% for tag in item.tags.all %}
   {% if not tag.more %}
     {% include 'tag.html' with tag=tag %}
   {% else %}

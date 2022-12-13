@@ -128,6 +128,10 @@ class CPDScenario:
         cpd_scenario.time_to_finish = usercase.cpd_time_to_finish
         cpd_scenario.learning_environments = usercase.cpd_learning_environment.all()
 
+        cpd_scenario.type = "CPDScenario"
+        cpd_scenario.featured = datetime.now(timezone.utc)
+        cpd_scenario.create_date = datetime.now(timezone.utc)
+
         w_scale_ids = [s.id for s in cpd_scenario.scales]
         w_scale_ids.sort()
         cpd_scenario.id = "".join([str(s_id) for s_id in w_scale_ids])

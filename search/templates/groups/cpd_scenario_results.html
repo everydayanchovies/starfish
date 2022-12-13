@@ -13,7 +13,12 @@
         <div class="row-content">
             <div class="card">
                 <div class="card-body">
-                    <a href="/browse?ftype=usercase&cpd_scenario_id={{ item.id }}">
+                    <a id="title-link-{{item.id}}">
+                    <script>
+                        queries = replaceQueryParam('ftype', 'usercase', window.location.search)
+                        url = window.location.pathname + replaceQueryParam('cpd_scenario_id', '{{item.id}}', queries)
+                        $('#title-link-{{item.id}}').attr('href', url);
+                    </script>
                         <h4 class="card-title">
                             {{ item.title }}
                         </h4>
@@ -30,5 +35,3 @@
     {% endfor %}
     </div>
 {% endblock %}
-
-{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

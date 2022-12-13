@@ -8,15 +8,13 @@ from search.utils import parse_tags
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 
-
 class TagInput(widgets.Widget):
     class Media:
-        js = ('jquery-ui.min.js', 'tag-it.js', 'tagit_search_input.js')
-        css = {'all': ('jquery-ui-1.10.3.custom.css', 'jquery.tagit.css')}
+        js = ('jquery-ui.min.js', 'js/tag-it.js')
+        css = {'all': ('jquery-ui-1.10.3.custom.css', 'css/jquery.tagit.css')}
 
     def render(self, name, value, attrs=None, renderer=None):
         # final_attrs = self.build_attrs(attrs)
-        tid = "id_" + name
         delim = SEARCH_SETTINGS['syntax']['DELIM']
         tsymb = SEARCH_SETTINGS['syntax']['TAG']
         if value is None:
@@ -24,11 +22,34 @@ class TagInput(widgets.Widget):
         else:
             value = delim.join([tsymb + t.handle for t in
                                 Tag.objects.filter(id__in=value)])
-        script = "<script type='text/javascript'>"
-        script += "$(function(){make_tagit(\"%s\",\"%s\");})" % (tid, delim)
-        script += "</script>"
-        return script + "<input class='form-control' type='text' " + \
-               "name='%s' id='%s' value='%s' />" % (name, tid, value)
+        script = """
+            <script type='text/javascript'>
+                $("#input_tags").tagit({{
+                    caseSensitive: false,
+                    singleFieldDelimiter: "{delim}",
+                    removeConfirmation: true,
+                    autocomplete: {{
+                        autofocus: false,
+                        source: function (search, cb) {{
+                            $.ajax({{
+                                url: "/autocomplete?q=" + encodeURIComponent(search.term),
+                                context: this
+                            }}).done(
+                                function (choices) {{
+                                    cb(this._subtractArray(choices, this.assignedTags()))
+                                }})
+                        }},
+                        focus: function (event, ui) {{
+                            console.log(event)
+                            console.log(ui)
+                        }}
+                    }}
+                }});
+                $(".tagit-new input:first").focus();
+            </script>
+        """.format(name=name, delim=delim)
+        return "<input class='form-control' type='text' " + \
+               f"name='{name}' id='input_tags' value='{value}' />" + script
 
     def value_from_datadict(self, data, files, name):
         raw_value = data.get(name, None)

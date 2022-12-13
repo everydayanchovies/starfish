@@ -903,43 +903,43 @@ def comment(request):
 
 def autocomplete(request):
     string = request.GET.get("q", "")
-    if len(string) > 0:
-        syntax = SEARCH_SETTINGS["syntax"]
-        if string[0] == syntax["TAG"]:
-            tags = Tag.objects.filter(handle__istartswith=string[1:])
-            persons = []
-            literals = []
-        elif string[0] == syntax["PERSON"]:
-            tags = []
-            persons = Person.objects.filter(name__istartswith=string[1:])
-            literals = []
-        elif string[0] == syntax["LITERAL"]:
-            tags = []
-            persons = []
-            literals = [string[1:]]
-        else:
-            tags = Tag.objects.filter(handle__istartswith=string)
-            persons = Person.objects.filter(name__istartswith=string)
-            # Suggestions based on titles
-            # We have to query by type because TextItem is abstract
-            objs = list(GoodPractice.objects.filter(title__istartswith=string))
-            objs += list(Question.objects.filter(title__istartswith=string))
-            objs += list(Information.objects.filter(title__istartswith=string))
-            objs += list(Project.objects.filter(title__istartswith=string))
-            objs += list(Event.objects.filter(title__istartswith=string))
-            titles = [i.title for i in objs]
-            literals = titles + [string]
-
-        matches = []
-        for tag in tags:
-            matches.append(syntax["TAG"] + tag.handle)
-        for person in persons:
-            matches.append(syntax["PERSON"] + person.handle)
-        for literal in literals:
-            matches.append(syntax["LITERAL"] + literal + syntax["LITERAL"])
-        return HttpResponse(json.dumps(matches), content_type="application/json")
-    else:
+    if len(string) <= 0:
         return HttpResponse("[]", content_type="application/json")
+
+    syntax = SEARCH_SETTINGS["syntax"]
+    if string[0] == syntax["TAG"]:
+        tags = Tag.objects.filter(handle__istartswith=string[1:])
+        persons = []
+        literals = []
+    elif string[0] == syntax["PERSON"]:
+        tags = []
+        persons = Person.objects.filter(name__istartswith=string[1:])
+        literals = []
+    elif string[0] == syntax["LITERAL"]:
+        tags = []
+        persons = []
+        literals = [string[1:]]
+    else:
+        tags = Tag.objects.filter(handle__istartswith=string)
+        persons = Person.objects.filter(name__istartswith=string)
+        # Suggestions based on titles
+        # We have to query by type because TextItem is abstract
+        objs = list(GoodPractice.objects.filter(title__istartswith=string))
+        objs += list(Question.objects.filter(title__istartswith=string))
+        objs += list(Information.objects.filter(title__istartswith=string))
+        objs += list(Project.objects.filter(title__istartswith=string))
+        objs += list(Event.objects.filter(title__istartswith=string))
+        titles = [i.title for i in objs]
+        literals = titles + [string]
+
+    matches = []
+    for tag in tags:
+        matches.append(syntax["TAG"] + tag.handle)
+    for person in persons:
+        matches.append(syntax["PERSON"] + person.handle)
+    for literal in literals:
+        matches.append(syntax["LITERAL"] + literal + syntax["LITERAL"])
+    return HttpResponse(json.dumps(matches), content_type="application/json")
 
 
 def tag(request, handle):
@@ -974,83 +974,57 @@ def browse(request):
         selected_communities = utils.expand_communities(selected_communities)
     else:
         selected_communities = user_communities
-    items = Item.objects.filter(communities__in=selected_communities, draft=False)
 
-    results = {}
+    recent = sort == "recent"
 
+    good_practices = GoodPractice.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    projects = Project.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    events = Event.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    glossaries = Glossary.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    informations = Information.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    questions = Question.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    user_cases = UserCase.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
 
+    people = Person.objects.filter(communities__in=selected_communities, draft=False, is_ghost=False).distinct().order_by("featured", "create_date" if recent else "name" )
 
-    item_dicts = [item.dict_format() for item in items]
-    # Append the dict_format representation of the item to the results
-    for item_dict in item_dicts:
-        # hide anonymous authors
-        if item_dict["type"] == "Person" and item_dict["is_ghost"]:
-            continue
-        if item_dict["type"] == "User Case":
-            cpd_scenario = CPDScenario.from_usercase(item_dict["id"])
-            item_dict["cpd_scenario"] = (
-                cpd_scenario.dict_format() if cpd_scenario else None
-            )
-        results[item_dict["id"]] = item_dict
+    cpd_scenarios = []
 
-    for item_dict in [uc for uc in [
-            item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
-            ]
-            if uc is not None
-            ]:
-        item_dict["type"] = "CPDScenario"
-        item_dict["featured"] = datetime.now(timezone.utc)
-        item_dict["create_date"] = datetime.now(timezone.utc)
-        results[item_dict["id"]] = item_dict
+    for case in user_cases:
+        cpd_scenario = case.get_cpd_scenario()
+        case.cpd_scenario = cpd_scenario
+        if cpd_scenario:
+            cpd_scenarios.append(cpd_scenario)
 
-    # with open("results.pkl", "wb") as f:
-    #     pickle.dump(results, f)
-
-    results = results.values()
-
-
-    results_by_type = dict()
-    for result in results:
-        try:
-            results_by_type["".join(result["type"].split())].append(result)
-        except KeyError:
-            results_by_type["".join(result["type"].split())] = [result]
-
-    def sorting_key(item):
-        if sort == "recent":
-            date_ref = datetime.now(timezone.utc)
-            return (item["featured"], date_ref - item["create_date"])
-        else:
-            if item["type"] == "Person":
-                return (item["featured"], item["name"].split(" ")[-1])
-            else:
-                return (item["featured"], item["title"])
-
-    for l in results_by_type.values():
-        l.sort(key=sorting_key)
+    results = {
+        "GoodPractice": good_practices,
+        "Project": projects,
+        "Event": events,
+        "Glossary": glossaries,
+        "Information": informations,
+        "Person": people,
+        "Question": questions,
+        "UserCase": user_cases,
+        "CPDScenario": cpd_scenarios
+    }
 
     # Find first type that has nonzero value count
-    for type_id, type_name in ITEM_TYPES:
-        if type_name.replace(" ", "") in results_by_type:
-            first_active = type_name.replace(" ", "").lower()
+    first_active = ""
+    for key in results:
+        if len(results[key]):
+            first_active = key.lower()
             break
-    else:
-        first_active = ""
-    # with open("results_by_type.pkl", "wb") as f:
-    #     pickle.dump(results_by_type, f)
 
     return render(
         request,
         "browse.html",
         {
             "user_communities": user_communities,
-            "results": results_by_type,
+            "results": results,
             "cols": 1,
             "sort": sort,
             "first_active": first_active,
         },
     )
-
 
 @check_profile_completed
 def search(request):

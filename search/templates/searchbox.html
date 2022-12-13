@@ -9,7 +9,7 @@
                     <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
                 {% endif %}
                 <input type="text" id="search_input" class="form-control" name="q"
-                       {% if query %}value="{{ query }}" {% endif %}>
+                       {% if query %}value="{{ query }}" {% endif %} style='display: none;'">
                 </div>
                 {% if user_communities|length > 1 %}
                     <div class="col-lg-3 col-md-2 col-sm-12 col-xs-12"
@@ -38,9 +38,9 @@
 </div>
 
 <script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
-<script src="{% static 'tag-it.js' %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static 'js/tag-it.js' %}" type="text/javascript" charset="utf-8"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'jquery-ui-1.10.3.custom.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'jquery.tagit.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.tagit.css' %}">
 <script type='text/javascript'>
     $("#search_input").tagit({
         caseSensitive: false,
@@ -57,8 +57,6 @@
                     })
             }
         }
-    })
+    });
     $(".tagit-new input:first").focus();
 </script>
-
-{# vim: set ft=htmldjango ts=2 sw=2 softtabstop=2: #}

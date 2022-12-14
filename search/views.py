@@ -181,38 +181,41 @@ class InformationView(StarfishDetailView):
         context["search"] = None
         context["summaries"] = []
 
+        def get_summary(tag):
+            try:
+                # page_info = wikipedia.page(tag.handle, auto_suggest=True, redirect=True)
+                # url = "https://en.wikipedia.org/?curid=" + page_info.pageid
+
+                tag_dict = tag.dict_format()
+                summary = (
+                    tag_dict["summary"]
+                    if not tag_dict["info"]
+                    else tag_dict["info"]["summary"]
+                )
+                return {
+                    "tag_dict": tag.dict_format(),
+                    "tag": tag.handle,
+                    "raw_tag": tag,
+                    "summary": summary,  # wikipedia.summary(tag.handle, sentences=1),
+                    "title": tag.handle,
+                    "url": tag.info_link,
+                }
+            except:
+                return {
+                    "tag_dict": tag.dict_format(),
+                    "tag": tag.handle,
+                    "raw_tag": tag,
+                    "summary": "No summary available",
+                    "title": tag.handle,
+                    "url": None,
+                }
+
         for tag in self.object.tags.all():
 
-            def get_summary():
-                try:
-                    # page_info = wikipedia.page(tag.handle, auto_suggest=True, redirect=True)
-                    # url = "https://en.wikipedia.org/?curid=" + page_info.pageid
+            if tag.type == "D":
+                continue
 
-                    tag_dict = tag.dict_format()
-                    summary = (
-                        tag_dict["summary"]
-                        if not tag_dict["info"]
-                        else tag_dict["info"]["summary"]
-                    )
-                    return {
-                        "tag_dict": tag.dict_format(),
-                        "tag": tag.handle,
-                        "raw_tag": tag,
-                        "summary": summary,  # wikipedia.summary(tag.handle, sentences=1),
-                        "title": tag.handle,
-                        "url": tag.info_link,
-                    }
-                except:
-                    return {
-                        "tag_dict": tag.dict_format(),
-                        "tag": tag.handle,
-                        "raw_tag": tag,
-                        "summary": "No summary available",
-                        "title": tag.handle,
-                        "url": None,
-                    }
-
-            context["summaries"].append(get_summary())
+            context["summaries"].append(get_summary(tag))
 
         # Fetch tags and split them into categories
         context.update(sorted_tags(self.object.tags.all()).items())

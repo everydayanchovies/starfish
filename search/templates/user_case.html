@@ -129,8 +129,9 @@
                                 <h5><b>Competences</b></h5>
                                 {% for scale in competences_list %}
                                 <div class="cpd-scale-in-list">
-                                    <!-- <span>{{ scale.label }}</span> -->
-                                    {{ scale.title }}
+                                    <a href="/?q=%23{{scale.tag.handle}}">
+                                        {{ scale.title }}
+                                    </a>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -138,8 +139,9 @@
                                 <h5><b>Attitudes</b></h5>
                                 {% for scale in attitudes_list %}
                                 <div class="cpd-scale-in-list">
-                                    <!-- <span>{{ scale.label }}</span> -->
-                                    {{ scale.title }}
+                                    <a href="/?q=%23{{scale.tag.handle}}">
+                                        {{ scale.title }}
+                                    </a>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -147,8 +149,9 @@
                                 <h5><b>Activities</b></h5>
                                 {% for scale in activities_list %}
                                 <div class="cpd-scale-in-list">
-                                    <!-- <span>{{ scale.label }}</span> -->
-                                    {{ scale.title }}
+                                    <a href="/?q=%23{{scale.tag.handle}}">
+                                        {{ scale.title }}
+                                    </a>
                                 </div>
                                 {% endfor %}
                             </div>

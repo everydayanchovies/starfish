@@ -14,9 +14,20 @@
             return deselectCategory(ftype);
         }
 
+        // Remove cpd_scenario when switching
+
+        let params = window.location.search
+        if (params !== "") {
+            params = new URLSearchParams(params.split("?")[1])
+            params.delete("cpd_scenario_id")
+            params = "?" + params.toString()
+            $(`.usercase`).show();
+        }
+
+
         deselectAllCategories()
         selectCategory(ftype)
-        history.replaceState(null, null, replaceQueryParam("ftype", ftype, window.location.search))
+        history.replaceState(null, null, replaceQueryParam("ftype", ftype, params))
     }
 
     function deselectAllCategories() {

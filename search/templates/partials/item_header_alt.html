@@ -47,12 +47,14 @@
 
     {% if not hide_ask_question %}
     <div class="col-lg-2" style='padding-top: 20px'>
-        <p>
-            <span class='btn btn-primary' style='width:100%;'
-                onclick="load_questionform('{{item.type}}', '{{item.id}}', '#questionbox')">
-                Ask a question
-            </span>
-        </p>
+	<!-- 
+             <p>
+             <span class='btn btn-primary' style='width:100%;'
+             onclick="load_questionform('{{item.type}}', '{{item.id}}', '#questionbox')">
+             Ask a question
+             </span>
+             </p>
+	-->
         {% if search %}
         <p>
             <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>

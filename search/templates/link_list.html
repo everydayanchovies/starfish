@@ -1,44 +1,45 @@
 {% for link in community_links|dictsort:"type" %}
-    {% if link.type != "Q" %}
-			<div class="row">
-					<div class="col-lg-1">
-                        <!--
-							{% if link.type == "P" %}
-									<span class="icon-large icon-user"></span>
-							{% elif link.type == "G" %}
-									<span class="icon-large icon-certificate"></span>
-							{% elif link.type == "I" %}
-									<span class="icon-large icon-info-sign"></span>
-							{% elif link.type == "R" %}
-									<span style="width: 40px; margin-left: -8px;" class="icon-large icon-group"></span>
-							{% elif link.type == "E" %}
-									<span class="icon-large icon-calendar"></span>
-							{% elif link.type == "S" %}
-									<span class="icon-large icon-book"></span>
-							{% endif %}
+{% if link.type != "Q" %}
+<div class="row">
+    <div class="col-lg-1">
+        <!--
+	     {% if link.type == "P" %}
+	     <span class="icon-large icon-user"></span>
+	     {% elif link.type == "G" %}
+	     <span class="icon-large icon-certificate"></span>
+	     {% elif link.type == "I" %}
+	     <span class="icon-large icon-info-sign"></span>
+	     {% elif link.type == "R" %}
+	     <span style="width: 40px; margin-left: -8px;" class="icon-large icon-group"></span>
+	     {% elif link.type == "E" %}
+	     <span class="icon-large icon-calendar"></span>
+	     {% elif link.type == "S" %}
+	     <span class="icon-large icon-book"></span>
+	     {% endif %}
 
-						-->
-                        <span class="badge badge-dark">{{ link.type }}</span>
-					</div>
-					<div class="col-lg-10">
-							<a href="{{ link.get_absolute_url }}" style="color: white">
-                                {{ link.downcast.display_name }}
-                            </a>
-					</div>
-			</div>
-		{% endif %}
+	-->
+        <span class="badge badge-dark">{{ link.type }}</span>
+    </div>
+    <div class="col-lg-10">
+	<a href="{{ link.get_absolute_url }}" style="color: white">
+            {{ link.downcast.display_name }}
+        </a>
+    </div>
+</div>
+{% endif %}
 {% endfor %}
-<hr />
-<h3 style='margin-top: 10px; color: white;'>Questions</h3>
-{% for link in community_links|dictsort:"type" %}
-    {% if link.type == "Q" %}
-			<div class="row">
-					<div class="col-lg-1">
-								<span class="icon-large icon-question-sign"></span>
-					</div>
-					<div class="col-lg-10">
-							<a href="{{ link.get_absolute_url }}" >{{ link.downcast.display_name }}</a>
-					</div>
-			</div>
-		{% endif %}
-{% endfor %}
+<!-- 
+     <hr />
+     <h3 style='margin-top: 10px; color: white;'>Questions</h3>
+     {% for link in community_links|dictsort:"type" %}
+     {% if link.type == "Q" %}
+     <div class="row">
+     <div class="col-lg-1">
+     <span class="icon-large icon-question-sign"></span>
+     </div>
+     <div class="col-lg-10">
+     <a href="{{ link.get_absolute_url }}" >{{ link.downcast.display_name }}</a>
+     </div>
+     </div>
+     {% endif %}
+     {% endfor %} -->

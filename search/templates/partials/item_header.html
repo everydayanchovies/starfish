@@ -21,14 +21,14 @@
             Valid until {{ item.exp_date }}
         </span>
         {% endif %}
-
-        <p style="margin-top: 20px;">
-            <span class='btn btn-primary' style='width:100%;'
-                onclick="load_questionform('{{ item.type }}', '{{ item.id }}', '#questionbox')">
-                Ask a question
-            </span>
-        </p>
-
+	<!-- 
+             <p style="margin-top: 20px;">
+             <span class='btn btn-primary' style='width:100%;'
+             onclick="load_questionform('{{ item.type }}', '{{ item.id }}', '#questionbox')">
+             Ask a question
+             </span>
+             </p>
+	-->
         {% if search %}
         <p>
             <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>

@@ -29,12 +29,14 @@
 
         </div>
         <div class="col-lg-2" style='padding-top: 20px'>
-            <p>
-    <span class='btn btn-primary' style='width:100%;'
-          onclick="load_questionform('{{ person.type }}', '{{ person.id }}', '#questionbox')">
-				Ask a question
-	  </span>
-            </p>
+	    <!-- 
+		 <p>
+		 <span class='btn btn-primary' style='width:100%;'
+		 onclick="load_questionform('{{ person.type }}', '{{ person.id }}', '#questionbox')">
+		 Ask a question
+		 </span>
+		 </p>
+	    -->
             {% if person.email and person.public_email %}
                 <p>
                     <a class='btn btn-default' style='width:100%;' href="mailto:{{ person.name }} <{{ person.email }}>">

@@ -237,15 +237,15 @@
         {% endwith %}
         {% endif %}
     </div>
-
-    <div id="question-results" style="display:none;">
-        {% if results.Question %}
-        {% with results.Question as results %}
-        {% include 'groups/question_results.html' %}
-        {% endwith %}
-        {% endif %}
-    </div>
-
+    <!-- 
+	 <div id="question-results" style="display:none;">
+         {% if results.Question %}
+         {% with results.Question as results %}
+         {% include 'groups/question_results.html' %}
+         {% endwith %}
+         {% endif %}
+	 </div>
+    -->
     <div id="usercase-results" style="display:none;">
         {% if results.UserCase %}
         {% with results.UserCase as results %}

@@ -5,6 +5,12 @@ if test -f /home/ubuntu/; then
     exit 1
 fi
 
-. venv/bin/activate
+. .venv/bin/activate
 
-python3 manage.py runserver
+pkill -9 memcached
+memcached -l localhost -p 11211 &
+
+pkill -9 caddy
+caddy run --config "./caddy/caddy-dev.conf" --adapter caddyfile &
+
+python manage.py runserver

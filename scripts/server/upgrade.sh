@@ -25,6 +25,6 @@ set +x
 deactivate
 set -x
 
-systemctl restart caddy
-systemctl restart memcached.service
-systemctl restart sf_django
+sudo systemctl restart caddy
+sudo systemctl restart memcached.service
+sudo systemctl restart sf_django

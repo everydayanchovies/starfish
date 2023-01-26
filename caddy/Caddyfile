@@ -11,3 +11,16 @@ starfish-education.eu {
 
 	reverse_proxy 127.0.0.1:8100
 }
+www.starfish-education.eu {
+	handle_path /media* {
+		root * /home/ubuntu/Starfish-master/media
+		file_server
+	}
+
+	handle_path /static* {
+		root * /var/www/Starfish/static
+		file_server
+	}
+
+	reverse_proxy 127.0.0.1:8100
+}

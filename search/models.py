@@ -395,6 +395,7 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ["type", "handle"]
+        verbose_name_plural = "tags"
 
 
 class Template(models.Model):
@@ -832,7 +833,9 @@ class UserCase(TextItem):
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def save(self, *args, **kwargs):
-        super(UserCase, self).save(*args, **kwargs)
+        # On create, not update
+        if self.pk is None:
+            super(UserCase, self).save(*args, **kwargs)
 
         # delete all relations with CPD tags
         cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
@@ -844,6 +847,9 @@ class UserCase(TextItem):
         cpd_tags = Tag.objects.all().filter(type=Tag.TT_CPD, handle__in=cpd_scales)
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
+
+        super(UserCase, self).save(*args, **kwargs)
+
 
     def context_and_goals(self):
         competences = []

@@ -17,6 +17,7 @@ from search.models import (
     Community,
     CPDLearningEnvironment,
     CPDQuestion,
+    Tag,
     Link,
     Event,
     Glossary,
@@ -94,7 +95,11 @@ class DashboardForm(ModelForm):
         else:
             communities = Community.objects
         super(DashboardForm, self).__init__(*args, **kwargs)
-        self.fields["tags"].widget = TagInput()
+        self.fields["tags"] = ModelMultipleChoiceField(
+            Tag.objects.exclude(type=Tag.TT_CPD),
+            widget=FilteredSelectMultiple(Tag._meta.verbose_name_plural, False),
+            required=False
+        )
         self.fields["tags"].help_text = None
         if "links" in self.fields:
             self.fields["links"] = ModelMultipleChoiceField(

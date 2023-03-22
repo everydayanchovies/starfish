@@ -393,8 +393,8 @@ class UserCaseForm(EditForm):
     success_url = "/dashboard/usercase"
 
     def post(self, request, *args, **kwargs):
-        logger = logging.getLogger("search")
-        logger.info("logging:", CPDQuestion._meta.verbose_name_plural, Link._meta.verbose_name_plural, Community._meta.verbose_name_plural)
+        # logger = logging.getLogger("search")
+        # logger.info("logging:", CPDQuestion._meta.verbose_name_plural, Link._meta.verbose_name_plural, Community._meta.verbose_name_plural)
 
         if request.POST.get("title"):
             match = UserCase.objects.filter(title=request.POST.get("title"))

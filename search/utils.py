@@ -38,12 +38,15 @@ def parse_tags(query):
     tags = Tag.objects.filter(handle__in=tag_tokens)
     # Signal in case of unknown tags
     handles = [t.handle for t in list(tags)]
+    print(handles)
     unknown_tags = {'token': [t for t in tag_tokens
                               if not t in handles],
                     'person': [t[0] for t in person_tokens
                                if not t in handles],
-                    'literal': [t[0] for t in literal_tokens if not
-                    t in handles]}
+                    'literal': [t[0] for t in literal_tokens
+                                if not t in handles]
+    }
+
     return tags, unknown_tags
 
 

@@ -304,16 +304,16 @@ class EditForm(generic.View):
             form.data.setlist("authors", form.data["authors"])
 
             if form.is_valid():
+                # TODO: this validation was broken
                 # Check if all tags are already known
-                tag_str = form.data.get("tags", None)
-                if tag_str:
-                    tags, unknown_tags = parse_tags(tag_str)
-                    if (
-                        unknown_tags["token"]
-                        or unknown_tags["person"]
-                        or unknown_tags["literal"]
-                    ):
-                        messages.info(request, TAG_REQUEST_MESSAGE)
+                # tag_str = form.data.get("tags", None)
+                # if tag_str:
+                #     tags, unknown_tags = parse_tags(tag_str)
+                #     if (unknown_tags["token"]
+                #         or unknown_tags["person"]
+                #         or unknown_tags["literal"]):
+                #         print(unknown_tags)
+                #         messages.info(request, TAG_REQUEST_MESSAGE)
                 if self.success_url[-1] == "/":
                     obj = form.save(commit=False)
                     obj.save()

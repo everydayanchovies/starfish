@@ -64,9 +64,3 @@ class TagInput(widgets.Widget):
         else:
             return None
 
-
-class NonAdminFilteredSelectMultiple(FilteredSelectMultiple):
-    @property
-    def media(self):
-        media = super(NonAdminFilteredSelectMultiple, self).media
-        return media

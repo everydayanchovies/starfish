@@ -29,6 +29,7 @@ from search.models import (
     Question,
     UserCase,
 )
+
 from search.widgets import (
     TagInput,
 )

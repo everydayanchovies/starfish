@@ -3,6 +3,7 @@ from datetime import datetime
 from html.parser import HTMLParser
 
 import ckeditor_uploader.fields as ck_field
+from django.dispatch import receiver
 import wikipedia
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -849,7 +850,6 @@ class UserCase(TextItem):
             self.tags.add(cpd_tag)
 
         super(UserCase, self).save(*args, **kwargs)
-
 
     def context_and_goals(self):
         competences = []

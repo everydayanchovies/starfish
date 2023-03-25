@@ -331,6 +331,9 @@ class EditForm(generic.View):
                     for link in links:
                         obj.link(link)
                     del form.cleaned_data["links"]
+                    # TODO: check if this is a security issue.
+                    form.cleaned_data["tags"] = obj.tags.all()
+
                     form.save_m2m()
                 redirect = self.success_url + obj_id
 

@@ -113,12 +113,11 @@ class DashboardForm(ModelForm):
             self.fields["communities"] = ModelMultipleChoiceField(
                 communities, widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False)
             )
-        """
-        if 'date' in self.fields:
-             self.fields['date'].widget = \
-                 DateTimePicker(options={"format": "YYYY-MM-DD HH:mm",
-                                         "pickSeconds": False})
-        """
+
+        # if 'date' in self.fields:
+        #      self.fields['date'].widget = \
+        #          DateTimePicker(options={"format": "YYYY-MM-DD HH:mm",
+        #                                  "pickSeconds": False})
 
     class Media:
             css = {

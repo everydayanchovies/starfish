@@ -834,9 +834,7 @@ class UserCase(TextItem):
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def save(self, *args, **kwargs):
-        # On create, not update
-        if self.pk is None:
-            super(UserCase, self).save(*args, **kwargs)
+        super(UserCase, self).save(*args, **kwargs)
 
         # delete all relations with CPD tags
         cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
@@ -849,7 +847,8 @@ class UserCase(TextItem):
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
 
-        super(UserCase, self).save(*args, **kwargs)
+        print(self.tags.all())
+
 
     def context_and_goals(self):
         competences = []

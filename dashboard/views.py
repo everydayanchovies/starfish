@@ -56,13 +56,13 @@ def contributions(request):
     )
 
     c = {
-        "goodpractice": GoodPractice.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "information":  Information.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "project":      Project.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "event":        Event.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "question":     Question.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "glossary":     Glossary.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title"),
-        "usercase":     UserCase.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title")
+        "goodpractice": GoodPractice.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "information":  Information.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "project":      Project.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "event":        Event.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "question":     Question.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "glossary":     Glossary.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct(),
+        "usercase":     UserCase.objects.filter(Q(authors=person) | Q(id__in=colab)).order_by("title").distinct()
     }
 
     return render(

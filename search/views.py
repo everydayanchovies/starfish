@@ -1,14 +1,11 @@
 import itertools
 import json
-import pickle
 import logging
 import random
 from builtins import str
 from urllib.error import HTTPError
 from urllib.parse import urlencode, quote
 from urllib.request import urlopen
-
-from django.views.decorators.cache import cache_page
 
 import ldap
 from django.contrib import messages
@@ -33,8 +30,6 @@ from search.models import *
 from search.widgets import *
 
 from zpython import *
-
-import pdb
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL

@@ -25,6 +25,8 @@ urlpatterns = [re_path(r'^$',
                        views.search_list, name='search'),
                re_path(r'^browse',
                        views.browse, name='browse'),
+               re_path(r'^analytics',
+                       views.analytics, name='analytics'),
                re_path(r'^feedback',
                        views.feedback, name='feedback'),
 

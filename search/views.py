@@ -953,6 +953,30 @@ def tag(request, handle):
     else:
         return redirect("/?q=" + symb + handle)
 
+def analytics(request):
+    usercases = UserCase.objects.exclude(draft=True)
+    questions = CPDQuestion.objects.all()
+    scales = CPDScale.objects.all()
+
+    q_counts = []
+    for question in questions:
+        l = UserCase.objects.filter(cpd_questions__question=question.question)
+        q_counts.append((str(question), l.count(), [e.title for e in l]))
+        # logger.debug(f"{question}, {q_counts[-1][1]}")
+
+    s_counts = []
+    for scale in scales:
+        l = UserCase.objects.filter(cpd_questions__scale__title=scale.title, cpd_questions__scale__scale_type=scale.scale_type, draft=False).distinct()
+        s_counts.append((str(scale), l.count(), [e.title for e in l]))
+
+    return render(
+        request,
+        "analytics.html",
+        {
+            "q_counts": q_counts,
+            "s_counts": s_counts
+        }
+    )
 
 # @cache_page(60 * 5)
 def browse(request):

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="item-container container">
+    <div class="row">
+        <h1> Number of usercases per CPD question number </h1>
+        {% for count in q_counts %}
+        <b> {{ count.0 }} </b>
+        <p> {{ count.1 }} </p>
+        <p> {{ count.2 }} </p>
+        {% endfor %}
+        <br/>
+        <h1> Number of usercases per CPD Scale </h1>
+        {% for count in s_counts %}
+            <b> {{ count.0 }} </b>
+            <p> {{ count.1 }} </p>
+            <p> {{ count.2 }} </p>
+        {% endfor %}
+        <br/>
+        <br/>
+        <h1> CSV friendly </h1>
+        <b> CPD question, number of usercases </b>
+        {% for count in q_counts %}
+        <p> {{ count.0 }}, {{ count.1 }} </p>
+        {% endfor %}
+        <br/>
+        <b> CPD Scale, number of usercases </b>
+        {% for count in s_counts %}
+            <p> {{ count.0 }}, {{ count.1 }} </p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

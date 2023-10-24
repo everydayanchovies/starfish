@@ -1,38 +1,36 @@
-{% extends 'groups/result_group.html' %}
+{% extends "groups/result_group.html" %}
 {% load static %}
-
 {% block header %}
     <h1 class="results_header">User Cases</h1>
-    <hr/>
-{% endblock %}
-
+    <hr />
+{% endblock header %}
 {% block content %}
     <div class="row row-flex">
         {% for item in results %}
-        {% with cpd_scenario=item.cpd_scenario %}
-            <div class="col-xs-12 col-md-12 col-lg-6 usercase {% if cpd_scenario %} cpd-scenario-{{ cpd_scenario.id }} {% endif %}" style="">
-                <div class="row-content">
-                    <div class="card" onclick='window.location="{{ item.get_absolute_url }}"'>
-                        <div class="card-img-top" style="width: 100%; height: 150px;">
-                            <div style="background: url('/media/{{ item.wallpaper }}'); height: 100%; width: 100%; background-repeat: no-repeat; background-size: contain; background-position: left;">
+            {% with cpd_scenario=item.cpd_scenario %}
+                <div class="col-xs-12 col-md-12 col-lg-6 usercase {% if cpd_scenario %}cpd-scenario-{{ cpd_scenario.id }}{% endif %}"
+                     style="">
+                    <div class="row-content">
+                        <div class="card" onclick="window.location='{{ item.get_absolute_url }}'">
+                            <div class="card-img-top" style="width: 100%; height: 150px;">
+                                <div style="background: url('/media/{{ item.wallpaper }}');
+                                            height: 100%;
+                                            width: 100%;
+                                            background-repeat: no-repeat;
+                                            background-size: contain;
+                                            background-position: left"></div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title">
-                                <a href="{{ item.get_absolute_url }}" style="color: black;">
-                                    {{ item.title }}
-                                </a>
-                            </h4>
-                            {% include 'groups/tags.html' %}
-
-                            <p>
-                                {{ item.summary }}
-                            </p>
+                            <div class="card-body">
+                                <h4 class="card-title">
+                                    <a href="{{ item.get_absolute_url }}" style="color: black;">{{ item.title }}</a>
+                                </h4>
+                                {% include "groups/tags.html" %}
+                                <p>{{ item.summary }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endwith %}
+            {% endwith %}
         {% endfor %}
     </div>
-{% endblock %}
+{% endblock content %}

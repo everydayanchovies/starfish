@@ -1,67 +1,43 @@
-<div class="row well" style='margin-bottom: 0px;'>
+<div class="row well" style="margin-bottom: 0px;">
     <div class="col-lg-10">
-        <h1 style='margin: 0px;'>
-            {{ item.title }}
-        </h1>
-
+        <h1 style="margin: 0px;">{{ item.title }}</h1>
         {% if show_text %}
-        {% autoescape off %}
-        {{ item.text }}
-        {% endautoescape %}
+            {% autoescape off %}
+                {{ item.text }}
+            {% endautoescape %}
         {% endif %}
-
         <span class="text-muted">
             Posted by
             {% for author in item.authors.all %}
-            <a href="/person/{{ author.id }}">
-                {{ syntax.PERSON }}{{ author.handle }}
-            </a>
+                <a href={% url "person" author.id %}>{{ syntax.PERSON }}{{ author.handle }}</a>
             {% endfor %}
             on {{ item.create_date }}
         </span>
-
         {% if item.contact %}
-        <span class="text-muted pull-right">
-            Contact:
-            <a href="{{ item.contact.get_absolute_url }}">
-                {{ syntax.PERSON }}{{ item.contact.handle }}
-            </a>
-        </span>
+            <span class="text-muted pull-right">
+                Contact:
+                <a href="{{ item.contact.get_absolute_url }}">{{ syntax.PERSON }}{{ item.contact.handle }}</a>
+            </span>
         {% endif %}
-
-        {% if item.exp_date %}
-        <span class="text-muted pull-right">
-            Valid until {{ item.exp_date }}
-        </span>
-        {% endif %}
-
+        {% if item.exp_date %}<span class="text-muted pull-right">Valid until {{ item.exp_date }}</span>{% endif %}
         {% if aliases %}
-        <div class='row'>
-            <div style='padding: 10px; font-size: small;'>
-                <strong>Aliases:</strong>
-                {{ aliases }}
+            <div class="row">
+                <div style="padding: 10px; font-size: small;">
+                    <strong>Aliases:</strong>
+                    {{ aliases }}
+                </div>
             </div>
-        </div>
         {% endif %}
     </div>
-
     {% if not hide_ask_question %}
-    <div class="col-lg-2" style='padding-top: 20px'>
-	<!-- 
-             <p>
-             <span class='btn btn-primary' style='width:100%;'
-             onclick="load_questionform('{{item.type}}', '{{item.id}}', '#questionbox')">
-             Ask a question
-             </span>
-             </p>
-	-->
-        {% if search %}
-        <p>
-            <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>
-                Search
-            </a>
-        </p>
-        {% endif %}
-    </div>
+        <div class="col-lg-2" style="padding-top: 20px">
+            {% if search %}
+                <p>
+                    <a class="btn btn-default"
+                       href="/?q=%23{{ search.handle }}"
+                       style="width:100%">Search</a>
+                </p>
+            {% endif %}
+        </div>
     {% endif %}
 </div>

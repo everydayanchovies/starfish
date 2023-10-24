@@ -1,119 +1,105 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load widget_tweaks %}
 {% load static %}
-
 {% block header %}
-<script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
-{{ form.media }}
-{% endblock %}
-
-
+    <script src="{% static 'jquery-ui.min.js' %}"
+            type="text/javascript"
+            charset="utf-8"></script>
+    {{ form.media }}
+{% endblock header %}
 {% block content %}
+    {% if messages %}
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+    {% endif %}
+    {% if is_new %}
+        <style>
+            ul.errorlist {
+                display: none;
+            }
+        </style>
+    {% endif %}
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-multiple').select2();
 
-{% if messages %}
-{% for message in messages %}
-<div class="alert alert-{{ message.tags }}">{{ message }}</div>
-{% endfor %}
-{% endif %}
-
-{% if is_new %}
-<style>
-    ul.errorlist {
-        display: none;
-    }
-</style>
-{% endif %}
-
-<script>
-    $(document).ready(function () {
-        $('.js-example-basic-multiple').select2();
-
-        alertify.defaults.transition = "slide";
-        alertify.defaults.theme.ok = "btn btn-primary";
-        alertify.defaults.theme.cancel = "btn btn-danger";
-        alertify.defaults.theme.input = "form-control";
-    });
-</script>
-
-<div class="container item-container">
-    <div class="row well">
-        <h1>Information</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <div class="row">
-                {% include "./partials/authors.html" with obj=obj %}
-
-                <div class="col-sm-12 col-md-8">
-                    <div class="row">
-                        <div class="col-md-10 col-xs-10">
-                            <strong>Information Title</strong>
-                            {{ form.title.errors }}
-                            {{ form.title|attr:"class:form-control" }}
-                        </div>
-                        <div class="col-md-2 col-xs-12">
-                            <strong>Draft</strong>
-                            {{ form.draft.errors }}
-                            {{ form.draft }}
+            alertify.defaults.transition = "slide";
+            alertify.defaults.theme.ok = "btn btn-primary";
+            alertify.defaults.theme.cancel = "btn btn-danger";
+            alertify.defaults.theme.input = "form-control";
+        });
+    </script>
+    <div class="container item-container">
+        <div class="row well">
+            <h1>Information</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    {% include "./partials/authors.html" with obj=obj %}
+                    <div class="col-sm-12 col-md-8">
+                        <div class="row">
+                            <div class="col-md-10 col-xs-10">
+                                <strong>Information Title</strong>
+                                {{ form.title.errors }}
+                                {{ form.title|attr:"class:form-control" }}
+                            </div>
+                            <div class="col-md-2 col-xs-12">
+                                <strong>Draft</strong>
+                                {{ form.draft.errors }}
+                                {{ form.draft }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <br />
-
-            <div class="row">
-                <div class="col-lg-12">
-                    <strong>Text</strong><br />
-                    {{ form.text.errors }}
-                    {{ form.text }}
+                <br />
+                <div class="row">
+                    <div class="col-lg-12">
+                        <strong>Text</strong>
+                        <br />
+                        {{ form.text.errors }}
+                        {{ form.text }}
+                    </div>
                 </div>
-            </div>
-
-
-            <div class="row">
-                <div class="col-sm-4 col-md-3">
-                    {{ form.date.label_tag }}
-                    {{ form.date.errors }}
-                    {{ form.date }}
+                <div class="row">
+                    <div class="col-sm-4 col-md-3">
+                        {{ form.date.label_tag }}
+                        {{ form.date.errors }}
+                        {{ form.date }}
+                    </div>
+                    <div class="col-sm-8 col-md-9">
+                        {{ form.contact.label_tag }}
+                        {{ form.contact.errors }}
+                        {{ form.contact|attr:"class:form-control" }}
+                    </div>
                 </div>
-
-                <div class="col-sm-8 col-md-9">
-                    {{ form.contact.label_tag }}
-                    {{ form.contact.errors }}
-                    {{ form.contact|attr:"class:form-control" }}
+                <div class="row">
+                    <div class="col-lg-12">
+                        {{ form.tags.label_tag }}
+                        <br />
+                        {{ form.tags.errors }}
+                        {{ form.tags|safe }}
+                    </div>
                 </div>
-            </div>
-
-
-            <div class="row">
-                <div class="col-lg-12">
-                    {{ form.tags.label_tag }}<br />
-                    {{ form.tags.errors }}
-                    {{ form.tags|safe }}
+                <div class="row">
+                    <div class="col-lg-6 col-md-12">
+                        {{ form.links.label_tag }}
+                        <br />
+                        {{ form.links.errors }}
+                        {{ form.links|safe }}
+                    </div>
+                    <div class="col-lg-6 col-md-12">
+                        {{ form.communities.label_tag }}
+                        <br />
+                        {{ form.communities.errors }}
+                        {{ form.communities|attr:"class:form-control" }}
+                    </div>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-6 col-md-12">
-                    {{ form.links.label_tag }}<br />
-                    {{ form.links.errors }}
-                    {{ form.links|safe }}
-                </div>
-                <div class="col-lg-6 col-md-12">
-                    {{ form.communities.label_tag }}<br />
-                    {{ form.communities.errors }}
-                    {{ form.communities|attr:"class:form-control" }}
-                </div>
-            </div>
-
-            <div>
-                {% include 'disclaimer.html' %}
-            </div>
-
-            <input style="margin-top: 40px;" class="btn btn-default pull-right" type="submit" value="Contribute" />
-        </form>
+                <div>{% include "disclaimer.html" %}</div>
+                <input style="margin-top: 40px"
+                       class="btn btn-default pull-right"
+                       type="submit"
+                       value="Contribute" />
+            </form>
+        </div>
+        {% include "licence.html" %}
     </div>
-    {% include 'licence.html' %}
-</div>
-{% endblock %}
+{% endblock content %}

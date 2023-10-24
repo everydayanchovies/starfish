@@ -1,22 +1,16 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load widget_tweaks %}
 {% load static %}
-
 {% block header %}
     {{ form.media }}
-{% endblock %}
-
+{% endblock header %}
 {% block content %}
     <div class="container item-container">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
+            {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
         {% endif %}
-
         <h1>My Contributions</h1>
         <hr />
-
         <div class="row">
             {% for k, v in c.items %}
                 {% if v %}
@@ -36,20 +30,20 @@
                         {% elif k == "usercase" %}
                             <h2 style="position: relative; top: -4px" id="U">User Case</h2>
                         {% endif %}
-
                         <div class="well">
                             <ul style="list-style-type: none">
                                 {% for e in v %}
                                     <li style="margin-bottom: 5px; margin-top: 5px;">
-                                        <a href="/dashboard/{{ k }}/{{ e.id }}">{{ e }}</a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
+                                        <!-- djlint:off -->
+                                                                            <a href="/dashboard/{{ k }}/{{ e.id }}">{{ e }}</a>
+                                    <!-- djlint:on -->
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
-
-{% endblock %}
+</div>
+{% endblock content %}

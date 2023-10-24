@@ -1,28 +1,15 @@
 {% if obj.authors %}
-<div class="col-xs-12" style="margin-bottom: 20px;">
-    <strong>Authors</strong>
-
-    <div class="row">
-        <ul>
-            {%for author in obj.authors.all %}
-            <li>{{author.person}}</li>
-            {%endfor%}
-        </ul>
-
-        <div class="col-xs-12 col-md-6">
-            <button class="btn btn-info" onclick="alertify.prompt(
-                                            'Send invitation', 'Enter the person\'s email below. If the person exists he/she will receive an invitation to contribute.', '',
-                                            function(evt, value) {
-                                            $.post('/invite-collaborator', {'invitee': value, 'csrfmiddlewaretoken': '{{ csrf_token }}', 'type': '{{ obj.type }}', 'id': '{{ obj.id }}'}, function(data) {
-                                            alertify.success('Invitation send to ' + value);
-                                            }).fail( function(xhr, textStatus, errorThrown) {
-                                            alertify.error('Failed to send invitation to ' + value);
-                                            });
-                                            },
-                                            function() { alertify.error('Invitation cancelled') });" type="button">
-                Invite contributor
-            </button>
+    <div class="col-xs-12" style="margin-bottom: 20px;">
+        <strong>Authors</strong>
+        <div class="row">
+            <ul>
+                {% for author in obj.authors.all %}<li>{{ author.person }}</li>{% endfor %}
+            </ul>
+            <div class="col-xs-12 col-md-6">
+                <button class="btn btn-info"
+                        onclick="alertify.prompt( 'Send invitation', 'Enter the person\'s email below. If the person exists he/she will receive an invitation to contribute.', '', function(evt, value) { $.post('/invite-collaborator', {'invitee': value, 'csrfmiddlewaretoken': '{{ csrf_token }}', 'type': '{{ obj.type }}', 'id': '{{ obj.id }}'}, function(data) { alertify.success('Invitation send to ' + value); }).fail( function(xhr, textStatus, errorThrown) { alertify.error('Failed to send invitation to ' + value); }); }, function() { alertify.error('Invitation cancelled') });"
+                        type="button">Invite contributor</button>
+            </div>
         </div>
     </div>
-</div>
 {% endif %}

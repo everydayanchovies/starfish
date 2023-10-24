@@ -2,12 +2,13 @@
 {% if results or special %}
     <link href="{% static 'bootstrap.icon-large.min.css' %}" rel="stylesheet">
     {% if special %}
-        <div class="row well well" onmouseover='this.style.cursor="pointer"'
+        <div class="row well well"
+             onmouseover='this.style.cursor="pointer"'
              onclick='window.location="{{ special.get_absolute_url }}"'>
             {% if special.info %}
                 {# Tag #}
                 <div class="col-lg-12">
-                    <h3 style='margin: 0px;'>
+                    <h3 style="margin: 0px;">
                         {{ special.info.title }}
                         <a href="{{ special.get_absolute_url }}" class="btn btn-info btn-xs">more</a>
                     </h3>
@@ -17,22 +18,24 @@
                 {# Person #}
                 <div class="col-lg-1">
                     {% if special.photo %}
-                        <img class="img-thumbnail" style="max-width: 70px;"
-                             src="/media/{{ special.photo }}"/>
+                        <img class="img-thumbnail"
+                             style="max-width: 70px"
+                             src="/media/{{ special.photo }}" />
                     {% endif %}
                 </div>
                 <div class="col-lg-11">
                     {% if special.title %}
-                        <h3 style='margin: 0px;'>{{ special.title }} {{ special.name }}
+                        <h3 style="margin: 0px;">
+                            {{ special.title }} {{ special.name }}
                             <a href="/person/{{ special.id }}" class="btn btn-info btn-xs">more</a>
                         </h3>
                     {% else %}
-                        <h3 style='margin: 0px;'>{{ special.name }}
+                        <h3 style="margin: 0px;">
+                            {{ special.name }}
                             <a href="/person/{{ special.id }}" class="btn btn-info btn-xs">more</a>
                         </h3>
                     {% endif %}
-
-                    <p style='text-align: justify'>
+                    <p style="text-align: justify">
                         {% autoescape off %}
                             {{ special.summary }}
                         {% endautoescape %}
@@ -45,9 +48,7 @@
         {% for item in results %}
             <tr>
                 <td>
-                    {% if item.featured %}
-                        <span class="icon-large icon-star"></span>
-                    {% endif %}
+                    {% if item.featured %}<span class="icon-large icon-star"></span>{% endif %}
                 </td>
                 <td>
                     {% if item.type == "Person" %}
@@ -64,29 +65,33 @@
                     {% elif item.type == "Event" %}
                         <span class="icon-large icon-calendar"></span>
                     {% endif %}
-                    <a style="font-size: 150%; position: relative; bottom: 5px;" href="{{ item.get_absolute_url }}">
+                    <a style="font-size: 150%;
+                              position: relative;
+                              bottom: 5px"
+                       href="{{ item.get_absolute_url }}">
                         {% if item.type == "Person" %}
                             {{ item.name }}
                         {% else %}
                             {{ item.title }}
                         {% endif %}
-                    </a><br/>
+                    </a>
+                    <br />
                     {% for tag in item.tags %}
                         {% if not tag.more %}
-                            {% include 'tag.html' with tag=tag %}
+                            {% include "tag.html" with tag=tag %}
                         {% else %}
                             <button class="btn btn-default btn-xs"
                                     onclick="$(this).hide();$('#{{ tag.dom_id }}').show();">{{ tag.handle }}</button>
                             <span id="{{ tag.dom_id }}" style="display: none;">
-						{% for more in tag.more %}
-                            {% include 'tag.html' with tag=more %}
-                        {% endfor %}
-						</span>
+                                {% for more in tag.more %}
+                                    {% include "tag.html" with tag=more %}
+                                {% endfor %}
+                            </span>
                         {% endif %}
                     {% endfor %}
-                    <br/>
+                    <br />
                     {{ item.summary }}
-                    <br/>
+                    <br />
                 </td>
             </tr>
         {% endfor %}

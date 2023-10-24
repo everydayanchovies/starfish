@@ -1,51 +1,46 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-
-{% include 'partials/item_header_alt.html' with item=event %}
-
-{% include 'tag_list.html' %}
-
-<div class="row" style="margin-top: 15px;">
-	{% if event.text %}
-	{% if community_links|length %}
-	<div class="col-lg-9 highlight">
-		{% else %}
-		<div class="col-lg-12 highlight">
-			{% endif %}
-			<div class="pull-right well">
-				{% if event.is_past_due %}
-				<span class="btn btn-warning">This event is in the past</span><br />
-				{% endif %}
-				{{ event.date }}<br />
-				{{ event.location }}
-			</div>
-			<h3 style='margin-top: 0px;'>About</h3>
-			{% autoescape off %}
-			{{ event.text }}
-			{% endautoescape %}
-			<hr style='margin-bottom: 10px;' />
-			{% include 'licence.html' %}
-		</div>
-		{% endif %}
-		{% if community_links|length %}
-		{% if event.text %}
-		<div class="col-lg-3" style='padding-right: 0px;'>
-			<div class='highlight' style='padding: 20px'>
-				{% else %}
-				<div class="col-lg-12 highlight">
-					{% endif %}
-					<h3 style='margin-top: 0px;'>See also</h3>
-					{% include 'link_list.html' with item=event%}
-					{% if event.about %}
-				</div>
-				{% endif %}
-			</div>
-			{% endif %}
-		</div>
-		<div class="row">
-			<div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;">
-				<a name="question"></a>
-			</div>
-		</div>
-
-		{% endblock %}
+    {% include "partials/item_header_alt.html" with item=event %}
+    {% include "tag_list.html" %}
+    <div class="row" style="margin-top: 15px;">
+        {% if event.text %}
+            <div class="col-lg-{% if community_links|length %}9 {% else %} 12 {% endif %}> highlight">
+                <div class="pull-right well">
+                    {% if event.is_past_due %}
+                        <span class="btn btn-warning">This event is in the past</span>
+                        <br />
+                    {% endif %}
+                    {{ event.date }}
+                    <br />
+                    {{ event.location }}
+                </div>
+                <h3 style="margin-top: 0px;">About</h3>
+                {% autoescape off %}
+                    {{ event.text }}
+                {% endautoescape %}
+                <hr style="margin-bottom: 10px;" />
+                {% include "licence.html" %}
+            </div>
+        {% endif %}
+        {% if community_links|length %}
+            <div {% if event.text %} class="col-lg-3" style="padding-right: 0px;" {% else %} class="col-lg-12 highlight" {% endif %}>
+                <div style="background-color: rgb(20, 50, 70);
+                            padding: 20px;
+                            color: white;
+                            border-radius: 10px">
+                    <h3 style="margin-top: 0px;">See also</h3>
+                    {% include "link_list.html" with item=event %}
+                    {% if event.about %}</div>{% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+<div class="row">
+    <div class="col-lg-9 highlight"
+         id="questionbox"
+         style="margin-top: 15px;
+                display:none">
+        <a name="question"></a>
+    </div>
+</div>
+{% endblock content %}

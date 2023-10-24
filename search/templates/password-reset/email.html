@@ -1,0 +1,9 @@
+<p>Hi {{ user.first_name }} {{ user.last_name }},</p>
+<p>
+    You're receiving this email because you requested a password reset for your user account at
+    <a href="{{ domain }}">{{ domain }}</a>
+</p>
+<p>Please click the following link to reset your password:</p>
+<a href="{{ protocol }}://{{ domain }}{% url "password_reset_confirm" uidb64=uid token=token %}">Reset password</a>
+<p>Thanks</p>
+<p>The Starfish Team</p>

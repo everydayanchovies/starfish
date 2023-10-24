@@ -1,118 +1,117 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-    {% if user.is_authenticated %}
-        {% if user.is_staff and new_users > 0 %}
-            <div class="alert alert-warning" role="alert" style="margin: 0; border-radius: 0;">
-                Hi {{ user.person.name }}, there are <a href="/validate"><strong>{{ new_users }} profiles</strong></a> awaiting verification!
-            </div>
-        {% endif %}
-
-        {% if has_pending_invitations %}
-            <div class="alert alert-warning" role="alert" style="margin: 0; border-radius: 0;">
-                Hi {{ user.person.name }}, you have been invited to contribute to an item on Starfish! Please consider contributing by accepting or declining the request below.
-                <br />
-                <ul>
-                    {% for invitation in pending_invitations %}
-                        <li><b>{{ invitation.item }}</b>: <a href="/invitation/accept?pk={{invitation.pk}}">accept</a> &middot; <a href="/invitation/decline?pk={{invitation.pk}}">decline</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-    {% endif %}
-
-    {% include 'searchbox.html' %}
-
-    {% if special %}
-        <div style='background-color: rgb(20, 50, 70); color: white; margin: 0; padding: 20px;'
-             onmouseover='this.style.cursor="pointer"'
-             onclick='window.location="{{ special.get_absolute_url }}"'>
-            <div class="row">
-                <div class="col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-sm-10 col-sm-offset-1 col-xs-12">
-                    {% if special.text %}
-                        {# TextItem #}
-                        <div class="col-lg-12">
-                            <h3 style='margin: 0px;'>
-                                {{ special.title }}
-                                <a href="{{ special.get_absolute_url }}" class="btn btn-info btn-xs">more</a>
-                            </h3>
-                            {{ special.summary }}
-                        </div>
-                    {% else %}
-                        {# Person #}
-                        <div class="row">
-                            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-4">
-                                {% if special.photo %}
-                                    <div style="background: url('/media/{{ special.photo }}'); width: 90px; height: 90px; border-radius: 50%; background-position: center; background-size: cover; border: 2px solid white;">
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="col-lg-9 col-md-8 col-sm-7 col-xs-7">
-                                {% if special.title %}
-                                    <h3 style='margin: 0px;'>
-                                        {{ special.title }} {{ special.name }}
-                                    </h3>
-                                {% else %}
-                                    <h3 style='margin: 0px;'>
-                                        {{ special.name }}
-                                    </h3>
-                                {% endif %}
-
-                                <small>{{ special.summary }}</small>
-
-                                <br/>
-                                <br/>
-
-                                <a href="/person/{{ special.id }}">
-                                    <button class="bttn-fill bttn-xs">
-                                        View profile
-                                    </button>
-                                </a>
-
-                            </div>
-                        </div>
-                    {% endif %}
+    {% load static %}
+    <div>
+        {% if user.is_authenticated %}
+            {% if user.is_staff and new_users > 0 %}
+                <div class="alert alert-warning"
+                     role="alert"
+                     style="margin: 0;
+                            border-radius: 0">
+                    Hi {{ user.person.name }}, there are <a href={% url "validate" %}><strong>{{ new_users }} profiles</strong></a> awaiting verification!
                 </div>
-            </div>
-        </div>
-    {% endif %}
-
-    <div class="">
-        {% if query %}
-            {% if query != dym_query %}
-                <div class="alert alert-info">Did you mean: <a
-                        href='?q={{ dym_query_raw|urlencode }}'>{{ dym_query|safe }}</a></div>
             {% endif %}
-
-            {% include 'results.html' %}
-
-        {% else %}
-            {% if used_tags %}
+            {% if has_pending_invitations %}
+                <div class="alert alert-warning"
+                     role="alert"
+                     style="margin: 0;
+                            border-radius: 0">
+                    Hi {{ user.person.name }}, you have been invited to contribute to an item on Starfish! Please consider contributing by accepting or declining the request below.
+                    <br />
+                    <ul>
+                        {% for invitation in pending_invitations %}
+                            <li>
+                                <b>{{ invitation.item }}</b>: <a href="/invitation/accept?pk={{ invitation.pk }}">accept</a> · <a href="/invitation/decline?pk={{ invitation.pk }}">decline</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endif %}
+        {% include "searchbox.html" %}
+        {% if special %}
+            <div style="background-color: rgb(20, 50, 70);
+                        color: white;
+                        margin: 0;
+                        padding: 20px"
+                 onmouseover='this.style.cursor="pointer"'
+                 onclick='window.location="{{ special.get_absolute_url }}"'>
                 <div class="row">
-                    {% for tagset in used_tags %}
-                        <div class="col-lg-3 col-md-6">
-                            <h4 class="tag tag-{{ tagset.0.0 }}">{{ tagset|first|last }}</h4>
-                            <b>Examples:</b>
-                            {% for tag in tagset|last %}
-                                <a
-                                        href="/?q={{ syntax.TAG|urlencode }}{{ tag }}"
-                                        class='btn btn-xs btn-default'
-                                        style='margin-top:2px;'>
-                                    {{ tag }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
+                    <div class="col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-sm-10 col-sm-offset-1 col-xs-12">
+                        {% if special.text %}
+                            {# TextItem #}
+                            <div class="col-lg-12">
+                                <h3 style="margin: 0px">
+                                    {{ special.title }}
+                                    <a href="{{ special.get_absolute_url }}" class="btn btn-info btn-xs">more</a>
+                                </h3>
+                                {{ special.summary }}
+                            </div>
+                        {% else %}
+                            {# Person #}
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 col-sm-4 col-xs-4">
+                                    {% if special.photo %}
+                                        <div style="background: url('/media/{{ special.photo }}');
+                                                    width: 90px;
+                                                    height: 90px;
+                                                    border-radius: 50%;
+                                                    background-position: center;
+                                                    background-size: cover;
+                                                    border: 2px solid white"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-lg-9 col-md-8 col-sm-7 col-xs-7">
+                                    {% if special.title %}
+                                        <h3 style="margin: 0px;">{{ special.title }} {{ special.name }}</h3>
+                                    {% else %}
+                                        <h3 style="margin: 0px">{{ special.name }}</h3>
+                                    {% endif %}
+                                    <small>{{ special.summary }}</small>
+                                    <br />
+                                    <br />
+                                    <a href="/person/{{ special.id }}">
+                                        <button class="bttn-fill bttn-xs">View profile</button>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <a href="/glossary/51/">
-                        <img style="max-width: 370px; margin-top: 20px;" src='static/images/TPACK.png'>
-                    </a>
-                </div>
-            {% else %}
-                <img class="img-responsive" src='/static/images/explanation.png'/>
-            {% endif %}
+            </div>
         {% endif %}
+        <div>
+            {% if query %}
+                {% if query != dym_query %}
+                    <div class="alert alert-info">
+                        Did you mean: <a href='?q={{ dym_query_raw|urlencode }}'>{{ dym_query|safe }}</a>
+                    </div>
+                {% endif %}
+                {% include "results.html" %}
+            {% else %}
+                {% if used_tags %}
+                    <div class="row">
+                        {% for tagset in used_tags %}
+                            <div class="col-lg-3 col-md-6">
+                                <h4 class="tag tag-{{ tagset.0.0 }}">{{ tagset|first|last }}</h4>
+                                <b>Examples:</b>
+                                {% for tag in tagset|last %}
+                                    <a href="/?q={{ syntax.TAG|urlencode }}{{ tag }}"
+                                       class="btn btn-xs btn-default"
+                                       style="margin-top:2px">{{ tag }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div style="text-align: center;">
+                        <a href={% url "glossary" 51 %}>
+                            <img style="max-width: 370px; margin-top: 20px" src="{% static "images/TPACK.png" %}">
+                        </a>
+                    </div>
+                {% else %}
+                    <img class="img-responsive" src={% static "images/explanation.png" %} />
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
-    </div>
-{% endblock %}
+{% endblock content %}

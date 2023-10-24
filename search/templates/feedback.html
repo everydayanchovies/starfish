@@ -1,11 +1,10 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<div class="jumbotron">
-    <h1>Feedback is much appreciated</h1>
-    We want to continue to make Starfish a better platform based on your input.
-    Please send an email with your feedback to ICTO-FNWI,<a
-        href="mailto:icto-fnwi@uva.nl">icto-fnwi@uva.nl</a>.
-	<hr />
-	<a href="/" class="btn btn-lg btn-primary">Go back to the website</a>
-</div>
-{% endblock %}
+    <div class="jumbotron">
+        <h1>Feedback is much appreciated</h1>
+        We want to continue to make Starfish a better platform based on your input.
+        Please send an email with your feedback to ICTO-FNWI,<a href="mailto:icto-fnwi@uva.nl">icto-fnwi@uva.nl</a>.
+        <hr />
+        <a href={% url "index" %} class="btn btn-lg btn-primary">Go back to the website</a>
+    </div>
+{% endblock content %}

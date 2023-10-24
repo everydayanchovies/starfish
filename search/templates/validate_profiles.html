@@ -1,5 +1,4 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
     <div class="container container-item">
         <h3>Validate profiles</h3>
@@ -11,26 +10,24 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ profile.name }}</h5>
                                 <p class="card-text">
-                                    {{ profile.university }}<br/>
+                                    {{ profile.university }}
+                                    <br />
                                     {{ profile.email }}
-                                <hr/>
-
-                                <strong>Introduction.</strong><br/>
-                                {{ profile.introduction }}
+                                    <hr />
+                                    <strong>Introduction.</strong>
+                                    <br />
+                                    {{ profile.introduction }}
                                 </p>
-                                <a href="/validate/accept?person={{ profile.pk }}" class="btn btn-success">
-                                    Accept
-                                </a>
-                                <a href="/validate/reject?person={{ profile.pk }}" class="btn btn-danger">
-                                    Reject
-                                </a>
+                                <a href="/validate/accept?person={{ profile.pk }}"
+                                   class="btn btn-success">Accept</a>
+                                <a href="/validate/reject?person={{ profile.pk }}"
+                                   class="btn btn-danger">Reject</a>
                             </div>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
-
-        {% include 'licence.html' %}
+        {% include "licence.html" %}
     </div>
-{% endblock %}
+{% endblock content %}

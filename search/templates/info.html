@@ -1,57 +1,55 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block header %}
-<link href="/static/css/read_more_link.css" rel="stylesheet">
-<script src="/static/js/read_more_links.js"></script>
-{% endblock %}
-
+    {% load static %}
+    <link href={% static "css/read_more_link.css" %} rel="stylesheet">
+    <script src={%static "js/read_more_links.js" %}></script>
+{% endblock header %}
 {% block content %}
-<div class="item-container container">
-
-    {% include 'partials/item_header.html' with item=information%}
-
-    {% include 'tag_list.html' %}
-
-    <div class="row">
-        {% if information.text %}
-        {% if community_links|length %}
-        <div class="col-lg-9 highlight">
-            {% else %}
-            <div class="col-lg-12 highlight">
-                {% endif %}
-                <h3 style='margin-top: 0px;'>About</h3>
-                {% autoescape off %}
-                {{ information.text }}
-                {% endautoescape %}
-                <hr style='margin-bottom: 10px;' />
-                {% include 'licence.html' %}
-            </div>
-            {% endif %}
-            {% if community_links|length %}
-            {% if information.text %}
-            <div class="col-lg-3" style='padding: 0;'>
-                <div class='' style='padding: 0 10px'>
-                    {% else %}
-                    <div class="col-lg-12">
-                        {% endif %}
-                        <div
-                            style="background-color: rgb(20, 50, 70); padding: 20px; color: white; border-radius: 10px;">
-                            <h3 style='margin-top: 0px;'>See also</h3>
-                            {% include 'link_list.html' with item=information %}
-                            {% if information.text %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+    <div class="item-container container">
+        {% include "partials/item_header.html" with item=information %}
+        {% include "tag_list.html" %}
         <div class="row">
-            <div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;">
-                <a name="question"></a>
+            {% if information.text %}
+                {% if community_links|length %}
+                    <div class="col-lg-9 highlight">
+                    {% else %}
+                        <div class="col-lg-12 highlight">
+                        {% endif %}
+                        <h3 style="margin-top: 0px">About</h3>
+                        {% autoescape off %}
+                            {{ information.text }}
+                        {% endautoescape %}
+                        <hr style="margin-bottom: 10px" />
+                        {% include "licence.html" %}
+                    </div>
+                {% endif %}
+                {% if community_links|length %}
+                    {% if information.text %}
+                        <div class="col-lg-3" style="padding: 0">
+                            <div style="padding: 0 10px">
+                            {% else %}
+                                <div class="col-lg-12">
+                                {% endif %}
+                                <div style="background-color: rgb(20, 50, 70);
+                                            padding: 20px;
+                                            color: white;
+                                            border-radius: 10px">
+                                    <h3 style="margin-top: 0px;">See also</h3>
+                                    {% include "link_list.html" with item=information %}
+                                    {% if information.text %}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-9 highlight"
+                     id="questionbox"
+                     style="margin-top: 15px;
+                            display:none">
+                    <a name="question"></a>
+                </div>
             </div>
         </div>
-
     </div>
-</div>
-{% endblock %}
+{% endblock content %}

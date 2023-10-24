@@ -1,46 +1,26 @@
 <div class="row">
     <div class="col-xs-12">
-        <h1 style='margin: 0px;'>
-            {{ item.title }}
-        </h1>
+        <h1 style="margin: 0px;">{{ item.title }}</h1>
     </div>
-
     <div class="col-md-4 col-xs-12" style="padding-top: 10px;">
         <span class="text-muted">
             Posted by
             {% for author in item.authors.all %}
-            <a href="/person/{{ author.id }}">
-                {{ syntax.PERSON }}{{ author.handle }}
-            </a>
+                <a href={% url "person" author.id %}>{{ syntax.PERSON }}{{ author.handle }}</a>
             {% endfor %}
             on {{ item.create_date }}
         </span>
-
-        {% if item.exp_date %}
-        <span class="text-muted pull-right">
-            Valid until {{ item.exp_date }}
-        </span>
-        {% endif %}
-	<!-- 
-             <p style="margin-top: 20px;">
-             <span class='btn btn-primary' style='width:100%;'
-             onclick="load_questionform('{{ item.type }}', '{{ item.id }}', '#questionbox')">
-             Ask a question
-             </span>
-             </p>
-	-->
+        {% if item.exp_date %}<span class="text-muted pull-right">Valid until {{ item.exp_date }}</span>{% endif %}
         {% if search %}
-        <p>
-            <a class='btn btn-default' href='/?q=%23{{ search.handle }}' style='width:100%;'>
-                Search
-            </a>
-        </p>
+            <p>
+                <a class="btn btn-default"
+                   href="/?q=%23{{ search.handle }}"
+                   style="width:100%">Search</a>
+            </p>
         {% endif %}
-
     </div>
-
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.tag-slider').slick({
                 slidesToShow: 3,
                 slidesToScroll: 3,
@@ -50,7 +30,6 @@
             });
         });
     </script>
-
     <style>
         .slick-prev:before,
         .slick-next:before {
@@ -74,11 +53,13 @@
             background-color: rgb(20, 50, 70) !important;
         }
     </style>
-
     <div class="col-md-8 col-xs-12 d-flex">
-        <div class="tag-slider" id="wikipedia" style="padding: 10px; padding-top: 0;">
+        <div class="tag-slider"
+             id="wikipedia"
+             style="padding: 10px;
+                    padding-top: 0">
             {% for summary in summaries %}
-            {% include './summary_card.html' with summary=summary %}
+                {% include "./summary_card.html" with summary=summary %}
             {% endfor %}
         </div>
     </div>

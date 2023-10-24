@@ -54,7 +54,7 @@ DEBUG = False
 SERVER_EMAIL = get_secret("SERVER_EMAIL")
 ADMINS = (get_secret("ADMIN_EMAIL")
           )
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 MANAGERS = ADMINS
 
 DATABASES = {

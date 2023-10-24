@@ -1,9 +1,8 @@
-{% extends 'groups/result_group.html' %}
+{% extends "groups/result_group.html" %}
 {% block header %}
     <h1>People</h1>
-    <hr/>
-{% endblock %}
-
+    <hr />
+{% endblock header %}
 {% block content %}
     <div class="row row-flex">
         {% for item in results %}
@@ -11,22 +10,22 @@
                 <div class="row-content">
                     <div class="card">
                         <div style="width: 100%; padding-top: 10px;">
-                            <div style="width: 100px; height: 100px; margin: 0 auto; background: url('/media/{{ item.photo }}'); background-size: cover; border-radius: 50%;">
-                            </div>
+                            <div style="width: 100px;
+                                        height: 100px;
+                                        margin: 0 auto;
+                                        background: url('/media/{{ item.photo }}');
+                                        background-size: cover;
+                                        border-radius: 50%"></div>
                         </div>
                         <div class="card-body">
                             <h4 class="card-title">
-                                <a href="{{ item.get_absolute_url }}" style="color: black;">
-                                    {{ item.name }}
-                                </a>
+                                <a href="{{ item.get_absolute_url }}" style="color: black;">{{ item.name }}</a>
                             </h4>
-                            <p>
-                                {{ item.summary }}
-                            </p>
+                            <p>{{ item.summary }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
-{% endblock %}
+{% endblock content %}

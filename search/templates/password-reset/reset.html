@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block header %}
+    {{ form.media }}
+{% endblock header %}
+{% block content %}
+    <div class="container item-container">
+        <div class="center">
+            <form method="post">
+                {% csrf_token %}
+                <h2 class="text-center">Reset Password</h2>
+                <div class="row">
+                    <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12">
+                        {% for field in form %}
+                            <strong>{{ field.label_tag }}</strong>
+                            {{ field|attr:"class:form-control" }}
+                            {% if field.errors %}<small>{{ field.errors|striptags }}</small>{% endif %}
+                        {% endfor %}
+                        <br />
+                        <div class="form-buttons">
+                            <input type="submit" value="Send" class="btn btn-primary">
+                            <a href="{% url 'login' %}"  class="btn btn-outline">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,5 +1,11 @@
 from django.urls import re_path, path
 from django.conf.urls import include
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
 
 from search import views, apis
 
@@ -71,6 +77,14 @@ urlpatterns = [re_path(r'^$',
                        views.login_user, name='login'),
                re_path(r'^logout',
                        views.logout_user, name='logout'),
+               path('password-reset/',
+                       PasswordResetView.as_view(template_name='password-reset/reset.html', html_email_template_name='password-reset/email.html'), name='password-reset'),
+               path('password-reset/done/',
+                       PasswordResetDoneView.as_view(template_name='password-reset/done.html'), name='password_reset_done'),
+               path('password-reset-confirm/<uidb64>/<token>/',
+                       PasswordResetConfirmView.as_view(template_name='password-reset/confirm.html'),name='password_reset_confirm'),
+               path('password-reset-complete/',
+                       PasswordResetCompleteView.as_view(template_name='password-reset/complete.html'),name='password_reset_complete'),
                re_path(r'ivoauth_debug$',
                        views.ivoauth_debug, name='ivoauth_debug'),
                re_path(r'ivoauth/debug_callback',

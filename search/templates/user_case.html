@@ -1,210 +1,207 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block header %}
-<link href="/static/css/read_more_link.css" rel="stylesheet">
-<script src="/static/js/read_more_links.js"></script>
-{% endblock %}
-
-
+    {% load static %}
+    <link href={% static "css/read_more_link.css" %} rel="stylesheet">
+    <script src={% static "js/read_more_links.js" %}></script>
+{% endblock header %}
 {% block content %}
-<div class="item-container container">
-    <style>
-        h2 {
-            font-size: 22px;
-        }
-    </style>
-
-    {% include 'partials/item_header.html' with item=information%}
-
-    {% include 'tag_list.html' %}
-
-    <div class="row" style="margin-top: -10px;">
-        {% if information.text %}
-        {% if community_links|length %}
-        <div class="col-lg-9 highlight">
-            {% else %}
-            <div class="col-lg-12 highlight">
-                {% endif %}
-
-                <div class="row">
-                    <div class="col-xs-12 col-md-8">
-                        {% if information.text %}
-                        {% autoescape off %}
-                        {{ information.text }}
-                        {% endautoescape %}
+    <div class="item-container container">
+        <style>
+            h2 {
+                font-size: 22px;
+            }
+        </style>
+        {% include "partials/item_header.html" with item=information %}
+        {% include "tag_list.html" %}
+        <div class="row" style="margin-top: -10px;">
+            {% if information.text %}
+                {% if community_links|length %}
+                    <div class="col-lg-9 highlight">
+                    {% else %}
+                        <div class="col-lg-12 highlight">
                         {% endif %}
-                    </div>
-
-                    <div class="col-xs-12 col-md-4" style="max-height:300px; overflow: hidden;">
-                        <div
-                            style="width: 100%; padding-bottom: 85%; background: url('/media/{{ information.wallpaper }}'); background-size: cover; background-position: center;">
-                        </div>
-                    </div>
-
-                </div>
-                <ul class="nav nav-tabs" role="tablist" style="margin-top: 20px">
-                    <li class="active">
-                        <a href="#contextgoals" role="tab" data-toggle="tab">Context and Goals</a>
-                    </li>
-                    <li>
-                        <a href="#profile" role="tab" data-toggle="tab">CPD Activities</a>
-                    </li>
-                    <li>
-                        <a href="#messages" role="tab" data-toggle="tab">Evaluation</a>
-                    </li>
-                    <li>
-                        <a href="#cpd-scenario" role="tab" data-toggle="tab">CPD Scenario</a>
-                    </li>
-                </ul>
-
-                <div class="tab-content">
-                    <div class="tab-pane fade active in" id="contextgoals">
-                        {% if information.context_goals %}
-                        {% autoescape off %}
-                        {{ information.context_goals }}
-                        {% endautoescape %}
-                        {% with information.context_and_goals as comps_atts_acts %}
-                        <h2>
-                            Needs defined in STEM-CPD Roadmap
-                        </h2>
                         <div class="row">
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Competences</b></h5>
-                                {% for comp in comps_atts_acts.0 %}
-                                <div class="cpd-scale-in-list">
-                                    <span>{{ comp }}</span>
-                                    <!-- {{ scale.title }} -->
-                                </div>
-                                {% endfor %}
+                            <div class="col-xs-12 col-md-8">
+                                {% if information.text %}
+                                    {% autoescape off %}
+                                        {{ information.text }}
+                                    {% endautoescape %}
+                                {% endif %}
                             </div>
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Attitudes</b></h5>
-                                {% for att in comps_atts_acts.1 %}
-                                <div class="cpd-scale-in-list">
-                                    <span>{{ att }}</span>
-                                    <!-- {{ scale.title }} -->
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Activities</b></h5>
-                                {% for act in comps_atts_acts.2 %}
-                                <div class="cpd-scale-in-list">
-                                    <span>{{ act }}</span>
-                                    <!-- {{ scale.title }} -->
-                                </div>
-                                {% endfor %}
+                            <div class="col-xs-12 col-md-4" style="max-height:300px; overflow: hidden">
+                                <div style="width: 100%;
+                                            padding-bottom: 85%;
+                                            background: url('/media/{{ information.wallpaper }}');
+                                            background-size: cover;
+                                            background-position: center"></div>
                             </div>
                         </div>
-                        {% endwith %}
-                        {% endif %}
-                    </div>
-                    <div class="tab-pane fade" id="profile">
-                        {% if information.cpd_activities %}
-                        {% autoescape off %}
-                        {{ information.cpd_activities }}
-                        {% endautoescape %}
-                        {% endif %}
-                    </div>
-                    <div class="tab-pane fade" id="messages">
-                        {% if information.evaluation %}
-                        {% autoescape off %}
-                        {{ information.evaluation }}
-                        {% endautoescape %}
-                        {% endif %}
-                    </div>
-                    <div class="tab-pane fade" id="cpd-scenario">
-                        {% if information.cpd_questions %}
-                        {% autoescape off %}
-                        <h4>{{ information.get_cpd_scenario.title }}</h4>
-                        <div class="row">
-                            <div class="col-lg-12 col-md-12">
-                                <div>
-                                    {{ information.get_cpd_scenario.description|linebreaks }}
-                                </div>
+                        <ul class="nav nav-tabs" role="tablist" style="margin-top: 20px">
+                            <li class="active">
+                                <a href="#contextgoals" role="tab" data-toggle="tab">Context and Goals</a>
+                            </li>
+                            <li>
+                                <a href="#profile" role="tab" data-toggle="tab">CPD Activities</a>
+                            </li>
+                            <li>
+                                <a href="#messages" role="tab" data-toggle="tab">Evaluation</a>
+                            </li>
+                            <li>
+                                <a href="#cpd-scenario" role="tab" data-toggle="tab">CPD Scenario</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade active in" id="contextgoals">
+                                {% if information.context_goals %}
+                                    {% autoescape off %}
+                                        {{ information.context_goals }}
+                                    {% endautoescape %}
+                                    {% with information.context_and_goals as comps_atts_acts %}
+                                        <h2>Needs defined in STEM-CPD Roadmap</h2>
+                                        <div class="row">
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Competences</b>
+                                                </h5>
+                                                {% for comp in comps_atts_acts.0 %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <span>{{ comp }}</span>
+                                                        <!-- {{ scale.title }} -->
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Attitudes</b>
+                                                </h5>
+                                                {% for att in comps_atts_acts.1 %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <span>{{ att }}</span>
+                                                        <!-- {{ scale.title }} -->
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Activities</b>
+                                                </h5>
+                                                {% for act in comps_atts_acts.2 %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <span>{{ act }}</span>
+                                                        <!-- {{ scale.title }} -->
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endwith %}
+                                {% endif %}
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Competences</b></h5>
-                                {% for scale in competences_list %}
-                                <div class="cpd-scale-in-list">
-                                    <a href="/?q=%23{{scale.tag.handle}}">
-                                        {{ scale.title }}
-                                    </a>
-                                </div>
-                                {% endfor %}
+                            <div class="tab-pane fade" id="profile">
+                                {% if information.cpd_activities %}
+                                    {% autoescape off %}
+                                        {{ information.cpd_activities }}
+                                    {% endautoescape %}
+                                {% endif %}
                             </div>
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Attitudes</b></h5>
-                                {% for scale in attitudes_list %}
-                                <div class="cpd-scale-in-list">
-                                    <a href="/?q=%23{{scale.tag.handle}}">
-                                        {{ scale.title }}
-                                    </a>
-                                </div>
-                                {% endfor %}
+                            <div class="tab-pane fade" id="messages">
+                                {% if information.evaluation %}
+                                    {% autoescape off %}
+                                        {{ information.evaluation }}
+                                    {% endautoescape %}
+                                {% endif %}
                             </div>
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Activities</b></h5>
-                                {% for scale in activities_list %}
-                                <div class="cpd-scale-in-list">
-                                    <a href="/?q=%23{{scale.tag.handle}}">
-                                        {{ scale.title }}
-                                    </a>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Learning environment</b></h5>
-                                {% for le in information.get_cpd_scenario.learning_environments %}
-                                <div class="cpd-le-in-list">
-                                    {{ le.title }}
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <div class="col-lg-4 col-md-12">
-                                <h5><b>Time</b></h5>
-                                {% if information.get_cpd_scenario.time_to_finish %}
-                                    {{ information.get_cpd_scenario.time_to_finish.title }}
+                            <div class="tab-pane fade" id="cpd-scenario">
+                                {% if information.cpd_questions %}
+                                    {% autoescape off %}
+                                        <h4>{{ information.get_cpd_scenario.title }}</h4>
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12">
+                                                <div>{{ information.get_cpd_scenario.description|linebreaks }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Competences</b>
+                                                </h5>
+                                                {% for scale in competences_list %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <a href="/?q=%23{{ scale.tag.handle }}">{{ scale.title }}</a>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Attitudes</b>
+                                                </h5>
+                                                {% for scale in attitudes_list %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <a href="/?q=%23{{ scale.tag.handle }}">{{ scale.title }}</a>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Activities</b>
+                                                </h5>
+                                                {% for scale in activities_list %}
+                                                    <div class="cpd-scale-in-list">
+                                                        <a href="/?q=%23{{ scale.tag.handle }}">{{ scale.title }}</a>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Learning environment</b>
+                                                </h5>
+                                                {% for le in information.get_cpd_scenario.learning_environments %}
+                                                    <div class="cpd-le-in-list">{{ le.title }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-lg-4 col-md-12">
+                                                <h5>
+                                                    <b>Time</b>
+                                                </h5>
+                                                {% if information.get_cpd_scenario.time_to_finish %}{{ information.get_cpd_scenario.time_to_finish.title }}{% endif %}
+                                            </div>
+                                        </div>
+                                    {% endautoescape %}
                                 {% endif %}
                             </div>
                         </div>
-                        {% endautoescape %}
-                        {% endif %}
+                        <hr style="margin-bottom: 10px;" />
+                        {% include "licence.html" %}
                     </div>
-                </div>
-
-                <hr style='margin-bottom: 10px;' />
-                {% include 'licence.html' %}
-            </div>
-            {% endif %}
-            {% if community_links|length %}
-            {% if information.text %}
-            <div class="col-lg-3" style='padding: 0;'>
-                <div class='' style='padding: 0 10px'>
-                    {% else %}
-                    <div class="col-lg-12">
-                        {% endif %}
-                        <div
-                            style="background-color: rgb(20, 50, 70); padding: 20px; color: white; border-radius: 10px;">
-                            <h3 style='margin-top: 0px;'>See also</h3>
-                            {% include 'link_list.html' with item=information %}
-                            {% if information.text %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
                 {% endif %}
+                {% if community_links|length %}
+                    {% if information.text %}
+                        <div class="col-lg-3" style="padding: 0;">
+                            <div style="padding: 0 10px">
+                            {% else %}
+                                <div class="col-lg-12">
+                                {% endif %}
+                                <div style="background-color: rgb(20, 50, 70);
+                                            padding: 20px;
+                                            color: white;
+                                            border-radius: 10px">
+                                    <h3 style="margin-top: 0px;">See also</h3>
+                                    {% include "link_list.html" with item=information %}
+                                    {% if information.text %}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-9 highlight" id="questionbox" style="margin-top: 15px; display:none;">
-                <a name="question"></a>
+            <div class="row">
+                <div class="col-lg-9 highlight"
+                     id="questionbox"
+                     style="margin-top: 15px;
+                            display:none">
+                    <a name="question"></a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+{% endblock content %}

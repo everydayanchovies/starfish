@@ -1,9 +1,8 @@
-{% extends 'groups/result_group.html' %}
+{% extends "groups/result_group.html" %}
 {% block header %}
     <h1 class="results_header">Projects</h1>
     <hr />
-{% endblock %}
-
+{% endblock header %}
 {% block content %}
     <div class="row row-flex">
         {% for item in results %}
@@ -12,18 +11,14 @@
                     <div class="card">
                         <div class="card-body">
                             <h4 class="card-title">
-                                <a href="{{ item.get_absolute_url }}" style="color: black;">
-                                    {{ item.title }}
-                                </a>
+                                <a href="{{ item.get_absolute_url }}" style="color: black;">{{ item.title }}</a>
                             </h4>
-                            <h6 class="card-subtitle mb-2 text-muted">{% include 'groups/tags.html' %}</h6>
-                            <p class="card-text">
-                                {{ item.summary }}
-                            </p>
+                            <h6 class="card-subtitle mb-2 text-muted">{% include "groups/tags.html" %}</h6>
+                            <p class="card-text">{{ item.summary }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
-{% endblock %}
+{% endblock content %}

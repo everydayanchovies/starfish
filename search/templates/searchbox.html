@@ -1,62 +1,81 @@
 {% load static %}
-<div id="search_box" class="row alert alert-info" style="background-color: rgb(20, 50, 70); margin: 0; border: none; border-radius: 0;">
+<div id="search_box"
+     class="row alert alert-info"
+     style="background-color: rgb(20, 50, 70);
+            margin: 0;
+            border: none;
+            border-radius: 0">
     <div class="container">
-        <form class="form-inline" role="form" method="get" action="/">
+        <form class="form-inline" role="form" method="get" action={% url "index" %}>
             <div class="row">
                 {% if user_communities|length > 1 %}
                     <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12">
-                {% else %}
-                    <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
-                {% endif %}
-                <input type="text" id="search_input" class="form-control" name="q"
-                       {% if query %}value="{{ query }}" {% endif %} style='display: none;'">
-                </div>
-                {% if user_communities|length > 1 %}
-                    <div class="col-lg-3 col-md-2 col-sm-12 col-xs-12"
-                         style='margin-bottom:10px; margin-top: 1px;'>
-                        <select id="selectcommunity" name="community" class="form-control">
-                            <option value="*">Everything</option>
-                            {% for c in user_communities %}
-                                <option {% if c.id == community %} selected="selected" {% endif %}
-                                                                   value="{{ c.id }}">{{ c }}</option>
-                            {% endfor %}
-                        </select>
+                    {% else %}
+                        <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
+                        {% endif %}
+                        <input type="text"
+                               id="search_input"
+                               class="form-control"
+                               name="q"
+                               {% if query %}value="{{ query }}"{% endif %}
+                               style="display: none">
                     </div>
-                {% endif %}
-                {% if user_communities|length > 1 %}
-                    <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
-                {% else %}
-                    <div class="col-lg-2 col-md-3 col-sm-3 col-xs-12">
-                {% endif %}
-                <button style="margin-top: 1px;" type="submit" class="form-control bttn-jelly bttn-sm bttn-block">
-                    Search
-                </button>
+                    {% if user_communities|length > 1 %}
+                        <div class="col-lg-3 col-md-2 col-sm-12 col-xs-12"
+                             style="margin-bottom:10px;
+                                    margin-top: 1px">
+                            <select id="selectcommunity" name="community" class="form-control">
+                                <option value="*">Everything</option>
+                                {% for c in user_communities %}
+                                    <option {% if c.id == community %}selected="selected"{% endif %}
+                                            value="{{ c.id }}">{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    {% if user_communities|length > 1 %}
+                        <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12">
+                        {% else %}
+                            <div class="col-lg-2 col-md-3 col-sm-3 col-xs-12">
+                            {% endif %}
+                            <button style="margin-top: 1px"
+                                    type="submit"
+                                    class="form-control bttn-jelly bttn-sm bttn-block">Search</button>
+                        </div>
+                    </form>
                 </div>
-        </form>
+            </div>
+        </div>
+        <script src="{% static 'jquery-ui.min.js' %}"
+                type="text/javascript"
+                charset="utf-8"></script>
+        <script src="{% static 'js/tag-it.js' %}"
+                type="text/javascript"
+                charset="utf-8"></script>
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'jquery-ui-1.10.3.custom.css' %}">
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'css/jquery.tagit.css' %}">
+        <script type='text/javascript'>
+            $("#search_input").tagit({
+                caseSensitive: false,
+                singleFieldDelimiter: "{{ syntax.DELIM }}",
+                placeholderText: 'e.g. #TPACK',
+                autocomplete: {
+                    source: function(search, cb) {
+                        $.ajax({
+                            url: "/autocomplete?q=" + encodeURIComponent(search.term),
+                            context: this
+                        }).done(
+                            function(choices) {
+                                cb(this._subtractArray(choices, this.assignedTags()))
+                            })
+                    }
+                }
+            });
+            $(".tagit-new input:first").focus();
+        </script>
     </div>
 </div>
-</div>
-
-<script src="{% static 'jquery-ui.min.js' %}" type="text/javascript" charset="utf-8"></script>
-<script src="{% static 'js/tag-it.js' %}" type="text/javascript" charset="utf-8"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'jquery-ui-1.10.3.custom.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.tagit.css' %}">
-<script type='text/javascript'>
-    $("#search_input").tagit({
-        caseSensitive: false,
-        singleFieldDelimiter: "{{ syntax.DELIM }}",
-        placeholderText: 'e.g. #TPACK',
-        autocomplete: {
-            source: function (search, cb) {
-                $.ajax({
-                    url: "/autocomplete?q=" + encodeURIComponent(search.term),
-                    context: this
-                }).done(
-                    function (choices) {
-                        cb(this._subtractArray(choices, this.assignedTags()))
-                    })
-            }
-        }
-    });
-    $(".tagit-new input:first").focus();
-</script>

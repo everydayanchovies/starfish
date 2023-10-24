@@ -13,3 +13,4 @@ _build/
 **/*.py.swp
 __MACOSX/
 .python-version
+pyproject.toml

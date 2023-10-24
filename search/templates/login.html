@@ -1,44 +1,39 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load widget_tweaks %}
-
 {% block header %}
     {{ form.media }}
-{% endblock %}
-
+{% endblock header %}
 {% block content %}
     <div class="container item-container">
         <h1>Log in</h1>
         {% if errors|length > 0 %}
             <div class="alert alert-danger" role="alert">
                 <strong>An error occurred!</strong>
-
                 <ul>
-                    {% for error in errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
+                    {% for error in errors %}<li>{{ error }}</li>{% endfor %}
                 </ul>
             </div>
         {% endif %}
-
         <form method="post">
             {% csrf_token %}
-
             <div class="row">
                 <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12">
                     <strong>E-mail</strong>
                     {{ form.email.errors }}
                     {{ form.email|attr:"class:form-control" }}
-
-                    <br/>
-
+                    <br />
                     <strong>Password</strong>
                     {{ form.password.errors }}
                     {{ form.password|attr:"class:form-control" }}
-
-                    <br/>
+                    <br />
                     <button type="submit" class="btn btn-primary">Submit</button>
+                    {% comment %} TODO: uncomment when email server is set up {% endcomment %}
+                    {% comment %} <p class="text-center">
+                        Forgot your password?
+                        <a href="{% url 'password-reset' %}">Reset Password</a>
+                    </p> {% endcomment %}
                 </div>
             </div>
         </form>
     </div>
-{% endblock %}
+{% endblock content %}

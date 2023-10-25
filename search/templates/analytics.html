@@ -30,7 +30,7 @@
                 data: {
                     labels: [{%for count in s_counts%} '{{ count.3 }}',{% endfor %}],
                     datasets: [{
-                        label: '# of usercases/CPD question',
+                        label: '# of usercases/CPD scale',
                         data: [{%for count in s_counts%} '{{ count.1 }}',{% endfor %}],
                         borderWidth: 1
                     }]

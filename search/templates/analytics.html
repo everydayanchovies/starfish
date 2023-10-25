@@ -1,7 +1,58 @@
 {% extends "base.html" %}
+{% block header %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock header %}
 {% block content %}
+    <script>
+        window.onload = function() {
+            var ctx = document.getElementById('qPlot').getContext('2d');
+            window.myPie = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [{%for count in q_counts%} '{{ count.3 }}',{% endfor %}],
+                    datasets: [{
+                        label: '# of usercases/CPD question',
+                        data: [{%for count in q_counts%} '{{ count.1 }}',{% endfor %}],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            var ctx = document.getElementById('sPlot').getContext('2d');
+            window.myPie2 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [{%for count in s_counts%} '{{ count.3 }}',{% endfor %}],
+                    datasets: [{
+                        label: '# of usercases/CPD question',
+                        data: [{%for count in s_counts%} '{{ count.1 }}',{% endfor %}],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        };
+    </script>
     <div class="item-container container">
+        <h1>Plots</h1>
+        <h3>Number of usercases per CPD question number</h3>
+        <canvas id="qPlot"></canvas>
+        <h3>Number of usercases per CPD Scale</h3>
+        <canvas id="sPlot"></canvas>
         <div class="row">
+            <h1>Raw</h1>
             <h1>Number of usercases per CPD question number</h1>
             {% for count in q_counts %}
                 <b> {{ count.0 }} </b>

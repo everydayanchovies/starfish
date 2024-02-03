@@ -12,7 +12,7 @@
         <h1>My Contributions</h1>
         <hr />
         <div class="row">
-            {% for k, v in c.items %}
+            {% for k, v in contributions.items %}
                 {% if v %}
                     <div class="col-md-6">
                         {% if k == "goodpractice" %}
@@ -34,9 +34,7 @@
                             <ul style="list-style-type: none">
                                 {% for e in v %}
                                     <li style="margin-bottom: 5px; margin-top: 5px;">
-                                        <!-- djlint:off -->
-                                                                            <a href="/dashboard/{{ k }}/{{ e.id }}">{{ e }}</a>
-                                    <!-- djlint:on -->
+                                        <a href="/dashboard/{{ k }}/{{ e.id }}">{{ e }}</a>
                                 </li>
                             {% endfor %}
                         </ul>

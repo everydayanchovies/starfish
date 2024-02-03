@@ -43,7 +43,7 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
-                    {% include "./partials/authors.html" with obj=obj %}
+                    {% include "./partials/authors.html" with authors=authors %}
                     <div class="col-sm-12 col-md-4">
                         <strong>Wallpaper</strong>
                         {% if wallpaper_url %}

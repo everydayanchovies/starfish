@@ -34,7 +34,7 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
-                    {% include "./partials/authors.html" with obj=obj %}
+                    {% include "./partials/authors.html" with authors=authors %}
                     <div class="col-sm-12 col-md-8">
                         <div class="row">
                             <div class="col-md-10 col-xs-10">

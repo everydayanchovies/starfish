@@ -5,8 +5,8 @@
     <div class="col-md-4 col-xs-12" style="padding-top: 10px;">
         <span class="text-muted">
             Posted by
-            {% for author in item.authors.all %}
-                <a href={% url "person" author.id %}>{{ syntax.PERSON }}{{ author.handle }}</a>
+            {% for author in authors %}
+                <a href={% url "person" author.id %}>{{author.name}}{% comment %}({{ syntax.PERSON }}{{ author.handle }}){% endcomment %}</a>,
             {% endfor %}
             on {{ item.create_date }}
         </span>

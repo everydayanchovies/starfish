@@ -6,8 +6,11 @@ from builtins import str
 from urllib.error import HTTPError
 from urllib.parse import urlencode, quote
 from urllib.request import urlopen
+import re
+from datetime import datetime, timezone
 
 import ldap
+from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -22,14 +25,13 @@ from django.http import (
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import generic
+from django.conf import settings
 
 from search import retrieval
 from search import utils
-from search.forms import *
-from search.models import *
-from search.widgets import *
-
-from zpython import *
+import search.forms as forms
+import search.models as models
+# import search.widgets as widgets
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL
@@ -96,14 +98,14 @@ def sorted_tags(tags):
 
 
 def editcontent(request, pk):
-    item = get_object_or_404(Items, pk=pk)
-    form = EditInformationForm(instance=item.downcast())
+    item = get_object_or_404(models.Items, pk=pk)
+    form = forms.EditInformationForm(instance=item.downcast())
     context = {"form", form}
     return render(request, "edit.html", context)
 
 
 def person(request, pk):
-    person = get_object_or_404(Person, id=pk)
+    person = get_object_or_404(models.Person, id=pk)
     user_communities = set(utils.get_user_communities(request.user))
 
     context = sorted_tags(person.tags.all())
@@ -119,8 +121,41 @@ def person(request, pk):
         filter(lambda x: not x.downcast().is_past_due if x.type == "E" else True, links)
     )
 
+    colab = models.ItemAuthor.objects.filter(
+        person=person, status="ACCEPTED"
+    ).values_list("item", flat=True)
+
+    contributions = {
+        "goodpractice": models.GoodPractice.objects.filter(
+            Q(authors=person) | Q(id__in=colab)
+        )
+        .order_by("title")
+        .distinct(),
+        "information": models.Information.objects.filter(
+            Q(authors=person) | Q(id__in=colab)
+        )
+        .order_by("title")
+        .distinct(),
+        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=colab))
+        .order_by("title")
+        .distinct(),
+        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=colab))
+        .order_by("title")
+        .distinct(),
+        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=colab))
+        .order_by("title")
+        .distinct(),
+        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=colab))
+        .order_by("title")
+        .distinct(),
+        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=colab))
+        .order_by("title")
+        .distinct(),
+    }
+
     context["community_links"] = links
     context["person"] = person
+    context["contributions"] = contributions
     context["syntax"] = SEARCH_SETTINGS["syntax"]
     context["next"] = person.get_absolute_url()
     return render(request, "person.html", context)
@@ -129,6 +164,7 @@ def person(request, pk):
 class StarfishDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(StarfishDetailView, self).get_context_data(**kwargs)
+        object = self.get_object()
 
         user_communities = set(utils.get_user_communities(self.request.user))
         context["user_communities"] = user_communities
@@ -142,10 +178,12 @@ class StarfishDetailView(generic.DetailView):
                 return False
             return True
 
+        colaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=object)
+        context["authors"] = {a for a in object.authors.all()} | {
+            c.person for c in colaborators
+        }
         # Filter links for communities
-        context["community_links"] = set(
-            filter(links_filter, self.get_object().links.all())
-        )
+        context["community_links"] = set(filter(links_filter, object.links.all()))
 
         return context
 
@@ -163,11 +201,10 @@ class StarfishDetailView(generic.DetailView):
 
 
 class InformationView(StarfishDetailView):
-    model = Information
+    model = models.Information
     template_name = "info.html"
 
     def get_context_data(self, **kwargs):
-
         # Call the base implementation first to get a context
         context = super(InformationView, self).get_context_data(**kwargs)
         # Add in a QuerySet of all the books
@@ -206,7 +243,6 @@ class InformationView(StarfishDetailView):
                 }
 
         for tag in self.object.tags.all():
-
             if tag.type == "D":
                 continue
 
@@ -218,7 +254,7 @@ class InformationView(StarfishDetailView):
 
 
 class GoodPracticeView(InformationView):
-    model = GoodPractice
+    model = models.GoodPractice
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -228,25 +264,36 @@ class GoodPracticeView(InformationView):
 
 
 class UserCaseView(InformationView):
-    model = UserCase
+    model = models.UserCase
     template_name = "user_case.html"
-
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(UserCaseView, self).get_context_data(**kwargs)
 
         context["information"] = context["usercase"]
-        if (context["information"].get_cpd_scenario()):
-            context["competences_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_competences))
-            context["attitudes_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_attitudes))
-            context["activities_list"] = list(dict.fromkeys(context["information"].get_cpd_scenario().scales_activities))
+        if context["information"].get_cpd_scenario():
+            context["competences_list"] = list(
+                dict.fromkeys(
+                    context["information"].get_cpd_scenario().scales_competences
+                )
+            )
+            context["attitudes_list"] = list(
+                dict.fromkeys(
+                    context["information"].get_cpd_scenario().scales_attitudes
+                )
+            )
+            context["activities_list"] = list(
+                dict.fromkeys(
+                    context["information"].get_cpd_scenario().scales_activities
+                )
+            )
 
         return context
 
 
 class EventView(StarfishDetailView):
-    model = Event
+    model = models.Event
     template_name = "event.html"
 
     def get_context_data(self, **kwargs):
@@ -275,7 +322,7 @@ class EventView(StarfishDetailView):
 
 
 class ProjectView(StarfishDetailView):
-    model = Project
+    model = models.Project
     template_name = "project.html"
 
     def get_context_data(self, **kwargs):
@@ -304,7 +351,7 @@ class ProjectView(StarfishDetailView):
 
 
 class QuestionView(StarfishDetailView):
-    model = Question
+    model = models.Question
     template_name = "question.html"
 
     def get_context_data(self, *args, **kwargs):
@@ -328,14 +375,14 @@ class QuestionView(StarfishDetailView):
         context["c"] = c
         context["o"] = o
         context["next"] = self.object.get_absolute_url()
-        context["form"] = CommentForm(
+        context["form"] = forms.CommentForm(
             initial={"item_type": self.object.type, "item_id": self.object.id}
         )
         return context
 
 
 class GlossaryView(StarfishDetailView):
-    model = Glossary
+    model = models.Glossary
     template_name = "glossary.html"
 
     def get_context_data(self, **kwargs):
@@ -348,12 +395,12 @@ class GlossaryView(StarfishDetailView):
 
         try:
             # Fetch tag that is exlained by this
-            tag = Tag.objects.get(glossary=context["object"])
-        except (Tag.DoesNotExist, Tag.MultipleObjectsReturned):
+            tag = models.Tag.objects.get(glossary=context["object"])
+        except (models.Tag.DoesNotExist, models.Tag.MultipleObjectsReturned):
             context["search"] = None
         else:
             context["search"] = tag
-            aliases = list(Tag.objects.filter(alias_of=tag))
+            aliases = list(models.Tag.objects.filter(alias_of=tag))
             if len(aliases) > 0:
                 context["aliases"] = ", ".join([alias.handle for alias in aliases])
             else:
@@ -367,26 +414,26 @@ class GlossaryView(StarfishDetailView):
 @login_required
 def invite_collaborator(request):
     if request.method == "POST":
-        person = Person.objects.filter(email=request.POST["invitee"])
+        person = models.Person.objects.filter(email=request.POST["invitee"])
         if request.POST["type"] == "G":
-            item = GoodPractice.objects.get(id=request.POST["id"])
+            item = models.GoodPractice.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "U":
-            item = UserCase.objects.get(id=request.POST["id"])
+            item = models.UserCase.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "I":
-            item = Information.objects.get(id=request.POST["id"])
+            item = models.Information.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "R":
-            item = Project.objects.get(id=request.POST["id"])
+            item = models.Project.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "E":
-            item = Event.objects.get(id=request.POST["id"])
+            item = models.Event.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "S":
-            item = Glossary.objects.get(id=request.POST["id"])
+            item = models.Glossary.objects.get(id=request.POST["id"])
         elif request.POST["type"] == "Q":
-            item = Question.objects.get(id=request.POST["id"])
+            item = models.Question.objects.get(id=request.POST["id"])
         else:
             return HttpResponseBadRequest()
 
         if person.exists():
-            ItemAuthor(person=person.first(), item=item).save()
+            models.ItemAuthor(person=person.first(), item=item).save()
 
         return HttpResponse()
 
@@ -413,7 +460,7 @@ def login_user(request):
         if user is None:
             errors += ["Invalid email and password combination!"]
 
-    form = LoginForm()
+    form = forms.LoginForm()
 
     return render(request, "login.html", {"form": form, "errors": errors})
 
@@ -431,8 +478,8 @@ def register_user(request):
         university = request.POST["university"]
         introduction = request.POST.get("introduction", "")
 
-        handle_match = Person.objects.filter(handle=handle)
-        email_match = Person.objects.filter(email=email)
+        handle_match = models.Person.objects.filter(handle=handle)
+        email_match = models.Person.objects.filter(email=email)
 
         if handle_match.exists():
             errors += ["Handle is already taken"]
@@ -447,7 +494,7 @@ def register_user(request):
             errors += ["Password must be at least 8 characters"]
 
         if len(errors) == 0:
-            user = User.objects.create_user(
+            user = models.User.objects.create_user(
                 username=handle,
                 first_name=first_name,
                 last_name=last_name,
@@ -456,9 +503,9 @@ def register_user(request):
             )
             user.save()
 
-            pub_com, _ = Community.objects.get_or_create(name="Public")
+            pub_com, _ = models.Community.objects.get_or_create(name="Public")
 
-            person = Person.objects.create(
+            person = models.Person.objects.create(
                 handle=handle,
                 email=email,
                 user=user,
@@ -472,7 +519,7 @@ def register_user(request):
             redirect_url = request.POST.get("next", "/login")
             return redirect(redirect_url)
 
-    form = RegisterForm()
+    form = forms.RegisterForm()
 
     return render(request, "register.html", {"form": form, "errors": errors})
 
@@ -573,10 +620,10 @@ def ivoauth_callback(request):
         attributes = content["attributes"]
         external_id = "surfconext/" + attributes["saml:sp:NameID"]["Value"]
         email = attributes["urn:mace:dir:attribute-def:mail"][0]
-        person_set = Person.objects.filter(external_id=external_id)
+        person_set = models.Person.objects.filter(external_id=external_id)
         # If a person with external_id nonexistent, create new person
         if not person_set.exists():
-            person = Person()
+            person = models.Person()
             person.handle = attributes["urn:mace:dir:attribute-def:uid"][0]
             try:
                 surname = attributes["urn:mace:dir:attribute-def:sn"][0]
@@ -602,7 +649,7 @@ def ivoauth_callback(request):
             ## Get communities for this person from ivoauth
             # TODO make this a generic method (so other auths can call it)
             # By default, add 'public' community
-            person.communities.add(Community.objects.get(pk=1))
+            person.communities.add(models.Community.objects.get(pk=1))
             # Get the rest from LDAP
             ldap_obj = ldap.initialize("ldap://ldap1.uva.nl:389")
             search_results = ldap_obj.search_s(
@@ -615,8 +662,8 @@ def ivoauth_callback(request):
             if search_results:
                 query, result = search_results[0]
                 try:
-                    supercommunity = Community.objects.get(name=result["o"][0])
-                except Community.DoesNotExist:
+                    supercommunity = models.Community.objects.get(name=result["o"][0])
+                except models.Community.DoesNotExist:
                     pass
                 else:
                     for community_name in result["ou"]:
@@ -638,9 +685,9 @@ def ivoauth_callback(request):
         # Create new user if not already available
         if not person.user:
             try:
-                user = User.objects.get(username=person.handle)
+                user = models.User.objects.get(username=person.handle)
             except:
-                user = User()
+                user = models.User()
                 user.username = person.handle
                 user.first_name = person.name.split()[0]
                 user.is_staff = True
@@ -671,7 +718,7 @@ def cast_vote(request):
 
         if request.user.is_authenticated:
             model = get_model_by_sub_id(model_type, int(model_id))
-            user = Person.objects.get(user=request.user)
+            user = models.Person.objects.get(user=request.user)
             if int(vote) == 1:
                 if not model.upvoters.filter(pk=user.pk).exists():
                     if model.downvoters.filter(pk=user.pk).exists():
@@ -704,7 +751,7 @@ def loadquestionform(request):
         item_id = int(request.GET.get("id", 0))
 
         logger.debug("initial questionform")
-        questionform = QuestionForm(
+        questionform = models.QuestionForm(
             initial={"item_type": item_type, "item_id": item_id}
         )
         return render(
@@ -722,13 +769,13 @@ def submitquestion(request):
                 request.POST._mutable = True
                 request.POST["authors"] = request.user.person
                 request.POST._mutable = False
-            except Person.DoesNotExist:
+            except models.Person.DoesNotExist:
                 # TODO Present message to the user explaining that somehow
                 # he is not linked to a person object.
                 return HttpResponseNotFound()
             finally:
                 request.POST._mutable = False
-            questionform = QuestionForm(request.POST)
+            questionform = forms.QuestionForm(request.POST)
             logger.debug("request is POST")
             if questionform.is_valid():
                 logger.debug("questionform valid")
@@ -738,7 +785,7 @@ def submitquestion(request):
                 question = questionform.save(commit=False)
                 try:
                     question.authors = request.user.person
-                except Person.DoesNotExist:
+                except models.Person.DoesNotExist:
                     # TODO Present message to the user explaining that somehow
                     # he is not linked to a person object.
                     return HttpResponseNotFound()
@@ -755,9 +802,11 @@ def submitquestion(request):
                 # Assign communities
                 c1 = set(item.communities.all())
                 c2 = set(
-                    flatten(
-                        [author.communities.all() for author in question.authors.all()]
-                    )
+                    [
+                        community
+                        for author in question.authors.all()
+                        for community in author.communities.all()
+                    ]
                 )
                 for community in c1.intersection(c2):
                     question.communities.add(community)
@@ -808,7 +857,7 @@ def submitquestion(request):
                     subject = "A question was asked"
                     from_email = "notifications@" + HOSTNAME
                     msg.attach_alternative(html_content, "text/html")
-                    if isinstance(item, Person):
+                    if isinstance(item, models.Person):
                         to_email = (item.email,)
                         msg = EmailMultiAlternatives(
                             subject, text_content, from_email, to_email
@@ -846,7 +895,7 @@ def comment(request):
         request.POST["author"] = request.user.person
         request.POST["title"] = "comment"  # This is a placeholder
         request.POST._mutable = False
-        commentform = CommentForm(request.POST)
+        commentform = forms.CommentForm(request.POST)
         if commentform.is_valid():
             item_type = commentform.cleaned_data["item_type"]
             item_id = commentform.cleaned_data["item_id"]
@@ -906,27 +955,27 @@ def autocomplete(request):
 
     syntax = SEARCH_SETTINGS["syntax"]
     if string[0] == syntax["TAG"]:
-        tags = Tag.objects.filter(handle__istartswith=string[1:])
+        tags = models.Tag.objects.filter(handle__istartswith=string[1:])
         persons = []
         literals = []
     elif string[0] == syntax["PERSON"]:
         tags = []
-        persons = Person.objects.filter(name__istartswith=string[1:])
+        persons = models.Person.objects.filter(name__istartswith=string[1:])
         literals = []
     elif string[0] == syntax["LITERAL"]:
         tags = []
         persons = []
         literals = [string[1:]]
     else:
-        tags = Tag.objects.filter(handle__istartswith=string)
-        persons = Person.objects.filter(name__istartswith=string)
+        tags = models.Tag.objects.filter(handle__istartswith=string)
+        persons = models.Person.objects.filter(name__istartswith=string)
         # Suggestions based on titles
         # We have to query by type because TextItem is abstract
-        objs = list(GoodPractice.objects.filter(title__istartswith=string))
-        objs += list(Question.objects.filter(title__istartswith=string))
-        objs += list(Information.objects.filter(title__istartswith=string))
-        objs += list(Project.objects.filter(title__istartswith=string))
-        objs += list(Event.objects.filter(title__istartswith=string))
+        objs = list(models.GoodPractice.objects.filter(title__istartswith=string))
+        objs += list(models.Question.objects.filter(title__istartswith=string))
+        objs += list(models.Information.objects.filter(title__istartswith=string))
+        objs += list(models.Project.objects.filter(title__istartswith=string))
+        objs += list(models.Event.objects.filter(title__istartswith=string))
         titles = [i.title for i in objs]
         literals = titles + [string]
 
@@ -943,7 +992,7 @@ def autocomplete(request):
 def tag(request, handle):
     symb = quote(SEARCH_SETTINGS["syntax"]["TAG"])
     try:
-        tag = Tag.objects.get(handle__iexact=handle)
+        tag = models.Tag.objects.get(handle__iexact=handle)
     except:
         return redirect("/?q=" + symb + handle)
     if tag.glossary is not None:
@@ -953,30 +1002,40 @@ def tag(request, handle):
     else:
         return redirect("/?q=" + symb + handle)
 
+
 def analytics(request):
-    usercases = UserCase.objects.exclude(draft=True)
-    questions = CPDQuestion.objects.all()
-    scales = CPDScale.objects.all()
+    usercases = models.UserCase.objects.exclude(draft=True)
+    questions = models.CPDQuestion.objects.all()
+    scales = models.CPDScale.objects.all()
 
     q_counts = []
     for question in questions:
-        l = UserCase.objects.filter(cpd_questions__question=question.question)
-        q_counts.append((str(question), l.count(), [e.title for e in l], f"{question.scale.scale_type}-{question.question_nr}"))
+        case = models.UserCase.objects.filter(cpd_questions__question=question.question)
+        q_counts.append(
+            (
+                str(question),
+                case.count(),
+                [e.title for e in case],
+                f"{question.scale.scale_type}-{question.question_nr}",
+            )
+        )
         # logger.debug(f"{question.scale.scale_type}-{question.question_nr}")
 
     s_counts = []
     for scale in scales:
-        l = UserCase.objects.filter(cpd_questions__scale__title=scale.title, cpd_questions__scale__scale_type=scale.scale_type, draft=False).distinct()
-        s_counts.append((str(scale), l.count(), [e.title for e in l], scale.label))
+        case = models.UserCase.objects.filter(
+            cpd_questions__scale__title=scale.title,
+            cpd_questions__scale__scale_type=scale.scale_type,
+            draft=False,
+        ).distinct()
+        s_counts.append(
+            (str(scale), case.count(), [e.title for e in case], scale.label)
+        )
 
     return render(
-        request,
-        "analytics.html",
-        {
-            "q_counts": q_counts,
-            "s_counts": s_counts
-        }
+        request, "analytics.html", {"q_counts": q_counts, "s_counts": s_counts}
     )
+
 
 # @cache_page(60 * 5)
 def browse(request):
@@ -985,8 +1044,10 @@ def browse(request):
     sort = request.GET.get("sort", "recent")
     if selected_community is not None:
         try:
-            selected_community = Community.objects.get(pk=int(selected_community))
-        except Community.DoesNotExist:
+            selected_community = models.Community.objects.get(
+                pk=int(selected_community)
+            )
+        except models.Community.DoesNotExist:
             selected_communities = user_communities
         else:
             selected_communities = [selected_community]
@@ -999,15 +1060,59 @@ def browse(request):
 
     recent = sort == "recent"
 
-    good_practices = GoodPractice.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    projects = Project.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    events = Event.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    glossaries = Glossary.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    informations = Information.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    questions = Question.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
-    user_cases = UserCase.objects.filter(communities__in=selected_communities, draft=False).distinct().order_by("featured", "create_date" if recent else "title" )
+    good_practices = (
+        models.GoodPractice.objects.filter(
+            communities__in=selected_communities, draft=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    projects = (
+        models.Project.objects.filter(communities__in=selected_communities, draft=False)
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    events = (
+        models.Event.objects.filter(communities__in=selected_communities, draft=False)
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    glossaries = (
+        models.Glossary.objects.filter(
+            communities__in=selected_communities, draft=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    informations = (
+        models.Information.objects.filter(
+            communities__in=selected_communities, draft=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    questions = (
+        models.Question.objects.filter(
+            communities__in=selected_communities, draft=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
+    user_cases = (
+        models.UserCase.objects.filter(
+            communities__in=selected_communities, draft=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "title")
+    )
 
-    people = Person.objects.filter(communities__in=selected_communities, draft=False, is_ghost=False).distinct().order_by("featured", "create_date" if recent else "name" )
+    people = (
+        models.Person.objects.filter(
+            communities__in=selected_communities, draft=False, is_ghost=False
+        )
+        .distinct()
+        .order_by("featured", "create_date" if recent else "name")
+    )
 
     cpd_scenarios = []
 
@@ -1026,7 +1131,7 @@ def browse(request):
         "Person": people,
         "Question": questions,
         "UserCase": user_cases,
-        "CPDScenario": cpd_scenarios
+        "CPDScenario": cpd_scenarios,
     }
 
     # Find first type that has nonzero value count
@@ -1048,6 +1153,7 @@ def browse(request):
         },
     )
 
+
 @check_profile_completed
 def search(request):
     user_communities = utils.get_user_communities(request.user)
@@ -1059,8 +1165,8 @@ def search(request):
         if community.isdigit() and int(community) > 0:
             community = int(community)
             try:
-                search_communities = [Community.objects.get(pk=int(community))]
-            except Community.DoesNotExist:
+                search_communities = [models.Community.objects.get(pk=int(community))]
+            except models.Community.DoesNotExist:
                 search_communities = user_communities
         else:
             search_communities = user_communities
@@ -1085,8 +1191,8 @@ def search(request):
             except KeyError:
                 results_by_type["".join(result["type"].split())] = [result]
 
-        for l in results_by_type.values():
-            l.sort(key=sorting_key)
+        for result in results_by_type.values():
+            result.sort(key=sorting_key)
 
         tag_tokens, person_tokens, literal_tokens = utils.parse_query(query)
 
@@ -1096,7 +1202,7 @@ def search(request):
         literal_tokens = map(lambda x: x[0], literal_tokens)
 
         tag_tokens = retrieval.get_synonyms(tag_tokens)
-        q_tags = Tag.objects.filter(handle__in=tag_tokens)
+        q_tags = models.Tag.objects.filter(handle__in=tag_tokens)
 
         q_types = set()
         for tag in q_tags:
@@ -1111,8 +1217,8 @@ def search(request):
             first_active = ""
 
         # Sort tags by type and alphabetically
-        for l in results_by_type.values():
-            for result in l:
+        for result in results_by_type.values():
+            for result in result:
                 t_sorted = sorted_tags(result["tags"]).values()
                 # Don't show 'irrelevant' tags
                 filtered = []
@@ -1150,7 +1256,7 @@ def search(request):
         first_active = ""
 
         used_tags = set(
-            Tag.objects.raw(
+            models.Tag.objects.raw(
                 """
         SELECT t.id, t.handle, t.type
         FROM search_tag as t
@@ -1172,7 +1278,7 @@ def search(request):
         )
 
         used_tags_by_type = []
-        for tag_type in Tag.TAG_TYPES:
+        for tag_type in models.Tag.TAG_TYPES:
             tags = [tag.handle for tag in used_tags if tag.type == tag_type[0]]
             random.shuffle(tags)
             used_tags_by_type.append([tag_type, sorted(tags[0:3])])
@@ -1185,14 +1291,14 @@ def search(request):
     new_users = 0
 
     if request.user.is_staff:
-        new_users = len(Person.objects.filter(draft=True))
+        new_users = len(models.Person.objects.filter(draft=True))
 
     pending_invitations = []
 
     if request.user.is_authenticated:
-        if Person.objects.filter(user=request.user).exists():
-            pending_invitations = ItemAuthor.objects.filter(
-                status="PENDING", person=Person.objects.get(user=request.user)
+        if models.Person.objects.filter(user=request.user).exists():
+            pending_invitations = models.ItemAuthor.objects.filter(
+                status="PENDING", person=models.Person.objects.get(user=request.user)
             )
 
     return render(
@@ -1220,7 +1326,7 @@ def search(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def validate_profiles(request):
-    profiles = Person.objects.filter(draft=True)
+    profiles = models.Person.objects.filter(draft=True)
     return render(request, "validate_profiles.html", {"profiles": profiles})
 
 
@@ -1237,7 +1343,7 @@ def validate_accept(request):
     _id = request.GET.get("person", -1)
 
     if int(_id) > 0:
-        p = Person.objects.get(id=_id)
+        p = models.Person.objects.get(id=_id)
         p.draft = False
         p.save()
 
@@ -1249,7 +1355,7 @@ def validate_reject(request):
     _id = request.GET.get("person", -1)
 
     if int(_id) > 0:
-        p = Person.objects.get(id=_id)
+        p = models.Person.objects.get(id=_id)
         p.delete()
 
     return redirect("/validate")
@@ -1257,7 +1363,7 @@ def validate_reject(request):
 
 @login_required
 def accept_invitation(request):
-    ia = get_object_or_404(ItemAuthor, pk=request.GET.get("pk", -1))
+    ia = get_object_or_404(models.ItemAuthor, pk=request.GET.get("pk", -1))
     ia.status = "ACCEPTED"
     ia.save()
 
@@ -1266,7 +1372,7 @@ def accept_invitation(request):
 
 @login_required
 def decline_invitation(request):
-    ia = get_object_or_404(ItemAuthor, pk=request.GET.get("pk", -1))
+    ia = get_object_or_404(models.ItemAuthor, pk=request.GET.get("pk", -1))
     ia.status = "DECLINED"
     ia.save()
 
@@ -1313,7 +1419,7 @@ def search_list(request):
         literal_tokens = map(lambda x: x[0], literal_tokens)
 
         tag_tokens = retrieval.get_synonyms(tag_tokens)
-        q_tags = Tag.objects.filter(handle__in=tag_tokens)
+        q_tags = models.Tag.objects.filter(handle__in=tag_tokens)
 
         q_types = set()
         for tag in q_tags:
@@ -1375,19 +1481,19 @@ def get_model_by_sub_id(model_type, model_id):
     # TODO replace using downcast
     model = None
     if model_type == "P":
-        model = Person.objects.get(pk=model_id)
+        model = models.Person.objects.get(pk=model_id)
     elif model_type == "G":
-        model = GoodPractice.objects.get(pk=model_id)
+        model = models.GoodPractice.objects.get(pk=model_id)
     elif model_type == "I":
-        model = Information.objects.get(pk=model_id)
+        model = models.Information.objects.get(pk=model_id)
     elif model_type == "R":
-        model = Project.objects.get(pk=model_id)
+        model = models.Project.objects.get(pk=model_id)
     elif model_type == "E":
-        model = Event.objects.get(pk=model_id)
+        model = models.Event.objects.get(pk=model_id)
     elif model_type == "Q":
-        model = Question.objects.get(pk=model_id)
+        model = models.Question.objects.get(pk=model_id)
     elif model_type == "C":
-        model = Comment.objects.get(pk=model_id)
+        model = models.Comment.objects.get(pk=model_id)
     elif model_type == "S":
-        model = Glossary.objects.get(pk=model_id)
+        model = models.Glossary.objects.get(pk=model_id)
     return model

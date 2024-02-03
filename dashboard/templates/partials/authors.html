@@ -3,7 +3,7 @@
         <strong>Authors</strong>
         <div class="row">
             <ul>
-                {% for author in obj.authors.all %}<li>{{ author.person }}</li>{% endfor %}
+                {% for author in authors %}<li>{{ author }}</li>{% endfor %}
             </ul>
             <div class="col-xs-12 col-md-6">
                 <button class="btn btn-info"

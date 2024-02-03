@@ -3,7 +3,6 @@ from datetime import datetime
 from html.parser import HTMLParser
 
 import ckeditor_uploader.fields as ck_field
-from django.dispatch import receiver
 import wikipedia
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -35,7 +34,6 @@ def get_template(item):
         return Template.objects.get(type=item).template
     except (Template.DoesNotExist, AttributeError):
         return ""
-
 
 
 class MLStripper(HTMLParser):
@@ -182,7 +180,6 @@ class CPDScenario:
 
     @property
     def description(self):
-
         competences = self.scales_competences
         attitudes = self.scales_attitudes
 
@@ -190,7 +187,12 @@ class CPDScenario:
 
         if competences:
             w_text += "This CPD scenario describes a User case in which lecturers develop their competence in "
-            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(competences), key=lambda x: x.label)])
+            w_text += " and ".join(
+                [
+                    s.inline_title.lower()
+                    for s in sorted(set(competences), key=lambda x: x.label)
+                ]
+            )
             w_text += " "
 
             if attitudes:
@@ -199,9 +201,13 @@ class CPDScenario:
         elif attitudes:
             w_text += "This CPD scenario describes a User case in which lecturers develop attitudes in "
 
-
         if attitudes:
-            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(attitudes), key=lambda x: x.label)])
+            w_text += " and ".join(
+                [
+                    s.inline_title.lower()
+                    for s in sorted(set(attitudes), key=lambda x: x.label)
+                ]
+            )
 
         w_text = w_text.strip()
         w_text += ".\n"
@@ -412,8 +418,7 @@ class Template(models.Model):
 
 class Community(models.Model):
     # The name of the community
-    name = models.CharField(max_length=254,
-                            verbose_name="community")
+    name = models.CharField(max_length=254, verbose_name="community")
     # abbreviation = models.CharField(max_length=50, blank=True, null=True,
     #                                default=None)
     # Communities are hierarchical
@@ -743,7 +748,6 @@ class TextItem(Item):
 
         # Add self to author links and vica versa
         for author in [a for a in self.authors.all() if self not in a.links.all()]:
-
             author.link(self)
             author.save()
 
@@ -849,18 +853,17 @@ class UserCase(TextItem):
 
         print(self.tags.all())
 
-
     def context_and_goals(self):
         competences = []
         attitudes = []
         activities = []
 
         for question in self.cpd_questions.all():
-            if (question.scale.scale_type == "P1"):
+            if question.scale.scale_type == "P1":
                 competences.append(f"{question.question_nr} {question.question}")
-            elif (question.scale.scale_type == "P2"):
+            elif question.scale.scale_type == "P2":
                 attitudes.append(f"{question.question_nr} {question.question}")
-            elif (question.scale.scale_type == "P3"):
+            elif question.scale.scale_type == "P3":
                 activities.append(f"{question.question_nr} {question.question}")
         return competences, attitudes, activities
 

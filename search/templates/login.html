@@ -27,11 +27,10 @@
                     {{ form.password|attr:"class:form-control" }}
                     <br />
                     <button type="submit" class="btn btn-primary">Submit</button>
-                    {% comment %} TODO: uncomment when email server is set up {% endcomment %}
-                    {% comment %} <p class="text-center">
+                    <p class="text-center">
                         Forgot your password?
                         <a href="{% url 'password-reset' %}">Reset Password</a>
-                    </p> {% endcomment %}
+                    </p>
                 </div>
             </div>
         </form>

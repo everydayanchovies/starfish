@@ -6,7 +6,7 @@
 {% endblock header %}
 {% block content %}
     <div class="item-container container">
-        {% include "partials/item_header.html" with item=information %}
+        {% include "partials/item_header.html" with item=information authors=authors%}
         {% include "tag_list.html" %}
         <div class="row">
             {% if information.text %}

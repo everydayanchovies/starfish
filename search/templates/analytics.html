@@ -5,6 +5,7 @@
 {% block content %}
     <script>
         window.onload = function() {
+            {% comment %} DONT FORMAT, it messes up the arrays here fsr {% endcomment %}
             var ctx = document.getElementById('qPlot').getContext('2d');
             window.myPie = new Chart(ctx, {
                 type: 'bar',

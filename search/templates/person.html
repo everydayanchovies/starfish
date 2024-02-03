@@ -70,16 +70,37 @@
                         {% if person.about %}
                             <div class="col-lg-4" style="padding-right: 0px">
                                 <div class="highlight" style="background-color: rgb(20, 50, 70)">
-                                {% else %}
+                        {% else %}
                                     <div class="col-lg-12 highlight" style="background-color: rgb(20, 50, 70)">
-                                    {% endif %}
+                        {% endif %}
                                     <div style="background-color: rgb(20, 50, 70);">
                                         <h3 style="margin-top: 0; color: white">See also</h3>
                                         {% include "link_list.html" with item=person %}
                                     </div>
+                                    </div>
+                                <div class="highlight" style="background-color: rgb(20, 50, 70)">
+                                    <div style="background-color: rgb(20, 50, 70);">
+                                        <h3 style="margin-top: 0; color: white">Contributions</h3>
+                                        {% for key, value in contributions.items %}
+                                            {% for cont in value %}
+                                                {% if not cont.draft %}
+                                                    <div class="row">
+                                                        <li >
+                                                            <div class="col-lg-1">
+                                                            <span class="badge badge-dark">{{ key.0|title }}</span>
+                                                            </div>
+                                                            <div class="col-lg-10">
+                                                            <a href="/{{ key }}/{{ cont.id }}" style="color: white">{{ cont.title }}</a>
+                                                            </div>
+                                                        </li>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
                                     {% if person.about %}</div>{% endif %}
                             </div>
-                        {% endif %}
+                    {% endif %}
                     </div>
                 </div>
                 <div class="row">

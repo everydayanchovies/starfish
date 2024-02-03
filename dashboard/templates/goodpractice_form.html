@@ -34,7 +34,7 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="row">
-                    {% include "./partials/authors.html" with obj=obj %}
+                    {% include "./partials/authors.html" with authors=authors %}
                     <div class="col-md-10 col-xs-10">
                         <strong>Title of the Good Practice</strong>
                         {{ form.title.errors }}

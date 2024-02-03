@@ -121,34 +121,34 @@ def person(request, pk):
         filter(lambda x: not x.downcast().is_past_due if x.type == "E" else True, links)
     )
 
-    colab = models.ItemAuthor.objects.filter(
+    collab = models.ItemAuthor.objects.filter(
         person=person, status="ACCEPTED"
     ).values_list("item", flat=True)
 
     contributions = {
         "goodpractice": models.GoodPractice.objects.filter(
-            Q(authors=person) | Q(id__in=colab)
+            Q(authors=person) | Q(id__in=collab)
         )
         .order_by("title")
         .distinct(),
         "information": models.Information.objects.filter(
-            Q(authors=person) | Q(id__in=colab)
+            Q(authors=person) | Q(id__in=collab)
         )
         .order_by("title")
         .distinct(),
-        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=colab))
+        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=colab))
+        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=colab))
+        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=colab))
+        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=colab))
+        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
     }
@@ -178,9 +178,9 @@ class StarfishDetailView(generic.DetailView):
                 return False
             return True
 
-        colaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=object)
+        collaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=object)
         context["authors"] = {a for a in object.authors.all()} | {
-            c.person for c in colaborators
+            c.person for c in collaborators
         }
         # Filter links for communities
         context["community_links"] = set(filter(links_filter, object.links.all()))

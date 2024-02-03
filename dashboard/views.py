@@ -53,37 +53,56 @@ def contributions(request):
 
     person = models.Person.objects.get(user=request.user)
 
-    colab = models.ItemAuthor.objects.filter(
-        person=person, status="ACCEPTED"
-    ).values_list("item", flat=True)
+    if request.user.is_superuser:
+        conts = {
+            "goodpractice": models.GoodPractice.objects.order_by("title").distinct(),
+            "information": models.Information.objects.order_by("title").distinct(),
+            "project": models.Project.objects.order_by("title").distinct(),
+            "event": models.Event.objects.order_by("title").distinct(),
+            "question": models.Question.objects.order_by("title").distinct(),
+            "glossary": models.Glossary.objects.order_by("title").distinct(),
+            "usercase": models.UserCase.objects.order_by("title").distinct(),
+        }
+    else:
+        collab = models.ItemAuthor.objects.filter(
+            person=person, status="ACCEPTED"
+        ).values_list("item", flat=True)
 
-    conts = {
-        "goodpractice": models.GoodPractice.objects.filter(
-            Q(authors=person) | Q(id__in=colab)
-        )
-        .order_by("title")
-        .distinct(),
-        "information": models.Information.objects.filter(
-            Q(authors=person) | Q(id__in=colab)
-        )
-        .order_by("title")
-        .distinct(),
-        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=colab))
-        .order_by("title")
-        .distinct(),
-        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=colab))
-        .order_by("title")
-        .distinct(),
-        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=colab))
-        .order_by("title")
-        .distinct(),
-        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=colab))
-        .order_by("title")
-        .distinct(),
-        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=colab))
-        .order_by("title")
-        .distinct(),
-    }
+        conts = {
+            "goodpractice": models.GoodPractice.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+            "information": models.Information.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+            "project": models.Project.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+            "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=collab))
+            .order_by("title")
+            .distinct(),
+            "question": models.Question.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+            "glossary": models.Glossary.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+            "usercase": models.UserCase.objects.filter(
+                Q(authors=person) | Q(id__in=collab)
+            )
+            .order_by("title")
+            .distinct(),
+        }
 
     return render(
         request,
@@ -222,9 +241,11 @@ class EditForm(generic.View):
         try:
             obj_id = int(elems[2])
             obj = get_object_or_404(self.model_class, pk=obj_id)
-            colaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=obj)
+            collaborators = models.ItemAuthor.objects.filter(
+                status="ACCEPTED", item=obj
+            )
             authors = {a.person for a in obj.authors.all()} | {
-                c.person for c in colaborators
+                c.person for c in collaborators
             }
 
             if (

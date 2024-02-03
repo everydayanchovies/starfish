@@ -5,11 +5,13 @@ from django.forms import (
     EmailInput,
     HiddenInput,
     IntegerField,
+    BooleanField,
     ModelForm,
     ModelMultipleChoiceField,
     PasswordInput,
     CheckboxSelectMultiple,
     Textarea,
+    Form,
 )
 
 from search.models import (
@@ -35,6 +37,10 @@ from search.widgets import (
 )
 
 # from bootstrap3_datetime.widgets import DateTimePicker
+
+
+class ValidateForm(Form):
+    usercases = BooleanField(required=False)
 
 
 class LoginForm(ModelForm):
@@ -99,19 +105,22 @@ class DashboardForm(ModelForm):
         self.fields["tags"] = ModelMultipleChoiceField(
             Tag.objects.exclude(type=Tag.TT_CPD),
             widget=FilteredSelectMultiple(Tag._meta.verbose_name_plural, False),
-            required=False
+            required=False,
         )
         self.fields["tags"].help_text = None
         if "links" in self.fields:
             self.fields["links"] = ModelMultipleChoiceField(
                 Item.objects.order_by("type"),
                 widget=FilteredSelectMultiple(Link._meta.verbose_name_plural, False),
-                required=False
+                required=False,
             )
 
         if "communities" in self.fields:
             self.fields["communities"] = ModelMultipleChoiceField(
-                communities, widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False)
+                communities,
+                widget=FilteredSelectMultiple(
+                    Community._meta.verbose_name_plural, False
+                ),
             )
 
         # if 'date' in self.fields:
@@ -120,10 +129,10 @@ class DashboardForm(ModelForm):
         #                                  "pickSeconds": False})
 
     class Media:
-            css = {
-                'all': ('/static/admin/css/widgets.css',),
-            }
-            js = ('/admin/jsi18n',)
+        css = {
+            "all": ("/static/admin/css/widgets.css",),
+        }
+        js = ("/admin/jsi18n",)
 
 
 class EditInformationForm(DashboardForm):
@@ -152,7 +161,7 @@ class EditQuestionForm(DashboardForm):
 
 class EditUserCaseForm(DashboardForm):
     cpd_questions = ModelMultipleChoiceField(
-        queryset=CPDQuestion.objects.all().order_by('scale__scale_type', 'question_nr'),
+        queryset=CPDQuestion.objects.all().order_by("scale__scale_type", "question_nr"),
         widget=FilteredSelectMultiple(CPDQuestion._meta.verbose_name_plural, False),
         required=False,
     )

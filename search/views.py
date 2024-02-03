@@ -10,6 +10,7 @@ import re
 from datetime import datetime, timezone
 
 import ldap
+from django.contrib.auth.models import Permission
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -447,7 +448,6 @@ def login_user(request):
         email = request.POST["email"]
         password = request.POST["password"]
         redirect_url = request.POST.get("next", "/")
-        print("FORM email", email)
         user = authenticate(username=email, password=password)
 
         if user is not None and user.is_active:
@@ -1326,8 +1326,30 @@ def search(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def validate_profiles(request):
+    if request.method == "POST":
+        form = forms.ValidateForm(request.POST)
+        if form.is_valid():
+            _id = request.POST.get("person", -1)
+            if int(_id) > 0:
+                p = models.Person.objects.get(id=_id)
+                if not request.POST.get("accepted") == "Accept":
+                    p.delete()
+                    return redirect("/validate")
+
+                p.draft = False
+                if form.cleaned_data["usercases"]:
+                    permission = Permission.objects.get(name="Can add user case")
+                    p.user.user_permissions.add(permission)
+                p.save()
+
+            return redirect("/validate")
+    else:
+        form = forms.ValidateForm()
+
     profiles = models.Person.objects.filter(draft=True)
-    return render(request, "validate_profiles.html", {"profiles": profiles})
+    return render(
+        request, "validate_profiles.html", {"profiles": profiles, "form": form}
+    )
 
 
 def privacy_policy(request):
@@ -1338,27 +1360,27 @@ def terms_of_service(request):
     return render(request, "terms-of-service.html")
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def validate_accept(request):
-    _id = request.GET.get("person", -1)
+# @user_passes_test(lambda u: u.is_superuser)
+# def validate_accept(request):
+# _id = request.GET.get("person", -1)
+# permission = Permission.objects.get(name="Can add user case")
+# if int(_id) > 0:
+#     p = models.Person.objects.get(id=_id)
+#     p.draft = False
+#     p.save()
 
-    if int(_id) > 0:
-        p = models.Person.objects.get(id=_id)
-        p.draft = False
-        p.save()
-
-    return redirect("/validate")
+# return redirect("/validate")
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def validate_reject(request):
-    _id = request.GET.get("person", -1)
+# @user_passes_test(lambda u: u.is_superuser)
+# def validate_reject(request):
+#     _id = request.GET.get("person", -1)
 
-    if int(_id) > 0:
-        p = models.Person.objects.get(id=_id)
-        p.delete()
+#     if int(_id) > 0:
+#         p = models.Person.objects.get(id=_id)
+#         p.delete()
 
-    return redirect("/validate")
+#     return redirect("/validate")
 
 
 @login_required

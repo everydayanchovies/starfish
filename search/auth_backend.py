@@ -5,9 +5,7 @@ from django.db.models import Q
 
 
 class PasswordlessAuthBackend(ModelBackend):
-    """Log in to Django without providing a password.
-
-    """
+    """Log in to Django without providing a password."""
 
     def authenticate(self, username=None):
         try:
@@ -25,18 +23,20 @@ class PasswordlessAuthBackend(ModelBackend):
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:  # to allow authentication through phone number or any other field, modify the below statement
-            print(username)
-            print([u.email for u in User.objects.all()])
-            user = User.objects.get(Q(username__iexact=username) | Q(email__iexact=username))
+            # print(username)
+            # print([u.email for u in User.objects.all()])
+            user = User.objects.get(
+                Q(username__iexact=username) | Q(email__iexact=username)
+            )
 
         except UserModel.DoesNotExist:
-            print("no user")
+            # print("no user")
             UserModel().set_password(password)
         except MultipleObjectsReturned:
-            print("multiple objects")
-            return User.objects.filter(email=username).order_by('id').first()
+            # print("multiple objects")
+            return User.objects.filter(email=username).order_by("id").first()
         else:
-            print(password, user.check_password(password))
+            # print(password, user.check_password(password))
             if user.check_password(password) and self.user_can_authenticate(user):
                 return user
 

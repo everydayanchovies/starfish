@@ -81,6 +81,7 @@
             <span class="contributeText" id="I">Information</span>
         </div>
     </div>
+    {% if user_case_permission %}
     <div class="col-md-4 col-sm-6 col-xs-12"
          onClick="window.location='usercase'">
         <div class="well contributeItem">
@@ -91,4 +92,5 @@
             <span class="contributeText" id="I">User Case</span>
         </div>
     </div>
+    {% endif %}
 {% endblock content %}

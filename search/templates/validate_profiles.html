@@ -18,10 +18,18 @@
                                     <br />
                                     {{ profile.introduction }}
                                 </p>
-                                <a href="/validate/accept?person={{ profile.pk }}"
-                                   class="btn btn-success">Accept</a>
-                                <a href="/validate/reject?person={{ profile.pk }}"
-                                   class="btn btn-danger">Reject</a>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    {{ form.non_field_errors }}
+                                    <strong>Can create User Cases:</strong>
+                                    {{ form.usercases.errors }}
+                                    {{ form.usercases }}
+                                    <br />
+                                    <br />
+                                    <input type="hidden" name="person" value={{ profile.pk}}>
+                                    <input class="btn btn-success" type="submit" value="Accept" name="accepted">
+                                    <input class="btn btn-danger" type="submit" value="Reject" name="accepted">
+                                </form>
                             </div>
                         </div>
                     </div>

@@ -42,7 +42,11 @@ def contribute(request):
     return render(
         request,
         "contribute_options.html",
-        {"user_communities": get_user_communities(request.user)},
+        {
+            "user_communities": get_user_communities(request.user),
+            "user_case_permission": request.user.has_perm("search.add_usercase")
+            or request.user.is_superuser,
+        },
     )
 
 

@@ -62,7 +62,7 @@ EMAIL_HOST_USER = get_secret("EMAIL")["ADDRESS"]
 DEFAULT_FROM_EMAIL = get_secret("EMAIL")["ADDRESS"]
 EMAIL_HOST_PASSWORD = get_secret("EMAIL")["PASSWORD"]
 EMAIL_USE_SSL = False
-EMAIL_USE_TLS = False
+EMAIL_USE_TLS = True
 
 DATABASES = {
     "default": {

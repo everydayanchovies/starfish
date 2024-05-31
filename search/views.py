@@ -273,20 +273,21 @@ class UserCaseView(InformationView):
         context = super(UserCaseView, self).get_context_data(**kwargs)
 
         context["information"] = context["usercase"]
-        if context["information"].get_cpd_scenario():
+        scenario = context["information"].get_cpd_scenario()
+        if scenario:
             context["competences_list"] = list(
                 dict.fromkeys(
-                    context["information"].get_cpd_scenario().scales_competences
+                    scenario.scales_competences
                 )
             )
             context["attitudes_list"] = list(
                 dict.fromkeys(
-                    context["information"].get_cpd_scenario().scales_attitudes
+                    scenario.scales_attitudes
                 )
             )
             context["activities_list"] = list(
                 dict.fromkeys(
-                    context["information"].get_cpd_scenario().scales_activities
+                    scenario.scales_activities
                 )
             )
 
@@ -443,7 +444,7 @@ def invite_collaborator(request):
 
 def login_user(request):
     errors = []
-    username = password = redirect_url = ""
+    password = redirect_url = ""
     if request.method == "POST":
         email = request.POST["email"]
         password = request.POST["password"]
@@ -1115,11 +1116,13 @@ def browse(request):
     )
 
     cpd_scenarios = []
+    cpd_ids = set()
 
     for case in user_cases:
         cpd_scenario = case.get_cpd_scenario()
         case.cpd_scenario = cpd_scenario
-        if cpd_scenario:
+        if cpd_scenario and cpd_scenario.id not in cpd_ids:
+            cpd_ids.add(cpd_scenario.id)
             cpd_scenarios.append(cpd_scenario)
 
     results = {

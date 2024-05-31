@@ -3,7 +3,7 @@
 
 # Storage folder where to move backup files
 # Must contain backup.monthly backup.weekly backup.daily folders
-BACKUP_DIR=/home/sander/steep_backup
+BACKUP_DIR=/home/sander/starfish_backup
 
 # to send mails to if backup failed TODO add email
 ADMIN_MAIL=

@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.db.models import Q
-from django.forms import TextInput
 
-from search.models import *
+# from search.models import *
+from search import models
 
 
 class QuerySetMock(object):
-    def __init__(self, l, qs):
-        self.l = l
+    def __init__(self, list, qs):
+        self.l = list
         self.qs = qs
 
     def __getattribute__(self, key):
@@ -26,7 +26,7 @@ class LinkAdmin(admin.ModelAdmin):
 
 
 class LinkInline(admin.TabularInline):
-    model = Link
+    model = models.Link
     fk_name = "from_item"
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -65,18 +65,14 @@ class ItemAdmin(admin.ModelAdmin):
 
             form.base_fields["authors"].queryset = (
                 form.base_fields["authors"]
-                .queryset.extra(
-                    select={"last_name": "substr(name, instr(name, ' ') + 1)"}
-                )
+                .queryset.extra(select={"last_name": "substr(name, instr(name, ' ') + 1)"})
                 .order_by("last_name")
             )
 
         if "contact" in form.base_fields:
             form.base_fields["contact"].queryset = (
                 form.base_fields["contact"]
-                .queryset.extra(
-                    select={"last_name": "substr(name, instr(name, ' ') + 1)"}
-                )
+                .queryset.extra(select={"last_name": "substr(name, instr(name, ' ') + 1)"})
                 .order_by("last_name")
             )
 
@@ -106,7 +102,7 @@ class TagAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "alias_of":
-            kwargs["queryset"] = Tag.objects.filter(alias_of=None)
+            kwargs["queryset"] = models.Tag.objects.filter(alias_of=None)
         s = super(TagAdmin, self)
         return s.formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -124,10 +120,8 @@ class CPDScaleAdmin(admin.ModelAdmin):
         # don't allow recursive child-parent relation
         # aka, hide self from scale_parent dropdown
         if db_field.name == "scale_parent":
-            kwargs["queryset"] = CPDScale.objects.filter(~Q(id=self.id))
-        return super(CPDScaleAdmin, self).formfield_for_foreignkey(
-            db_field, request, **kwargs
-        )
+            kwargs["queryset"] = models.CPDScale.objects.filter(~Q(id=self.id))
+        return super(CPDScaleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     class Media:
         js = ("js/admin/cpd_scale.js",)
@@ -151,7 +145,7 @@ class GlossaryAdmin(TextItemAdmin):
     def duplicate_as_info(self, request, queryset):
         for glossary in queryset:
             try:
-                info = Information(
+                info = models.Information(
                     title=glossary.title,
                     text=glossary.text,
                     authors=glossary.authors,
@@ -167,33 +161,30 @@ class GlossaryAdmin(TextItemAdmin):
                     info.link(link)
                 info.links.add(glossary)
                 info.save()
-                self.message_user(
-                    request, "%s was succesfully duplicated." % (glossary.title,)
-                )
+                self.message_user(request, "%s was succesfully duplicated." % (glossary.title,))
             except Exception as e:
-                self.message_user(
-                    request, "%s could not be duplicated." % (glossary.title,), "error"
-                )
+                self.message_user(request, "%s could not be duplicated." % (glossary.title,), "error")
+                print(e)
 
     duplicate_as_info.short_description = "Duplicate selected glossaries as information"
 
 
-admin.site.register(Person, PersonAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(GoodPractice, ItemAdmin)
-admin.site.register(Information, TextItemAdmin)
-admin.site.register(Project, TextItemAdmin)
-admin.site.register(Event, TextItemAdmin)
-admin.site.register(Question, TextItemAdmin)
-admin.site.register(UserCase, ItemAdmin)
-admin.site.register(Comment)
-admin.site.register(Community)
-admin.site.register(Glossary, GlossaryAdmin)
-admin.site.register(Template)
-admin.site.register(Link, LinkAdmin)
-admin.site.register(Item)
-admin.site.register(ItemAuthor)
-admin.site.register(CPDScale, CPDScaleAdmin)
-admin.site.register(CPDQuestion, CPDQuestionAdmin)
-admin.site.register(CPDTimeToFinish, CPDTimeToFinishAdmin)
-admin.site.register(CPDLearningEnvironment, CPDLearningEnvironmentAdmin)
+admin.site.register(models.Person, PersonAdmin)
+admin.site.register(models.Tag, TagAdmin)
+admin.site.register(models.GoodPractice, ItemAdmin)
+admin.site.register(models.Information, TextItemAdmin)
+admin.site.register(models.Project, TextItemAdmin)
+admin.site.register(models.Event, TextItemAdmin)
+admin.site.register(models.Question, TextItemAdmin)
+admin.site.register(models.UserCase, ItemAdmin)
+admin.site.register(models.Comment)
+admin.site.register(models.Community)
+admin.site.register(models.Glossary, GlossaryAdmin)
+admin.site.register(models.Template)
+admin.site.register(models.Link, LinkAdmin)
+admin.site.register(models.Item)
+admin.site.register(models.ItemAuthor)
+admin.site.register(models.CPDScale, CPDScaleAdmin)
+admin.site.register(models.CPDQuestion, CPDQuestionAdmin)
+admin.site.register(models.CPDTimeToFinish, CPDTimeToFinishAdmin)
+admin.site.register(models.CPDLearningEnvironment, CPDLearningEnvironmentAdmin)

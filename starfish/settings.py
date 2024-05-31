@@ -38,9 +38,7 @@ SEARCH_SETTINGS = {
 
 HOSTNAME = "starfish-education.eu"
 ADMIN_NOTIFICATION_EMAIL = get_secret("ADMIN_NOTIFICATION_EMAIL")
-TAG_REQUEST_MESSAGE = (
-    "One or more used tags are not (yet) added. A moderator has been notified."
-)
+TAG_REQUEST_MESSAGE = "One or more used tags are not (yet) added. A moderator has been notified."
 ACCOUNT_UPDATED_MSG = "Your {} has been updated successfully."
 ITEM_UPDATED_MSG = "{} updated successfully."
 
@@ -51,7 +49,7 @@ QUESTION_ASKED_TEXT = (
 )
 COMMENT_PLACED_TEXT = "{author} commented on {itemlink}"
 
-DEBUG = False
+DEBUG = True
 
 ADMINS = get_secret("ADMIN_EMAIL")
 MANAGERS = ADMINS
@@ -169,26 +167,22 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    # Uncomment the next line for debugging:
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = "steep.urls"
+ROOT_URLCONF = "starfish.urls"
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = "steep.wsgi.application"
+WSGI_APPLICATION = "starfish.wsgi.application"
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Uncomment the next line to debug:
-    # "debug_toolbar",
     # Uncomment the next line to enable the admin:
     "django.contrib.admin",
     # Uncomment the next line to enable admin documentation:
@@ -199,7 +193,11 @@ INSTALLED_APPS = (
     "bootstrap3_datetime",
     "ckeditor",
     "ckeditor_uploader",
-)
+]
+
+if DEBUG:
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+    INSTALLED_APPS += ["debug_toolbar"]
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
 

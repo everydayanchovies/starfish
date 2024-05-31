@@ -101,6 +101,7 @@ class DashboardForm(ModelForm):
             del kwargs["communities"]
         else:
             communities = Community.objects
+
         super(DashboardForm, self).__init__(*args, **kwargs)
         self.fields["tags"] = ModelMultipleChoiceField(
             Tag.objects.exclude(type=Tag.TT_CPD),
@@ -118,15 +119,8 @@ class DashboardForm(ModelForm):
         if "communities" in self.fields:
             self.fields["communities"] = ModelMultipleChoiceField(
                 communities,
-                widget=FilteredSelectMultiple(
-                    Community._meta.verbose_name_plural, False
-                ),
+                widget=FilteredSelectMultiple(Community._meta.verbose_name_plural, False),
             )
-
-        # if 'date' in self.fields:
-        #      self.fields['date'].widget = \
-        #          DateTimePicker(options={"format": "YYYY-MM-DD HH:mm",
-        #                                  "pickSeconds": False})
 
     class Media:
         css = {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-BACKUP_DIR=/home/sander/steep_backup
-FILES_DIR=/var/www/steep
+BACKUP_DIR=/home/sander/starfish_backup
+FILES_DIR=/var/www/starfish
 DB_DUMP_LOG=$FILES_DIR/db_dump.log
 
 # Dump Django database

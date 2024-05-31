@@ -38,13 +38,11 @@ def parse_tags(query):
     tags = Tag.objects.filter(handle__in=tag_tokens)
     # Signal in case of unknown tags
     handles = [t.handle for t in list(tags)]
-    print(handles)
-    unknown_tags = {'token': [t for t in tag_tokens
-                              if not t in handles],
-                    'person': [t[0] for t in person_tokens
-                               if not t in handles],
-                    'literal': [t[0] for t in literal_tokens
-                                if not t in handles]
+    print("parse_tags handles", handles)
+    unknown_tags = {
+        "token": [t for t in tag_tokens if not t in handles],
+        "person": [t[0] for t in person_tokens if not t in handles],
+        "literal": [t[0] for t in literal_tokens if not t in handles],
     }
 
     return tags, unknown_tags
@@ -52,11 +50,11 @@ def parse_tags(query):
 
 def parse_query(query):
     """
-        Tokenize query into person, tag and literal tokens.
-        Uses the special symbols as defined in the syntax setting.
+    Tokenize query into person, tag and literal tokens.
+    Uses the special symbols as defined in the syntax setting.
     """
     # Get syntax
-    syntax = SEARCH_SETTINGS['syntax']
+    syntax = SEARCH_SETTINGS["syntax"]
     # Tokenize, get tags/users/queries
     tags = []
     persons = []
@@ -77,12 +75,12 @@ def parse_query(query):
         # If no token is being formed
         if token is None:
             # If symbol is the delimeter
-            if symbol == syntax['DELIM']:
+            if symbol == syntax["DELIM"]:
                 # This means nothing in this context, but we do need to update
                 # the span to prevent it from including this character
                 a += 1
             # If symbol is the escape character
-            elif symbol == syntax['ESCAPE']:
+            elif symbol == syntax["ESCAPE"]:
                 # If a special character is being escaped
                 if i < len(query) - 1 and query[i + 1] in syntax.values():
                     # Add the escape character + the escaped character
@@ -97,7 +95,7 @@ def parse_query(query):
                     # Ignore, means nothing in this context
                     pass
             # If symbol is literal character
-            elif symbol == syntax['LITERAL']:
+            elif symbol == syntax["LITERAL"]:
                 # Start empty literal token
                 token = ""
                 # Jump to next character
@@ -107,7 +105,7 @@ def parse_query(query):
                     # Eat symbol (inner loop)
                     symbol = query[i]
                     # If symbol is literal character
-                    if symbol == syntax['LITERAL']:
+                    if symbol == syntax["LITERAL"]:
                         # Add token to literals
                         literals.append((token, (a, a + len(token) + 2)))
                         # Update start position of token span
@@ -117,18 +115,17 @@ def parse_query(query):
                         # Stop eating symbols for literal
                         break
                     # If symbol is the escape character
-                    elif symbol == syntax['ESCAPE']:
+                    elif symbol == syntax["ESCAPE"]:
                         # If the literal character is being escaped
-                        if i < len(query) - 1 and \
-                                query[i + 1] == syntax['LITERAL']:
+                        if i < len(query) - 1 and query[i + 1] == syntax["LITERAL"]:
                             # Add literal character as normal symbol
-                            token += syntax['LITERAL']
+                            token += syntax["LITERAL"]
                             # Jump over literal character
                             i += 1
                         # If a different symbol follows the escape character
                         else:
                             # Add escape character to token
-                            token += syntax['ESCAPE']
+                            token += syntax["ESCAPE"]
                     else:
                         # Add symbol to literal token
                         token += symbol
@@ -146,21 +143,21 @@ def parse_query(query):
         # If a token is already being formed
         else:
             # If symbol is the delimeter
-            if symbol == syntax['DELIM']:
+            if symbol == syntax["DELIM"]:
                 # If the token is a person
-                if token[0] == syntax['PERSON']:
+                if token[0] == syntax["PERSON"]:
                     # Add the token (without syntax symbol) to persons
                     persons.append((token[1:], (a, a + len(token))))
                     # Update start position of token span
                     a = i + 1
                 # If the token is a tag
-                elif token[0] == syntax['TAG']:
+                elif token[0] == syntax["TAG"]:
                     # Add the token (without syntax symbol) to tags
                     tags.append((token[1:], (a, a + len(token))))
                     # Update start position of token span
                     a = i + 1
                 # If the token is escaped
-                elif token[0] == syntax['ESCAPE']:
+                elif token[0] == syntax["ESCAPE"]:
                     # Treat the rest the token as literal
                     literals.append((token[1:], (a, a + len(token) - 1)))
                     # Update start position of token span
@@ -175,7 +172,7 @@ def parse_query(query):
                 # Clear token
                 token = None
             # If symbol is the escape character
-            elif symbol == syntax['ESCAPE']:
+            elif symbol == syntax["ESCAPE"]:
                 # If a special character is being escaped
                 if i < len(query) - 1 and query[i + 1] in syntax.values():
                     # Add the character as normal symbol
@@ -195,15 +192,15 @@ def parse_query(query):
     # If last token was not ended
     if token is not None:
         # If the token is a person
-        if token[0] == syntax['PERSON']:
+        if token[0] == syntax["PERSON"]:
             # Add the token (without syntax symbol) to persons
             persons.append((token[1:], (a, a + len(token))))
         # If the token is a tag
-        elif token[0] == syntax['TAG']:
+        elif token[0] == syntax["TAG"]:
             # Add the token (without syntax symbol) to tags
             tags.append((token[1:], (a, a + len(token))))
         # If the token is escaped
-        elif token[0] == syntax['ESCAPE']:
+        elif token[0] == syntax["ESCAPE"]:
             # Treat the rest the token as literal
             literals.append((token[1:], (a, a + len(token) - 1)))
         # If the token is a literal
@@ -214,7 +211,7 @@ def parse_query(query):
         token = None
 
     # Discard any empty tokens
-    clean_fn = lambda x: filter(lambda c: c[0] != '', x)
+    clean_fn = lambda x: filter(lambda c: c[0] != "", x)
     tags = clean_fn(tags)
     persons = clean_fn(persons)
     literals = clean_fn(literals)
@@ -224,7 +221,7 @@ def parse_query(query):
 
 
 def did_you_mean(tags, persons, literals, query, template="%s"):
-    '''
+    """
     Discover literals that closely resemble tags or persons. Returns a
     suggested query with proposed improvements if any, otherwise it returns the
     same query.
@@ -262,7 +259,7 @@ def did_you_mean(tags, persons, literals, query, template="%s"):
     B.            b = n
     C.    a = a + 1
     D.    b = n
-    '''
+    """
 
     # Placeholder for did_you_mean suggestions for tags and persons
     #  Type is a list of tuples (start_index, end_index, tag)
@@ -279,10 +276,10 @@ def did_you_mean(tags, persons, literals, query, template="%s"):
     extract_fn = lambda i: lambda x: x[i]
 
     # Get person symbol from search syntax
-    s_person = SEARCH_SETTINGS['syntax']['PERSON']
+    s_person = SEARCH_SETTINGS["syntax"]["PERSON"]
 
     # Get tag symbol from search syntax
-    s_tag = SEARCH_SETTINGS['syntax']['TAG']
+    s_tag = SEARCH_SETTINGS["syntax"]["TAG"]
 
     # 1. Init the length
     n = len(literals)
@@ -344,7 +341,7 @@ def did_you_mean(tags, persons, literals, query, template="%s"):
     # Generate queries
     for params in dym:
         # Extract the list of text indexes from the span of literals
-        indexes = map(extract_fn(1), literals[params[0]:params[1]])
+        indexes = map(extract_fn(1), literals[params[0] : params[1]])
         # Calculate the actual span in the text string
         tspan = functools.reduce(lambda x, y: (x[0], y[1]), sorted(indexes))
 
@@ -360,23 +357,24 @@ def did_you_mean(tags, persons, literals, query, template="%s"):
             handle = s_tag + item.handle
 
         # Construct new dym_query with suggestion in place
-        dym_query = "%s%s%s" % (dym_query[:tspan[0] + offset],
-                                template % (handle,),
-                                dym_query[tspan[1] + offset:])
+        dym_query = "%s%s%s" % (dym_query[: tspan[0] + offset], template % (handle,), dym_query[tspan[1] + offset :])
         # Update offset in dym_query coordinates
-        offset += len(template % (handle,)) - len(query[tspan[0]:tspan[1]])
+        offset += len(template % (handle,)) - len(query[tspan[0] : tspan[1]])
 
         # Construct new dym_query_raw with suggestion in place
-        dym_query_raw = "%s%s%s" % (dym_query_raw[:tspan[0] + offset_raw],
-                                    handle,
-                                    dym_query_raw[tspan[1] + offset_raw:])
+        dym_query_raw = "%s%s%s" % (
+            dym_query_raw[: tspan[0] + offset_raw],
+            handle,
+            dym_query_raw[tspan[1] + offset_raw :],
+        )
         # Update offset in dym_query_raw coordinates
-        offset_raw += len(handle) - len(query[tspan[0]:tspan[1]])
+        offset_raw += len(handle) - len(query[tspan[0] : tspan[1]])
     return dym_query, dym_query_raw
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
+    return "".join(random.choice(chars) for x in range(size))
+
 
 # Taken from https://www.gyford.com/phil/writing/2018/05/15/invalidating-django-cache/
 def expire_view_cache(path, key_prefix=None):

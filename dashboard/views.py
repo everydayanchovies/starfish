@@ -6,7 +6,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.template.context_processors import csrf
 from django.views import generic
-import logging
 
 from django.conf import settings
 import dashboard.forms as dforms
@@ -18,8 +17,6 @@ SEARCH_SETTINGS = settings.SEARCH_SETTINGS
 TAG_REQUEST_MESSAGE = settings.TAG_REQUEST_MESSAGE
 ACCOUNT_UPDATED_MSG = settings.ACCOUNT_UPDATED_MSG
 ITEM_UPDATED_MSG = settings.ITEM_UPDATED_MSG
-
-logger = logging.getLogger("search")
 
 
 class QuerySetMock:
@@ -44,13 +41,15 @@ def contribute(request):
         "contribute_options.html",
         {
             "user_communities": get_user_communities(request.user),
-            "user_case_permission": request.user.has_perm("search.add_usercase")
-            or request.user.is_superuser,
+            "user_case_permission": request.user.has_perm("search.add_usercase") or request.user.is_superuser,
         },
     )
 
 
 def contributions(request):
+    def filter_contributions(model):
+        return model.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct()
+
     if not request.user.is_authenticated:
         # TODO: usability
         return HttpResponse("Please log in.")
@@ -68,44 +67,16 @@ def contributions(request):
             "usercase": models.UserCase.objects.order_by("title").distinct(),
         }
     else:
-        collab = models.ItemAuthor.objects.filter(
-            person=person, status="ACCEPTED"
-        ).values_list("item", flat=True)
+        collab = models.ItemAuthor.objects.filter(person=person, status="ACCEPTED").values_list("item", flat=True)
 
         conts = {
-            "goodpractice": models.GoodPractice.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
-            "information": models.Information.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
-            "project": models.Project.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
-            "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=collab))
-            .order_by("title")
-            .distinct(),
-            "question": models.Question.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
-            "glossary": models.Glossary.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
-            "usercase": models.UserCase.objects.filter(
-                Q(authors=person) | Q(id__in=collab)
-            )
-            .order_by("title")
-            .distinct(),
+            "goodpractice": filter_contributions(models.GoodPractice),
+            "information": filter_contributions(models.Information),
+            "project": filter_contributions(models.Project),
+            "event": filter_contributions(models.Event),
+            "question": filter_contributions(models.Question),
+            "glossary": filter_contributions(models.Glossary),
+            "usercase": filter_contributions(models.UserCase),
         }
 
     return render(
@@ -205,9 +176,7 @@ def account_settings(request):
             u = request.user
             u.set_password(newpwd)
             u.save()
-            messages.add_message(
-                request, messages.INFO, ACCOUNT_UPDATED_MSG.format("password")
-            )
+            messages.add_message(request, messages.INFO, ACCOUNT_UPDATED_MSG.format("password"))
 
     return render(
         request,
@@ -236,26 +205,17 @@ class EditForm(generic.View):
 
         # Communities
         user_communities = get_user_communities(request.user)
-        communities = models.Community.objects.filter(
-            pk__in=[c.id for c in user_communities]
-        )
+        communities = models.Community.objects.filter(pk__in=[c.id for c in user_communities])
 
         # Existing object
         elems = request.path.strip("/").split("/")
         try:
             obj_id = int(elems[2])
             obj = get_object_or_404(self.model_class, pk=obj_id)
-            collaborators = models.ItemAuthor.objects.filter(
-                status="ACCEPTED", item=obj
-            )
-            authors = {a.person for a in obj.authors.all()} | {
-                c.person for c in collaborators
-            }
+            collaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=obj)
+            authors = {a.person for a in obj.authors.all()} | {c.person for c in collaborators}
 
-            if (
-                request.user not in [a.user for a in authors]
-                and not request.user.is_superuser
-            ):
+            if request.user not in [a.user for a in authors] and not request.user.is_superuser:
                 return render(request, "no_access.html")
 
             form = self.form_class(instance=obj, communities=communities)
@@ -314,9 +274,7 @@ class EditForm(generic.View):
 
         # Communities
         user_communities = get_user_communities(request.user)
-        communities = models.Community.objects.filter(
-            pk__in=[c.id for c in user_communities]
-        )
+        communities = models.Community.objects.filter(pk__in=[c.id for c in user_communities])
 
         # Existing object
         elems = request.path.strip("/").split("/")
@@ -338,39 +296,22 @@ class EditForm(generic.View):
         form.data.setlist("authors", form.data["authors"])
 
         if form.is_valid():
-            # TODO: this validation was broken
-            # Check if all tags are already known
-            # tag_str = form.data.get("tags", None)
-            # if tag_str:
-            #     tags, unknown_tags = parse_tags(tag_str)
-            #     if (unknown_tags["token"]
-            #         or unknown_tags["person"]
-            #         or unknown_tags["literal"]):
-            #         print(unknown_tags)
-            #         messages.info(request, TAG_REQUEST_MESSAGE)
-            if self.success_url[-1] == "/":
-                obj = form.save(commit=False)
-                obj.save()
-                obj_id = str(obj.pk)
-                links = form.cleaned_data.get("links")
-                for link in links:
-                    obj.link(link)
-                del form.cleaned_data["links"]
-                form.save_m2m()
-            else:
-                obj = form.save(commit=False)
-                obj.save()
-                obj_id = "/" + str(obj.pk)
-                links = form.cleaned_data.get("links")
-                for link in links:
-                    obj.link(link)
-                del form.cleaned_data["links"]
-                # TODO: check if this is a security issue.
-                print(obj.tags.all())
-                print(obj)
-                # form.cleaned_data["tags"] = obj.tags.all()
+            obj = form.save(commit=False)
 
-                form.save_m2m()
+            obj_id = ((self.success_url[-1] != "/") * "/") + str(obj.pk)
+
+            links = form.cleaned_data.get("links")
+            obj.cpd_questions.set(form.cleaned_data.get("cpd_questions"))
+
+            for link in links:
+                obj.link(link)
+            del form.cleaned_data["links"]
+            del form.cleaned_data["tags"]
+
+            obj.save()
+            form.save_m2m()
+            print("handles2", [a.handle for a in obj.tags.all()])
+
             redirect = self.success_url + obj_id
 
             messages.add_message(
@@ -430,8 +371,6 @@ class UserCaseForm(PermissionRequiredMixin, EditForm):
     success_url = "/dashboard/usercase"
 
     def post(self, request, *args, **kwargs):
-        # logger.info("logging:", CPDQuestion._meta.verbose_name_plural, Link._meta.verbose_name_plural, Community._meta.verbose_name_plural)
-
         if request.POST.get("title"):
             match = models.UserCase.objects.filter(title=request.POST.get("title"))
             if len(match) == 1 and request.FILES.get("wallpaper"):

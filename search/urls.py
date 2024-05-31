@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import re_path, path
 from django.conf.urls import include
 from django.contrib.auth.views import (
@@ -85,5 +86,4 @@ urlpatterns = [
     ),
     re_path(r"ivoauth/callback", views.ivoauth_callback, name="ivoauth_callback"),
     re_path(r"ivoauth$", views.ivoauth, name="ivoauth"),
-    path("__debug__/", include("debug_toolbar.urls")),
 ]

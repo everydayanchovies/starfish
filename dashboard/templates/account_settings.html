@@ -1,124 +1,124 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
 {% block header %}
-  {{ form.media }}
+    {{ form.media }}
 {% endblock header %}
 {% block content %}
-  {% if messages %}
-    {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
-  {% endif %}
-  <div class="container well">
-    <h1 style="margin: 0px;">Account settings</h1>
-    <hr>
-    <form method="post" action="" role="form" class="form-horizontal">
-      {% if passwordform.errors %}
-        <div class="alert alert-danger">
-          <ul>
-            {% for field in passwordform %}
-              <li>
-                <strong>{{ field.label }}
-                  <br>
-                {{ field.errors }}</strong>
-              </li>
-            {% endfor %}
-          </ul>
+    {% if messages %}
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+    {% endif %}
+    <div class="container well">
+        <h1 style="margin: 0px;">Account settings</h1>
+        <hr>
+        <form method="post" action="" role="form" class="form-horizontal">
+            {% if passwordform.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field in passwordform %}
+                            <li>
+                                <strong>{{ field.label }}
+                                    <br>
+                                {{ field.errors }}</strong>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% csrf_token %}
+            <div class="row">
+                <div class="form-group">
+                    {{ passwordform.newpassword.errors }}
+                    <label class="col-sm-2 control-label" for="password">New password</label>
+                    <div class="col-sm-10">
+                        <input class="form-control"
+                               type="password"
+                               name="newpassword"
+                               id="newpassword"
+                               placeholder="New password">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    {{ passwordform.confirmnewpassword.errors }}
+                    <label class="col-sm-2 control-label" for="email">Confirm new password</label>
+                    <div class="col-sm-10">
+                        <input class="form-control"
+                               type="password"
+                               name="confirmnewpassword"
+                               id="confirmnewpassword"
+                               placeholder="Confirm new password">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <input style="margin-top: 20px"
+                           type="submit"
+                           value="Save"
+                           class="btn btn-default pull-right" />
+                </div>
+            </div>
+        </form>
+        <hr>
+        <form method="post" action="" role="form" class="form-horizontal">
+            {% if emailform.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field in emailform %}
+                            <li>
+                                <strong>{{ field.label }}
+                                    <br>
+                                {{ field.errors }}</strong>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% csrf_token %}
+            <div class="row">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label" for="email">Current email</label>
+                    <div class="col-sm-10">
+                        <div class="form-control">{{ person.email }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    {{ emailform.newemail.errors }}
+                    <label class="col-sm-2 control-label" for="email">New email</label>
+                    <div class="col-sm-10">
+                        <input class="form-control"
+                               type="email"
+                               name="newemail"
+                               id="newemail"
+                               placeholder="name@example.com">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    {{ emailform.confirmnewemail.errors }}
+                    <label class="col-sm-2 control-label" for="email">Confirm new email</label>
+                    <div class="col-sm-10">
+                        <input class="form-control"
+                               type="email"
+                               name="confirmnewemail"
+                               id="confirmnewemail"
+                               placeholder="name@example.com">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <input style="margin-top: 20px"
+                           type="submit"
+                           value="Save"
+                           class="btn btn-default pull-right" />
+                </div>
+            </div>
         </div>
-      {% endif %}
-      {% csrf_token %}
-      <div class="row">
-        <div class="form-group">
-          {{ passwordform.newpassword.errors }}
-          <label class="col-sm-2 control-label" for="password">New password</label>
-          <div class="col-sm-10">
-            <input class="form-control"
-                   type="password"
-                   name="newpassword"
-                   id="newpassword"
-                   placeholder="New password">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group">
-          {{ passwordform.confirmnewpassword.errors }}
-          <label class="col-sm-2 control-label" for="email">Confirm new password</label>
-          <div class="col-sm-10">
-            <input class="form-control"
-                   type="password"
-                   name="confirmnewpassword"
-                   id="confirmnewpassword"
-                   placeholder="Confirm new password">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-12">
-          <input style="margin-top: 20px"
-                 type="submit"
-                 value="Save"
-                 class="btn btn-default pull-right" />
-        </div>
-      </div>
     </form>
-    <hr>
-    <form method="post" action="" role="form" class="form-horizontal">
-      {% if emailform.errors %}
-        <div class="alert alert-danger">
-          <ul>
-            {% for field in emailform %}
-              <li>
-                <strong>{{ field.label }}
-                  <br>
-                {{ field.errors }}</strong>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-      {% csrf_token %}
-      <div class="row">
-        <div class="form-group">
-          <label class="col-sm-2 control-label" for="email">Current email</label>
-          <div class="col-sm-10">
-            <div class="form-control">{{ person.email }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group">
-          {{ emailform.newemail.errors }}
-          <label class="col-sm-2 control-label" for="email">New email</label>
-          <div class="col-sm-10">
-            <input class="form-control"
-                   type="email"
-                   name="newemail"
-                   id="newemail"
-                   placeholder="name@example.com">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group">
-          {{ emailform.confirmnewemail.errors }}
-          <label class="col-sm-2 control-label" for="email">Confirm new email</label>
-          <div class="col-sm-10">
-            <input class="form-control"
-                   type="email"
-                   name="confirmnewemail"
-                   id="confirmnewemail"
-                   placeholder="name@example.com">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-12">
-          <input style="margin-top: 20px"
-                 type="submit"
-                 value="Save"
-                 class="btn btn-default pull-right" />
-        </div>
-      </div>
-    </div>
-  </form>
-  {% include "licence.html" %}
+    {% include "licence.html" %}
 {% endblock content %}

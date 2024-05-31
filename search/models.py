@@ -187,12 +187,7 @@ class CPDScenario:
 
         if competences:
             w_text += "This CPD scenario describes a User case in which lecturers develop their competence in "
-            w_text += " and ".join(
-                [
-                    s.inline_title.lower()
-                    for s in sorted(set(competences), key=lambda x: x.label)
-                ]
-            )
+            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(competences), key=lambda x: x.label)])
             w_text += " "
 
             if attitudes:
@@ -202,20 +197,13 @@ class CPDScenario:
             w_text += "This CPD scenario describes a User case in which lecturers develop attitudes in "
 
         if attitudes:
-            w_text += " and ".join(
-                [
-                    s.inline_title.lower()
-                    for s in sorted(set(attitudes), key=lambda x: x.label)
-                ]
-            )
+            w_text += " and ".join([s.inline_title.lower() for s in sorted(set(attitudes), key=lambda x: x.label)])
 
         w_text = w_text.strip()
         w_text += ".\n"
 
         if time_to_finish := self.time_to_finish:
-            w_text += (
-                "The approximate duration of a User case that follows this scenario is "
-            )
+            w_text += "The approximate duration of a User case that follows this scenario is "
             w_text += time_to_finish.inline_title.lower()
 
             w_text = w_text.strip()
@@ -223,9 +211,7 @@ class CPDScenario:
 
         if learning_environments := self.learning_environments:
             w_text += "In this CPD scenario the participants "
-            w_text += " and ".join(
-                [le.inline_title.lower() for le in learning_environments]
-            )
+            w_text += " and ".join([le.inline_title.lower() for le in learning_environments])
 
             w_text = w_text.strip()
             w_text += "."
@@ -245,12 +231,8 @@ class CPDScale(models.Model):
 
     title = models.CharField(max_length=255)
     inline_title = models.CharField(max_length=255)
-    scale_parent = models.ForeignKey(
-        "CPDScale", on_delete=models.SET_NULL, null=True, blank=True
-    )
-    scale_type = models.CharField(
-        max_length=50, choices=SCALE_TYPE_CHOICES, default=ST_COMPETENCES
-    )
+    scale_parent = models.ForeignKey("CPDScale", on_delete=models.SET_NULL, null=True, blank=True)
+    scale_type = models.CharField(max_length=50, choices=SCALE_TYPE_CHOICES, default=ST_COMPETENCES)
     scale = models.CharField(max_length=3)
 
     @property
@@ -291,9 +273,7 @@ class CPDScale(models.Model):
             {
                 "id": self.id,
                 "title": self.title,
-                "scale_parent": self.scale_parent.dict_format()
-                if self.scale_parent
-                else "",
+                "scale_parent": self.scale_parent.dict_format() if self.scale_parent else "",
                 "scale_type": self.scale_type,
             }
         )
@@ -337,14 +317,10 @@ class Tag(models.Model):
     # The handle by which this tag will be identified
     handle = models.CharField(max_length=255, unique=True)
     # The glossary item that explains the tag
-    # TODO: use a one-to-one relationship instead of a foreign key
-    glossary = models.ForeignKey(
-        "Glossary", on_delete=models.SET_NULL, null=True, blank=True, unique=True
-    )
+
+    glossary = models.OneToOneField("Glossary", on_delete=models.SET_NULL, null=True, blank=True)
     # The reference to the Tag of which this is an alias (if applicable)
-    alias_of = models.ForeignKey(
-        "self", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    alias_of = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
 
     info_link = models.CharField(max_length=300, null=True, blank=True)
 
@@ -388,9 +364,7 @@ class Tag(models.Model):
             return
 
         try:
-            page_info = wikipedia.page(
-                instance.handle, auto_suggest=True, redirect=True
-            )
+            page_info = wikipedia.page(instance.handle, auto_suggest=True, redirect=True)
             url = "https://en.wikipedia.org/?curid=" + page_info.pageid
             if not instance.description:
                 instance.description = wikipedia.summary(instance.handle, sentences=1)
@@ -470,9 +444,7 @@ class Item(models.Model):
     # Tags linked to this item
     tags = models.ManyToManyField("Tag", blank=True)
     # The other items that are linked to this item
-    links = models.ManyToManyField(
-        "Item", blank=True, through="Link", symmetrical=False
-    )
+    links = models.ManyToManyField("Item", blank=True, through="Link", symmetrical=False)
     # The comments linked to this item
     comments = models.ManyToManyField("Comment", blank=True, editable=True)
     # Whether this item is featured by a moderator
@@ -631,9 +603,7 @@ class Person(Item):
     # Optional introduction given by the user on registry
     introduction = models.TextField(null=True, blank=True)
 
-    is_ghost = models.BooleanField(
-        default=False, verbose_name="Make this author anonymous"
-    )
+    is_ghost = models.BooleanField(default=False, verbose_name="Make this author anonymous")
 
     class Meta:
         ordering = ["name"]
@@ -739,9 +709,7 @@ class TextItem(Item):
 
     def save(self, *args, **kwargs):
         self.title = self.title.strip()
-        self.searchablecontent = "<br />".join(
-            [cleanup_for_search(self.title), cleanup_for_search(self.text)]
-        )
+        self.searchablecontent = "<br />".join([cleanup_for_search(self.title), cleanup_for_search(self.text)])
         # On create, not update
         if self.pk is None:
             super(TextItem, self).save(*args, **kwargs)
@@ -774,9 +742,7 @@ class CpdActivity(models.Model):
         self.type = "U"
 
     # The person who can be contacted for more info on the project
-    user_case = models.ForeignKey(
-        "UserCase", on_delete=models.CASCADE, related_name="+"
-    )
+    user_case = models.ForeignKey("UserCase", on_delete=models.CASCADE, related_name="+")
 
     def dict_format(self, obj=None):
         """Dictionary representation used to communicate the model to the
@@ -838,8 +804,6 @@ class UserCase(TextItem):
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def save(self, *args, **kwargs):
-        super(UserCase, self).save(*args, **kwargs)
-
         # delete all relations with CPD tags
         cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
         for cpd_tag in cpd_tags:
@@ -851,7 +815,8 @@ class UserCase(TextItem):
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
 
-        print(self.tags.all())
+        print("Saving tags:", [t.handle for t in self.tags.all()])
+        super(UserCase, self).save(*args, **kwargs)
 
     def context_and_goals(self):
         competences = []
@@ -1010,9 +975,7 @@ class DisplayQuery(models.Model):
 
 class ItemAuthor(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="author_item")
-    person = models.ForeignKey(
-        Person, on_delete=models.CASCADE, related_name="author_person"
-    )
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="author_person")
     status = models.CharField(
         max_length=100,
         default="PENDING",

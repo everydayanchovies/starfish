@@ -20,7 +20,7 @@ serve () {
   if [ -d /home/ubuntu/ ]; then
     sh "$PROJECT_ROOT/scripts/server/serve.sh";
   else
-    kill-process memcached;
+    pkill memcached;
     memcached -l localhost -p 11211 &
     sf runserver;
   fi

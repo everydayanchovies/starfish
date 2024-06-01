@@ -113,10 +113,10 @@
                             <div class="tab-pane fade" id="cpd-scenario">
                                 {% if information.cpd_questions %}
                                     {% autoescape off %}
-                                        <h4>{{ information.get_cpd_scenario.title }}</h4>
+                                        <h4>Developing confidence in {{ scenario.title }}</h4>
                                         <div class="row">
                                             <div class="col-lg-12 col-md-12">
-                                                <div>{{ information.get_cpd_scenario.description|linebreaks }}</div>
+                                                <div>{{ scenario.description|linebreaks }}</div>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -156,15 +156,13 @@
                                                 <h5>
                                                     <b>Learning environment</b>
                                                 </h5>
-                                                {% for le in information.get_cpd_scenario.learning_environments %}
-                                                    <div class="cpd-le-in-list">{{ le.title }}</div>
-                                                {% endfor %}
+                                                {% for le in scenario.learning_environments %}<div class="cpd-le-in-list">{{ le.title }}</div>{% endfor %}
                                             </div>
                                             <div class="col-lg-4 col-md-12">
                                                 <h5>
                                                     <b>Time</b>
                                                 </h5>
-                                                {% if information.get_cpd_scenario.time_to_finish %}{{ information.get_cpd_scenario.time_to_finish.title }}{% endif %}
+                                                {% if scenario.time_to_finish %}{{ scenario.time_to_finish.title }}{% endif %}
                                             </div>
                                         </div>
                                     {% endautoescape %}

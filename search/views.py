@@ -32,6 +32,7 @@ from search import retrieval
 from search import utils
 import search.forms as forms
 import search.models as models
+
 # import search.widgets as widgets
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
@@ -54,8 +55,7 @@ def check_profile_completed(func):
             messages.add_message(
                 request,
                 50,
-                "<a href='%s'>Click here to complete your profile</a>"
-                % (reverse("edit_me")),
+                "<a href='%s'>Click here to complete your profile</a>" % (reverse("edit_me")),
             )
         return func(request, *args, **kwargs)
 
@@ -118,40 +118,22 @@ def person(request, pk):
     )
 
     # Remove events that have already passed
-    links = set(
-        filter(lambda x: not x.downcast().is_past_due if x.type == "E" else True, links)
-    )
+    links = set(filter(lambda x: not x.downcast().is_past_due if x.type == "E" else True, links))
 
-    collab = models.ItemAuthor.objects.filter(
-        person=person, status="ACCEPTED"
-    ).values_list("item", flat=True)
+    collab = models.ItemAuthor.objects.filter(person=person, status="ACCEPTED").values_list("item", flat=True)
 
     contributions = {
-        "goodpractice": models.GoodPractice.objects.filter(
-            Q(authors=person) | Q(id__in=collab)
-        )
+        "goodpractice": models.GoodPractice.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "information": models.Information.objects.filter(
-            Q(authors=person) | Q(id__in=collab)
-        )
+        "information": models.Information.objects.filter(Q(authors=person) | Q(id__in=collab))
         .order_by("title")
         .distinct(),
-        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=collab))
-        .order_by("title")
-        .distinct(),
-        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=collab))
-        .order_by("title")
-        .distinct(),
-        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=collab))
-        .order_by("title")
-        .distinct(),
-        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=collab))
-        .order_by("title")
-        .distinct(),
-        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=collab))
-        .order_by("title")
-        .distinct(),
+        "project": models.Project.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct(),
+        "event": models.Event.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct(),
+        "question": models.Question.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct(),
+        "glossary": models.Glossary.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct(),
+        "usercase": models.UserCase.objects.filter(Q(authors=person) | Q(id__in=collab)).order_by("title").distinct(),
     }
 
     context["community_links"] = links
@@ -180,9 +162,7 @@ class StarfishDetailView(generic.DetailView):
             return True
 
         collaborators = models.ItemAuthor.objects.filter(status="ACCEPTED", item=object)
-        context["authors"] = {a for a in object.authors.all()} | {
-            c.person for c in collaborators
-        }
+        context["authors"] = {a for a in object.authors.all()} | {c.person for c in collaborators}
         # Filter links for communities
         context["community_links"] = set(filter(links_filter, object.links.all()))
 
@@ -220,11 +200,7 @@ class InformationView(StarfishDetailView):
                 # url = "https://en.wikipedia.org/?curid=" + page_info.pageid
 
                 tag_dict = tag.dict_format()
-                summary = (
-                    tag_dict["summary"]
-                    if not tag_dict["info"]
-                    else tag_dict["info"]["summary"]
-                )
+                summary = tag_dict["summary"] if not tag_dict["info"] else tag_dict["info"]["summary"]
                 return {
                     "tag_dict": tag.dict_format(),
                     "tag": tag.handle,
@@ -273,23 +249,11 @@ class UserCaseView(InformationView):
         context = super(UserCaseView, self).get_context_data(**kwargs)
 
         context["information"] = context["usercase"]
-        scenario = context["information"].get_cpd_scenario()
-        if scenario:
-            context["competences_list"] = list(
-                dict.fromkeys(
-                    scenario.scales_competences
-                )
-            )
-            context["attitudes_list"] = list(
-                dict.fromkeys(
-                    scenario.scales_attitudes
-                )
-            )
-            context["activities_list"] = list(
-                dict.fromkeys(
-                    scenario.scales_activities
-                )
-            )
+        context["scenario"] = context["information"].get_cpd_scenario()
+        if context["scenario"]:
+            context["competences_list"] = list(dict.fromkeys(context["scenario"].scales_competences))
+            context["attitudes_list"] = list(dict.fromkeys(context["scenario"].scales_attitudes))
+            context["activities_list"] = list(dict.fromkeys(context["scenario"].scales_activities))
 
         return context
 
@@ -377,9 +341,7 @@ class QuestionView(StarfishDetailView):
         context["c"] = c
         context["o"] = o
         context["next"] = self.object.get_absolute_url()
-        context["form"] = forms.CommentForm(
-            initial={"item_type": self.object.type, "item_id": self.object.id}
-        )
+        context["form"] = forms.CommentForm(initial={"item_type": self.object.type, "item_id": self.object.id})
         return context
 
 
@@ -531,15 +493,11 @@ def logout_user(request):
 
 
 def ivoauth(request):
-    callback_url = (
-        str(request.build_absolute_uri("ivoauth/callback")) + "/?ticket={#ticket}"
-    )
+    callback_url = str(request.build_absolute_uri("ivoauth/callback")) + "/?ticket={#ticket}"
     post_data = [("token", IVOAUTH_TOKEN), ("callback_url", callback_url)]
     try:
         content = json.loads(
-            urlopen(IVOAUTH_URL + "/ticket", urlencode(post_data).encode("utf-8"))
-            .read()
-            .decode("utf-8")
+            urlopen(IVOAUTH_URL + "/ticket", urlencode(post_data).encode("utf-8")).read().decode("utf-8")
         )
     except HTTPError:
         logger.error("Invalid url")
@@ -553,16 +511,10 @@ def ivoauth(request):
 
 
 def ivoauth_debug(request):
-    callback_url = (
-        str(request.build_absolute_uri("ivoauth/debug_callback")) + "/?ticket={#ticket}"
-    )
+    callback_url = str(request.build_absolute_uri("ivoauth/debug_callback")) + "/?ticket={#ticket}"
     post_data = [("token", IVOAUTH_TOKEN), ("callback_url", callback_url)]
     try:
-        content = json.loads(
-            urlopen(
-                IVOAUTH_URL + "/ticket", urlencode(post_data).encode("utf-8")
-            ).decode("utf-8")
-        )
+        content = json.loads(urlopen(IVOAUTH_URL + "/ticket", urlencode(post_data).encode("utf-8")).decode("utf-8"))
     except HTTPError:
         logger.error("Invalid url")
         return HttpResponseBadRequest()
@@ -582,9 +534,7 @@ def ivoauth_debug_callback(request):
     url = IVOAUTH_URL + "/status"
     post_data = [("token", IVOAUTH_TOKEN), ("ticket", ticket)]
     try:
-        content = (
-            urlopen(url, urlencode(post_data).encode("utf-8")).read().decode("utf-8")
-        )
+        content = urlopen(url, urlencode(post_data).encode("utf-8")).read().decode("utf-8")
     except HTTPError:
         logger.error("Invalid url")
         return HttpResponseBadRequest()
@@ -607,9 +557,7 @@ def ivoauth_callback(request):
     url = IVOAUTH_URL + "/status"
     post_data = [("token", IVOAUTH_TOKEN), ("ticket", ticket)]
     try:
-        content = (
-            urlopen(url, urlencode(post_data).encode("utf-8")).read().decode("utf-8")
-        )
+        content = urlopen(url, urlencode(post_data).encode("utf-8")).read().decode("utf-8")
     except HTTPError:
         logger.error("Invalid url")
         return HttpResponseBadRequest()
@@ -668,9 +616,7 @@ def ivoauth_callback(request):
                     pass
                 else:
                     for community_name in result["ou"]:
-                        subcommunity = supercommunity.subcommunities.filter(
-                            name=community_name
-                        )
+                        subcommunity = supercommunity.subcommunities.filter(name=community_name)
                         if subcommunity.exists():
                             person.communities.add(subcommunity.get())
                             logger.debug("Community '" + community_name + "' added.")
@@ -752,9 +698,7 @@ def loadquestionform(request):
         item_id = int(request.GET.get("id", 0))
 
         logger.debug("initial questionform")
-        questionform = models.QuestionForm(
-            initial={"item_type": item_type, "item_id": item_id}
-        )
+        questionform = models.QuestionForm(initial={"item_type": item_type, "item_id": item_id})
         return render(
             request,
             "askquestion.html",
@@ -802,19 +746,11 @@ def submitquestion(request):
 
                 # Assign communities
                 c1 = set(item.communities.all())
-                c2 = set(
-                    [
-                        community
-                        for author in question.authors.all()
-                        for community in author.communities.all()
-                    ]
-                )
+                c2 = set([community for author in question.authors.all() for community in author.communities.all()])
                 for community in c1.intersection(c2):
                     question.communities.add(community)
 
-                data = json.dumps(
-                    {"success": True, "redirect": question.get_absolute_url()}
-                )
+                data = json.dumps({"success": True, "redirect": question.get_absolute_url()})
 
                 # Send emails
                 # To admin
@@ -860,27 +796,18 @@ def submitquestion(request):
                     msg.attach_alternative(html_content, "text/html")
                     if isinstance(item, models.Person):
                         to_email = (item.email,)
-                        msg = EmailMultiAlternatives(
-                            subject, text_content, from_email, to_email
-                        )
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
                         msg.send(fail_silently=True)
                     else:
                         for author in item.authors.all():
                             to_email = (author.email,)
-                            msg = EmailMultiAlternatives(
-                                subject, text_content, from_email, to_email
-                            )
+                            msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
                             msg.send(fail_silently=True)
             else:
                 logger.debug("questionform invalid")
                 r = {
                     "success": False,
-                    "errors": dict(
-                        [
-                            (k, [str(e) for e in v])
-                            for k, v in questionform.errors.items()
-                        ]
-                    ),
+                    "errors": dict([(k, [str(e) for e in v]) for k, v in questionform.errors.items()]),
                 }
                 data = json.dumps(r)
             return HttpResponse(data, content_type="application/json")
@@ -902,11 +829,7 @@ def comment(request):
             item_id = commentform.cleaned_data["item_id"]
             item = get_model_by_sub_id(item_type, item_id)
             if not item:
-                logger.error(
-                    "No item found for given type {} and id {}".format(
-                        item_type, item_id
-                    )
-                )
+                logger.error("No item found for given type {} and id {}".format(item_type, item_id))
 
             comment = commentform.save(commit=False)
             comment.author = request.user.person
@@ -933,11 +856,7 @@ def comment(request):
             msg.attach_alternative(html_content, "text/html")
             msg.send(fail_silently=True)
 
-            logger.debug(
-                "Comment by user '{}' on item {}/{}".format(
-                    request.user, item_type, item_id
-                )
-            )
+            logger.debug("Comment by user '{}' on item {}/{}".format(request.user, item_type, item_id))
             item.comments.add(comment)
             if item_type == "Q":
                 item.tags.add(*comment.tags.all())
@@ -1029,13 +948,9 @@ def analytics(request):
             cpd_questions__scale__scale_type=scale.scale_type,
             draft=False,
         ).distinct()
-        s_counts.append(
-            (str(scale), case.count(), [e.title for e in case], scale.label)
-        )
+        s_counts.append((str(scale), case.count(), [e.title for e in case], scale.label))
 
-    return render(
-        request, "analytics.html", {"q_counts": q_counts, "s_counts": s_counts}
-    )
+    return render(request, "analytics.html", {"q_counts": q_counts, "s_counts": s_counts})
 
 
 # @cache_page(60 * 5)
@@ -1045,9 +960,7 @@ def browse(request):
     sort = request.GET.get("sort", "recent")
     if selected_community is not None:
         try:
-            selected_community = models.Community.objects.get(
-                pk=int(selected_community)
-            )
+            selected_community = models.Community.objects.get(pk=int(selected_community))
         except models.Community.DoesNotExist:
             selected_communities = user_communities
         else:
@@ -1062,9 +975,7 @@ def browse(request):
     recent = sort == "recent"
 
     good_practices = (
-        models.GoodPractice.objects.filter(
-            communities__in=selected_communities, draft=False
-        )
+        models.GoodPractice.objects.filter(communities__in=selected_communities, draft=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "title")
     )
@@ -1079,38 +990,28 @@ def browse(request):
         .order_by("featured", "create_date" if recent else "title")
     )
     glossaries = (
-        models.Glossary.objects.filter(
-            communities__in=selected_communities, draft=False
-        )
+        models.Glossary.objects.filter(communities__in=selected_communities, draft=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "title")
     )
     informations = (
-        models.Information.objects.filter(
-            communities__in=selected_communities, draft=False
-        )
+        models.Information.objects.filter(communities__in=selected_communities, draft=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "title")
     )
     questions = (
-        models.Question.objects.filter(
-            communities__in=selected_communities, draft=False
-        )
+        models.Question.objects.filter(communities__in=selected_communities, draft=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "title")
     )
     user_cases = (
-        models.UserCase.objects.filter(
-            communities__in=selected_communities, draft=False
-        )
+        models.UserCase.objects.filter(communities__in=selected_communities, draft=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "title")
     )
 
     people = (
-        models.Person.objects.filter(
-            communities__in=selected_communities, draft=False, is_ghost=False
-        )
+        models.Person.objects.filter(communities__in=selected_communities, draft=False, is_ghost=False)
         .distinct()
         .order_by("featured", "create_date" if recent else "name")
     )
@@ -1120,6 +1021,7 @@ def browse(request):
 
     for case in user_cases:
         cpd_scenario = case.get_cpd_scenario()
+        cpd_scenario.scales = cpd_scenario.get_parent_scales()
         case.cpd_scenario = cpd_scenario
         if cpd_scenario and cpd_scenario.id not in cpd_ids:
             cpd_ids.add(cpd_scenario.id)
@@ -1173,9 +1075,7 @@ def search(request):
                 search_communities = user_communities
         else:
             search_communities = user_communities
-        query, dym_query, dym_query_raw, results, special = retrieval.retrieve(
-            string, True, search_communities
-        )
+        query, dym_query, dym_query_raw, results, special = retrieval.retrieve(string, True, search_communities)
 
         def sorting_key(item):
             if sort == "recent":
@@ -1228,9 +1128,7 @@ def search(request):
                 for by_type in t_sorted:
                     filtered.append(
                         filter(
-                            lambda x: (
-                                x["type"] not in q_types or x["handle"] in tag_tokens
-                            ),
+                            lambda x: (x["type"] not in q_types or x["handle"] in tag_tokens),
                             by_type,
                         )
                     )
@@ -1241,9 +1139,7 @@ def search(request):
                         # TODO: pick one
                         handle = str("+" + str(len(t) - 1) + " " + t[0]["type_name"])
                         dom_id = str(result["id"]) + t[0]["type"]
-                        trimmed.append(
-                            [t[0], {"handle": handle, "more": t[1:], "dom_id": dom_id}]
-                        )
+                        trimmed.append([t[0], {"handle": handle, "more": t[1:], "dom_id": dom_id}])
                     else:
                         trimmed.append(t)
                 # FIXME fix collapsed tags in browse/search page
@@ -1350,9 +1246,7 @@ def validate_profiles(request):
         form = forms.ValidateForm()
 
     profiles = models.Person.objects.filter(draft=True)
-    return render(
-        request, "validate_profiles.html", {"profiles": profiles, "form": form}
-    )
+    return render(request, "validate_profiles.html", {"profiles": profiles, "form": form})
 
 
 def privacy_policy(request):
@@ -1413,9 +1307,7 @@ def search_list(request):
     user_communities = utils.get_user_communities(request.user)
     string = request.GET.get("q", "")
     if len(string) > 0:
-        query, dym_query, dym_query_raw, results, special = retrieval.retrieve(
-            string, True, user_communities
-        )
+        query, dym_query, dym_query_raw, results, special = retrieval.retrieve(string, True, user_communities)
 
         def compare(item1, item2):
             """
@@ -1426,8 +1318,7 @@ def search_list(request):
             if item1["featured"] ^ item2["featured"]:
                 return int(round(item1["featured"] - item2["featured"]))
             return int(
-                round(item1["create_date"] < item2["create_date"])
-                - (item1["create_date"] > item2["create_date"])
+                round(item1["create_date"] < item2["create_date"]) - (item1["create_date"] > item2["create_date"])
             )
 
             # TODO scope
@@ -1458,9 +1349,7 @@ def search_list(request):
             for by_type in t_sorted:
                 filtered.append(
                     filter(
-                        lambda x: (
-                            x["type"] not in q_types or x["handle"] in tag_tokens
-                        ),
+                        lambda x: (x["type"] not in q_types or x["handle"] in tag_tokens),
                         by_type,
                     )
                 )
@@ -1470,9 +1359,7 @@ def search_list(request):
                     # TODO: pick one
                     handle = "+" + str(len(t) - 1) + " " + t[0]["type_name"]
                     dom_id = str(result["id"]) + t[0]["type"]
-                    trimmed.append(
-                        [t[0], {"handle": handle, "more": t[1:], "dom_id": dom_id}]
-                    )
+                    trimmed.append([t[0], {"handle": handle, "more": t[1:], "dom_id": dom_id}])
                 else:
                     trimmed.append(t)
             result["tags"] = itertools.chain(*trimmed)

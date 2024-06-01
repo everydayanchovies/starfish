@@ -116,9 +116,7 @@ class CPDScenario:
     time_to_finish = None
     learning_environments = []
 
-    def from_usercase(usercase_id):
-        usercase = UserCase.objects.get(pk=usercase_id)
-
+    def from_usercase(usercase):
         cpd_scenario = CPDScenario()
         cpd_scenario.scales = [q.scale for q in usercase.cpd_questions.all()]
         if not cpd_scenario.scales:
@@ -131,9 +129,6 @@ class CPDScenario:
         cpd_scenario.featured = datetime.now(timezone.utc)
         cpd_scenario.create_date = datetime.now(timezone.utc)
 
-        w_scale_ids = [s.id for s in cpd_scenario.scales]
-        w_scale_ids.sort()
-        cpd_scenario.id = "".join([str(s_id) for s_id in w_scale_ids])
         return cpd_scenario
 
     def dict_format(self, obj=None):
@@ -150,6 +145,12 @@ class CPDScenario:
             }
         )
         return obj
+
+    @property
+    def id(self):
+        w_scale_ids = [s.id for s in self.scales]
+        w_scale_ids.sort()
+        return "".join([str(s_id) for s_id in w_scale_ids])
 
     @property
     def scales_competences(self):
@@ -173,10 +174,22 @@ class CPDScenario:
             return activities
         return []
 
+    def get_parent_scales(self):
+        scales = set()
+        for scale in dict.fromkeys(self.classification_scales):
+            while scale.scale_parent:
+                scale = scale.scale_parent
+            scales.add(scale)
+        return sorted(scales, key=lambda s: s.label)
+
     @property
     def title(self):
-        scales = list(dict.fromkeys(self.classification_scales))
-        return f"{', '.join([s.title for s in scales])} (type {', '.join([s.label for s in scales])})"
+        scales = self.get_parent_scales()
+        titles = [s.title for s in scales]
+        if len(titles) > 1:
+            titles[-1] = "and " + titles[-1]
+
+        return f"{', '.join(titles)} (type {', '.join([s.label for s in scales])})"
 
     @property
     def description(self):
@@ -773,7 +786,7 @@ class UserCase(TextItem):
         self.type = "U"
 
     def get_cpd_scenario(self):
-        return CPDScenario.from_usercase(self.id)
+        return CPDScenario.from_usercase(self)
 
     wallpaper = models.ImageField(upload_to="user_cases", blank=True, null=True)
 
@@ -815,7 +828,7 @@ class UserCase(TextItem):
         for cpd_tag in cpd_tags:
             self.tags.add(cpd_tag)
 
-        print("Saving tags:", [t.handle for t in self.tags.all()])
+        # print("Saving tags:", [t.handle for t in self.tags.all()])
         super(UserCase, self).save(*args, **kwargs)
 
     def context_and_goals(self):

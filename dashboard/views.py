@@ -295,37 +295,35 @@ class EditForm(generic.View):
         # this reverts that change
         form.data.setlist("authors", form.data["authors"])
 
-        if form.is_valid():
-            obj = form.save(commit=False)
-
-            obj_id = ((self.success_url[-1] != "/") * "/") + str(obj.pk)
-
-            links = form.cleaned_data.get("links")
-            obj.cpd_questions.set(form.cleaned_data.get("cpd_questions"))
-
-            for link in links:
-                obj.link(link)
-            del form.cleaned_data["links"]
-            del form.cleaned_data["tags"]
-
-            obj.save()
-            form.save_m2m()
-            print("handles2", [a.handle for a in obj.tags.all()])
-
-            redirect = self.success_url + obj_id
-
-            messages.add_message(
-                request,
-                messages.INFO,
-                ITEM_UPDATED_MSG.format(self.model_class.__name__),
-            )
-            return HttpResponseRedirect(redirect)
-        else:
+        if not form.is_valid():
             return render(
                 request,
                 self.template_name,
                 {"user_communities": user_communities, "form": form},
             )
+        obj = form.save(commit=False)
+
+        links = form.cleaned_data.get("links")
+        obj.cpd_questions.set(form.cleaned_data.get("cpd_questions"))
+
+        for link in links:
+            obj.link(link)
+
+        # If we don't delete the cleaned data they will replace the computed values (eg. special/cpd tags)
+        del form.cleaned_data["links"]
+        del form.cleaned_data["tags"]
+
+        obj.save()
+        form.save_m2m()
+
+        redirect = self.success_url + ((self.success_url[-1] != "/") * "/") + str(obj.pk)
+
+        messages.add_message(
+            request,
+            messages.INFO,
+            ITEM_UPDATED_MSG.format(self.model_class.__name__),
+        )
+        return HttpResponseRedirect(redirect)
 
 
 class InformationForm(EditForm):

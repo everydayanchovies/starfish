@@ -185,11 +185,17 @@ class CPDScenario:
     @property
     def title(self):
         scales = self.get_parent_scales()
-        titles = [s.title for s in scales]
+        if not scales or len(scales) == 0:
+            return ""
+
+        titles = [s.inline_title for s in scales]
         if len(titles) > 1:
             titles[-1] = "and " + titles[-1]
 
-        return f"{', '.join(titles)} (type {', '.join([s.label for s in scales])})"
+        if scales[0].scale_type == CPDScale.ST_ACTIVITIES:
+            return f"Use of {', '.join(titles)} (type {', '.join([s.label for s in scales])})"
+
+        return f"Developing confidence in {', '.join(titles)} (type {', '.join([s.label for s in scales])})"
 
     @property
     def description(self):

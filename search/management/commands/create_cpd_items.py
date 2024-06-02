@@ -83,22 +83,15 @@ class Command(BaseCommand):
     ]
 
     COMPETENCES_SCALES_QUESTIONS = [
-        (
-            "1",
-            "Constructive alignment",
-            "sound course design",
-            [1, 2, 3, 6]),
+        ("1", "Constructive alignment", "sound course design", []),
+        ("1a", "Constructive alignment", "sound course design", [1, 2, 3, 6]),
         (
             "2",
-            "Pedagogy, Interactive teaching",
-            "pedagogy of interactive teaching",
+            "Interactive teaching",
+            "interactive teaching",
             [],
         ),
-        (
-            "2a",
-            "Competence teaching",
-            "teaching in higher education",
-            [9, 10, 14, 15]),
+        ("2a", "Competence teaching", "teaching in higher education", [9, 10, 14, 15]),
         (
             "2b",
             "Competence design interactive teaching",
@@ -107,8 +100,8 @@ class Command(BaseCommand):
         ),
         (
             "3",
-            "Pedagogy, Learning facilitation",
-            "pedagogy of learning facilitation",
+            "Learning facilitation",
+            "learning facilitation",
             [],
         ),
         (
@@ -138,7 +131,7 @@ class Command(BaseCommand):
         (
             "4",
             "Technology in facilitative teaching:",
-            "how to use digital technology in teaching and learning",
+            "use of technology in facilitative teaching",
             [],
         ),
         (
@@ -182,13 +175,13 @@ class Command(BaseCommand):
         (
             "1",
             "Imparting information (trainer-centered)",
-            "in a trainer centered way",
+            "a trainer centered way",
             [1, 2, 3],
         ),
         (
             "2",
             "Learning facilitation (person-centered)",
-            "in a learner centered way",
+            "a learner centered way",
             [4, 5, 7, 8, 9, 10],
         ),
         ("3", "Collaboration", "collaboratively", [11, 13]),
@@ -234,9 +227,7 @@ class Command(BaseCommand):
         path_to_db = options["path_to_db"]
         shutil.copyfile(
             path_to_db,
-            path_to_db
-            + "_backup_pre_create_cpd_items_"
-            + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"),
+            path_to_db + "_backup_pre_create_cpd_items_" + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"),
         )
 
         self.insert_scale_data(
@@ -255,17 +246,17 @@ class Command(BaseCommand):
             self.ACTIVITIES_QUESTIONS,
         )
 
-        for (title, inline_title) in self.TIME_TO_FINISH_ENTRIES:
+        for title, inline_title in self.TIME_TO_FINISH_ENTRIES:
             ttf = CPDTimeToFinish(title=title, inline_title=inline_title)
             ttf.save()
 
-        for (title, inline_title) in self.LEARNING_ENVIRONMENT_ENTRIES:
+        for title, inline_title in self.LEARNING_ENVIRONMENT_ENTRIES:
             le = CPDLearningEnvironment(title=title, inline_title=inline_title)
             le.save()
 
     def insert_scale_data(self, scale_type, scale_data, questions):
         # create parent scales
-        for (scale, title, inline_title, scale_questions) in scale_data:
+        for scale, title, inline_title, scale_questions in scale_data:
             # parent scales don't have questions
             if scale_questions:
                 continue
@@ -279,7 +270,7 @@ class Command(BaseCommand):
             s.save()
 
         # create other scales
-        for (scale, title, inline_title, scale_questions) in scale_data:
+        for scale, title, inline_title, scale_questions in scale_data:
             # parent scales don't have questions
             # and we already created the parent scales
             if not scale_questions:
@@ -290,15 +281,16 @@ class Command(BaseCommand):
             parent_scale = None if len(scale) == 1 else scale[0]
             scale = scale[0] if not parent_scale else scale[1]
 
+            print("test")
+            print(scale)
+            print(parent_scale)
+
+            print(CPDScale.objects.get(scale_type=scale_type, scale=parent_scale))
             s = CPDScale(
                 title=title,
                 inline_title=inline_title,
                 scale=scale,
-                scale_parent=CPDScale.objects.get(
-                    scale_type=scale_type, scale=parent_scale
-                )
-                if parent_scale
-                else None,
+                scale_parent=CPDScale.objects.get(scale_type=scale_type, scale=parent_scale) if parent_scale else None,
                 scale_type=scale_type,
             )
             s.save()

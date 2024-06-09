@@ -49,7 +49,7 @@ QUESTION_ASKED_TEXT = (
 )
 COMMENT_PLACED_TEXT = "{author} commented on {itemlink}"
 
-DEBUG = True
+DEBUG = False
 
 ADMINS = get_secret("ADMIN_EMAIL")
 MANAGERS = ADMINS

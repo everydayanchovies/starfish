@@ -4,6 +4,7 @@ from datetime import datetime
 from django.core.management.base import BaseCommand
 
 from search.models import CPDLearningEnvironment, CPDQuestion, CPDScale, CPDTimeToFinish
+import sqlite3
 
 
 class Command(BaseCommand):
@@ -153,27 +154,53 @@ class Command(BaseCommand):
             "1",
             "Motivation and self-regulation for CPD",
             "how to stay motivated and self-regulate their continuous professional development",
+            [],
+        ),
+        (
+            "1a",
+            "Motivation and self-regulation for CPD",
+            "how to stay motivated and self-regulate their continuous professional development",
             [2, 14, 15, 16],
         ),
         (
             "2",
             "Pastoral interest",
             "supporting student development and enabling students’ well-being in a learning process and inclusivity",
+            [],
+        ),
+        (
+            "2a",
+            "Pastoral interest",
+            "supporting student development and enabling students’ well-being in a learning process and inclusivity",
             [3, 4, 5],
         ),
-        ("3", "Reflection", "reflecting on own teaching practice", [1, 10, 11]),
+        ("3", "Reflection", "reflecting on own teaching practice", []),
+        ("3a", "Reflection", "reflecting on own teaching practice", [1, 10, 11]),
         (
             "4",
             "Evidence informed approach",
             "practicing teaching and learning in an evidence informed way ",
+            [],
+        ),
+        (
+            "4a",
+            "Evidence informed approach",
+            "practicing teaching and learning in an evidence informed way ",
             [6, 7, 13],
         ),
-        ("5", "Knowledge sharing", "knowledge sharing", [8, 9, 12, 17]),
+        ("5", "Knowledge sharing", "knowledge sharing", []),
+        ("5a", "Knowledge sharing", "knowledge sharing", [8, 9, 12, 17]),
     ]
 
     ACTIVITIES_SCALES_QUESTIONS = [
         (
             "1",
+            "Imparting information (trainer-centered)",
+            "a trainer centered way",
+            [],
+        ),
+        (
+            "1a",
             "Imparting information (trainer-centered)",
             "a trainer centered way",
             [1, 2, 3],
@@ -182,11 +209,24 @@ class Command(BaseCommand):
             "2",
             "Learning facilitation (person-centered)",
             "a learner centered way",
+            [],
+        ),
+        (
+            "2a",
+            "Learning facilitation (person-centered)",
+            "a learner centered way",
             [4, 5, 7, 8, 9, 10],
         ),
-        ("3", "Collaboration", "collaboratively", [11, 13]),
+        ("3", "Collaboration", "collaboratively", []),
+        ("3a", "Collaboration", "collaboratively", [11, 13]),
         (
             "4",
+            "Mentor-mentee support",
+            "according to mentor-mentee support principle",
+            [],
+        ),
+        (
+            "4a",
             "Mentor-mentee support",
             "according to mentor-mentee support principle",
             [12, 15, 17],
@@ -195,9 +235,16 @@ class Command(BaseCommand):
             "5",
             "(Personal/individual) expert support",
             "by using personal/individual expert support",
+            [],
+        ),
+        (
+            "5a",
+            "(Personal/individual) expert support",
+            "by using personal/individual expert support",
             [14, 16],
         ),
-        ("6", "Knowledge sharing", "by knowledge sharing", [6, 18, 19]),
+        ("6", "Knowledge sharing", "by knowledge sharing", []),
+        ("6a", "Knowledge sharing", "by knowledge sharing", [6, 18, 19]),
     ]
 
     TIME_TO_FINISH_ENTRIES = [
@@ -230,26 +277,47 @@ class Command(BaseCommand):
             path_to_db + "_backup_pre_create_cpd_items_" + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"),
         )
 
+        print("Reseting tables...")
+        # We need to delete the old entries in order to regenerate the questions. Aside from deleting we also want to reset the pk counter, which for some questions start at odd values in order to preserve the links between case and questions etc, presumably due to incorrect edits in the past.
+        connection = sqlite3.connect(path_to_db)
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM search_cpdscale;")
+        cursor.execute("UPDATE sqlite_sequence SET seq = 54 WHERE name = 'search_cpdscale';")
+        cursor.execute("DELETE FROM search_cpdactivity;")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name = 'search_cpdactivity';")
+        cursor.execute("DELETE FROM search_cpdlearningenvironment;")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name = 'search_cpdlearningenvironment';")
+        cursor.execute("DELETE FROM search_cpdquestion;")
+        cursor.execute("UPDATE sqlite_sequence SET seq = 140 WHERE name = 'search_cpdquestion';")
+        cursor.execute("DELETE FROM search_cpdtimetofinish;")
+        cursor.execute("UPDATE sqlite_sequence SET seq = 8 WHERE name = 'search_cpdtimetofinish';")
+        connection.commit()
+
+        print("Creating competences")
         self.insert_scale_data(
             CPDScale.ST_COMPETENCES,
             self.COMPETENCES_SCALES_QUESTIONS,
             self.COMPETENCIES_QUESTIONS,
         )
+        print("Creating attitudes")
         self.insert_scale_data(
             CPDScale.ST_ATTITUDES,
             self.ATTITUDES_SCALES_QUESTIONS,
             self.ATTITUDES_QUESTIONS,
         )
+        print("Creating activities")
         self.insert_scale_data(
             CPDScale.ST_ACTIVITIES,
             self.ACTIVITIES_SCALES_QUESTIONS,
             self.ACTIVITIES_QUESTIONS,
         )
 
+        print("Saving time to finish")
         for title, inline_title in self.TIME_TO_FINISH_ENTRIES:
             ttf = CPDTimeToFinish(title=title, inline_title=inline_title)
             ttf.save()
 
+        print("Saving learning environments")
         for title, inline_title in self.LEARNING_ENVIRONMENT_ENTRIES:
             le = CPDLearningEnvironment(title=title, inline_title=inline_title)
             le.save()
@@ -281,11 +349,6 @@ class Command(BaseCommand):
             parent_scale = None if len(scale) == 1 else scale[0]
             scale = scale[0] if not parent_scale else scale[1]
 
-            print("test")
-            print(scale)
-            print(parent_scale)
-
-            print(CPDScale.objects.get(scale_type=scale_type, scale=parent_scale))
             s = CPDScale(
                 title=title,
                 inline_title=inline_title,

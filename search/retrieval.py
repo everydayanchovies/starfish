@@ -4,11 +4,12 @@ from django.conf import settings
 from django.db.models import Q
 
 from search import utils
-from search.models import CPDScenario, Item, Tag, Person
+from search.models import CPDScenario, Item, Tag, Person, UserCase
 
 from datetime import datetime, timezone
 
 SEARCH_SETTINGS = settings.SEARCH_SETTINGS
+
 
 def retrieve(query, dict_format=False, communities_list=None):
     """
@@ -27,9 +28,7 @@ def retrieve(query, dict_format=False, communities_list=None):
     tag_tokens, person_tokens, literal_tokens = utils.parse_query(query)
 
     # Try to find query suggestions
-    dym_query, dym_query_raw = utils.did_you_mean(
-        tag_tokens, person_tokens, literal_tokens, query, "<b>%s</b>"
-    )
+    dym_query, dym_query_raw = utils.did_you_mean(tag_tokens, person_tokens, literal_tokens, query, "<b>%s</b>")
 
     # Extract the tokens, discard location information
     tag_tokens = map(lambda x: x[0], tag_tokens)
@@ -57,9 +56,7 @@ def retrieve(query, dict_format=False, communities_list=None):
     # If tags were used
     if len(tag_tokens) > 0:
         # Fetch all mentioned tags and their aliases
-        tags = Tag.objects.select_related("alias_of").filter(
-            handle__iregex=r"^(" + "|".join(tag_tokens) + ")$"
-        )
+        tags = Tag.objects.select_related("alias_of").filter(handle__iregex=r"^(" + "|".join(tag_tokens) + ")$")
         # Add tag aliases
         tags_extended = set([Tag.objects.filter(handle=h)[0] for h in tag_tokens])
         for tag in tags:
@@ -85,13 +82,9 @@ def retrieve(query, dict_format=False, communities_list=None):
     if len(person_tokens) > 0:
         # If settings set to allow partial person handles
         if SEARCH_SETTINGS["allowPartialPersonHandles"]:
-            persons = Person.objects.filter(
-                handle__iregex=r"^(" + "|".join(person_tokens) + ")"
-            )
+            persons = Person.objects.filter(handle__iregex=r"^(" + "|".join(person_tokens) + ")")
         else:
-            persons = Person.objects.filter(
-                handle__iregex=r"^(" + "|".join(person_tokens) + ")$"
-            )
+            persons = Person.objects.filter(handle__iregex=r"^(" + "|".join(person_tokens) + ")$")
     else:
         # Else, set persons to be empty
         persons = []
@@ -106,12 +99,8 @@ def retrieve(query, dict_format=False, communities_list=None):
     if not communities_list:
         communities_list = []
     else:
-        communities_list = functools.reduce(
-            lambda x, y: x + y, map(lambda c: c.get_parents() + [c], communities_list)
-        )
-    community_q = functools.reduce(
-        lambda q, c: q | Q(communities=c), communities_list, Q()
-    )
+        communities_list = functools.reduce(lambda x, y: x + y, map(lambda c: c.get_parents() + [c], communities_list))
+    community_q = functools.reduce(lambda q, c: q | Q(communities=c), communities_list, Q())
     items = items.filter(community_q)
 
     # Add literal contraints
@@ -182,21 +171,15 @@ def retrieve(query, dict_format=False, communities_list=None):
                 continue
             # TODO this does not appear to work
             if item_dict["type"] == "User Case":
-                cpd_scenario = CPDScenario.from_usercase(item_dict["id"])
-                item_dict["cpd_scenario"] = (
-                    cpd_scenario.dict_format() if cpd_scenario else None
-                )
+                cpd_scenario = CPDScenario.from_usercase(UserCase.objects.get(pk=item_dict["id"]))
+                item_dict["cpd_scenario"] = cpd_scenario.dict_format() if cpd_scenario else None
                 results[item_dict["id"]] = item_dict
                 continue
 
             results[item_dict["id"]] = item_dict
 
         for item_dict in [
-                uc
-                for uc in [
-                        item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"
-                ]
-                if uc is not None
+            uc for uc in [item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"] if uc is not None
         ]:
             item_dict["type"] = "CPDScenario"
             item_dict["featured"] = datetime.now(timezone.utc)

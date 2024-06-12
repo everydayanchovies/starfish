@@ -164,26 +164,24 @@ def retrieve(query, dict_format=False, communities_list=None):
 
     if dict_format:
         item_dicts = [item.dict_format() for item in items]
+        cpd_ids = set()
 
         for item_dict in item_dicts:
             # hide anonymous authors
             if item_dict["type"] == "Person" and item_dict["is_ghost"]:
                 continue
-            # TODO this does not appear to work
+
             if item_dict["type"] == "User Case":
                 cpd_scenario = CPDScenario.from_usercase(UserCase.objects.get(pk=item_dict["id"]))
-                item_dict["cpd_scenario"] = cpd_scenario.dict_format() if cpd_scenario else None
-                results[item_dict["id"]] = item_dict
-                continue
+                cpd_scenario.scales = cpd_scenario.get_parent_scales()
+                if cpd_scenario.id not in cpd_ids:
+                    cpd_ids.add(cpd_scenario.id)
+                    item_dict["cpd_scenario"] = cpd_scenario.dict_format() if cpd_scenario else None
+                    item_dict["cpd_scenario"]["type"] = "CPDScenario"
+                    item_dict["cpd_scenario"]["featured"] = datetime.now(timezone.utc)
+                    item_dict["cpd_scenario"]["create_date"] = datetime.now(timezone.utc)
+                    results[cpd_scenario.id] = item_dict["cpd_scenario"]
 
-            results[item_dict["id"]] = item_dict
-
-        for item_dict in [
-            uc for uc in [item["cpd_scenario"] for item in item_dicts if item["type"] == "User Case"] if uc is not None
-        ]:
-            item_dict["type"] = "CPDScenario"
-            item_dict["featured"] = datetime.now(timezone.utc)
-            item_dict["create_date"] = datetime.now(timezone.utc)
             results[item_dict["id"]] = item_dict
 
         results = results.values()

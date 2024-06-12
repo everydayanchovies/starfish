@@ -823,6 +823,8 @@ class UserCase(TextItem):
     evaluation = ck_field.RichTextUploadingField(verbose_name="Evaluation")
 
     def save(self, *args, **kwargs):
+        # Need to save the object first in order to initialize many to many relationship stuff
+        super(UserCase, self).save(*args, **kwargs)
         # delete all relations with CPD tags
         cpd_tags = self.tags.all().filter(type=Tag.TT_CPD)
         for cpd_tag in cpd_tags:

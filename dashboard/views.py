@@ -304,7 +304,6 @@ class EditForm(generic.View):
         obj = form.save(commit=False)
 
         links = form.cleaned_data.get("links")
-        obj.cpd_questions.set(form.cleaned_data.get("cpd_questions"))
 
         for link in links:
             obj.link(link)
@@ -312,6 +311,11 @@ class EditForm(generic.View):
         # If we don't delete the cleaned data they will replace the computed values (eg. special/cpd tags)
         del form.cleaned_data["links"]
         del form.cleaned_data["tags"]
+
+        # Need to save the object first in order to initialize many to many relationship stuff
+        obj.save()
+
+        obj.cpd_questions.set(form.cleaned_data.get("cpd_questions"))
 
         obj.save()
         form.save_m2m()

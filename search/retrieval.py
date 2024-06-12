@@ -174,12 +174,12 @@ def retrieve(query, dict_format=False, communities_list=None):
             if item_dict["type"] == "User Case":
                 cpd_scenario = CPDScenario.from_usercase(UserCase.objects.get(pk=item_dict["id"]))
                 cpd_scenario.scales = cpd_scenario.get_parent_scales()
+                item_dict["cpd_scenario"] = cpd_scenario.dict_format() if cpd_scenario else None
+                item_dict["cpd_scenario"]["type"] = "CPDScenario"
+                item_dict["cpd_scenario"]["featured"] = datetime.now(timezone.utc)
+                item_dict["cpd_scenario"]["create_date"] = datetime.now(timezone.utc)
                 if cpd_scenario.id not in cpd_ids:
                     cpd_ids.add(cpd_scenario.id)
-                    item_dict["cpd_scenario"] = cpd_scenario.dict_format() if cpd_scenario else None
-                    item_dict["cpd_scenario"]["type"] = "CPDScenario"
-                    item_dict["cpd_scenario"]["featured"] = datetime.now(timezone.utc)
-                    item_dict["cpd_scenario"]["create_date"] = datetime.now(timezone.utc)
                     results[cpd_scenario.id] = item_dict["cpd_scenario"]
 
             results[item_dict["id"]] = item_dict

@@ -1,8 +1,10 @@
 .log/*
-venv/*
+*venv/*
 venvdj3/*
 search/static/*
 media/*
 search/__pycache__/*
 steep/__pycache__/*
 dashboard/__pycache__/*
+*.lock
+*.sqlite

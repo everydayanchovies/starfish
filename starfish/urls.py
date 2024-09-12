@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from django.urls import re_path, path, url
+from django.urls import re_path, path
 from django.views.i18n import JavaScriptCatalog
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -19,8 +19,8 @@ urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
     re_path(r"", include("search.urls")),
     re_path(r"^dashboard/", include("dashboard.urls")),
-    url(r"^ckeditor/upload/", login_required(ckeditor_views.upload), name="ckeditor_upload"),
-    url(r"^ckeditor/browse/", never_cache(login_required(ckeditor_views.browse)), name="ckeditor_browse"),
+    path(r"^ckeditor/upload/", login_required(ckeditor_views.upload), name="ckeditor_upload"),
+    path(r"^ckeditor/browse/", never_cache(login_required(ckeditor_views.browse)), name="ckeditor_browse"),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="jsi18n"),
 ]
 

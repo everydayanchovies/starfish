@@ -119,8 +119,6 @@ class CPDScenario:
     def from_usercase(usercase):
         cpd_scenario = CPDScenario()
         cpd_scenario.scales = [q.scale for q in usercase.cpd_questions.all()]
-        if not cpd_scenario.scales:
-            return None
 
         cpd_scenario.time_to_finish = usercase.cpd_time_to_finish
         cpd_scenario.learning_environments = usercase.cpd_learning_environment.all()

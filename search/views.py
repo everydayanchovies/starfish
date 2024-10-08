@@ -1021,6 +1021,9 @@ def browse(request):
 
     for case in user_cases:
         cpd_scenario = case.get_cpd_scenario()
+        if not cpd_scenario:
+            continue
+
         cpd_scenario.scales = cpd_scenario.get_parent_scales()
         case.cpd_scenario = cpd_scenario
         if cpd_scenario and cpd_scenario.id not in cpd_ids:
